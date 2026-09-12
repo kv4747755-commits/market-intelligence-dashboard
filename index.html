@@ -21,7 +21,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 </head>
 <body>
 <header><div class="head">
-<div class="badge">● V3 DATA FOUNDATION — OPTIONS MODEL</div>
+<div class="badge">● V4 MACRO COMMAND CENTER</div>
 <div class="brand">MARKET INTELLIGENCE</div>
 <div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div>
 <div class="nav">
@@ -78,7 +78,63 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 </div>
 </section>
 
-<section id="macro"><div class="title">MACRO & LIQUIDITY</div><div class="card"><h3>US Rates</h3><table><thead><tr><th>Maturity</th><th>Yield</th><th>1D</th></tr></thead><tbody id="rates"></tbody></table></div></section>
+<section id="macro">
+<div class="title">MACRO COMMAND CENTER <span class="small">rates • inflation • labor • growth • liquidity • credit • global risk</span></div>
+<div id="macro-banner" class="callout" style="margin-bottom:12px">Loading macro data…</div>
+<div class="grid">
+<div class="card"><div class="label">Fed Funds</div><div class="big" id="m-fed">—</div><div class="small" id="m-fed-date">—</div></div>
+<div class="card"><div class="label">SOFR</div><div class="big" id="m-sofr">—</div><div class="small" id="m-sofr-date">—</div></div>
+<div class="card"><div class="label">10Y Real Yield</div><div class="big" id="m-real10">—</div><div class="small">FRED DFII10</div></div>
+<div class="card"><div class="label">10Y Breakeven</div><div class="big" id="m-be10">—</div><div class="small">Inflation expectations</div></div>
+</div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Yield Curve</h3><table><thead><tr><th>Maturity</th><th>Yield</th><th>Curve</th></tr></thead><tbody id="macro-rates"></tbody></table><div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">2s10s</span><b id="s-2s10s">—</b></div><div class="kpi"><span class="small">5s30s</span><b id="s-5s30s">—</b></div><div class="kpi"><span class="small">3M10Y</span><b id="s-3m10y">—</b></div></div></div>
+<div class="card"><h3>Fed & Policy</h3><div class="callout"><b id="fomc-next">—</b><br><span class="small" id="fomc-note">Official Federal Reserve calendar</span></div><table style="margin-top:10px"><tr><td>Fed balance sheet</td><td id="m-walcl">—</td></tr><tr><td>Bank reserves / liquidity</td><td id="m-liq">—</td></tr><tr><td>Reverse repo</td><td id="m-rrp">—</td></tr><tr><td>TGA</td><td id="m-tga">—</td></tr></table></div>
+</div>
+<div class="title" style="margin-top:28px">INFLATION & PRICES</div>
+<div class="grid">
+<div class="card"><div class="label">CPI</div><div class="big" id="m-cpi">—</div><div class="small" id="m-cpi-prev">—</div></div>
+<div class="card"><div class="label">Core CPI</div><div class="big" id="m-corecpi">—</div><div class="small" id="m-corecpi-prev">—</div></div>
+<div class="card"><div class="label">PCE</div><div class="big" id="m-pce">—</div><div class="small" id="m-pce-prev">—</div></div>
+<div class="card"><div class="label">Core PCE</div><div class="big" id="m-corepce">—</div><div class="small" id="m-corepce-prev">—</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>PPI & Inflation Expectations</h3><table><tr><td>PPI</td><td id="m-ppi">—</td></tr><tr><td>10Y breakeven</td><td id="m-be10b">—</td></tr><tr><td>Real 10Y</td><td id="m-real10b">—</td></tr></table></div><div class="card"><h3>Inflation Regime</h3><div class="big amber" id="reg-inflation">—</div><div class="small">Rule-based classification from latest available data; not a forecast.</div></div></div>
+<div class="title" style="margin-top:28px">EMPLOYMENT & LABOR</div>
+<div class="grid">
+<div class="card"><div class="label">Unemployment</div><div class="big" id="m-unrate">—</div><div class="small" id="m-unrate-prev">—</div></div>
+<div class="card"><div class="label">Nonfarm Payrolls</div><div class="big" id="m-payrolls">—</div><div class="small" id="m-payrolls-prev">—</div></div>
+<div class="card"><div class="label">Avg Hourly Earnings</div><div class="big" id="m-ahe">—</div><div class="small">Monthly series</div></div>
+<div class="card"><div class="label">Labor Participation</div><div class="big" id="m-part">—</div><div class="small">Civilian labor force</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Claims & Jobs</h3><table><tr><td>Initial claims</td><td id="m-icsa">—</td></tr><tr><td>Continuing claims</td><td id="m-ccsa">—</td></tr><tr><td>JOLTS openings</td><td id="m-jolts">—</td></tr></table></div><div class="card"><h3>Labor Regime</h3><div class="big" id="reg-labor">—</div><div class="small">Derived from unemployment rate.</div></div></div>
+<div class="title" style="margin-top:28px">GROWTH & ACTIVITY</div>
+<div class="grid">
+<div class="card"><div class="label">GDP</div><div class="big" id="m-gdp">—</div><div class="small">Real GDP level</div></div>
+<div class="card"><div class="label">GDP Growth</div><div class="big" id="m-gdpg">—</div><div class="small">Annualized quarterly rate</div></div>
+<div class="card"><div class="label">Industrial Production</div><div class="big" id="m-indpro">—</div><div class="small">Index level</div></div>
+<div class="card"><div class="label">Retail Sales</div><div class="big" id="m-retail">—</div><div class="small">Index level</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Housing & Sentiment</h3><table><tr><td>Housing starts</td><td id="m-houst">—</td></tr><tr><td>Building permits</td><td id="m-permit">—</td></tr><tr><td>Consumer sentiment</td><td id="m-sent">—</td></tr></table></div><div class="card"><h3>Growth Regime</h3><div class="big" id="reg-growth">—</div><div class="small">Rule-based classification from GDP growth.</div></div></div>
+<div class="title" style="margin-top:28px">LIQUIDITY & CREDIT</div>
+<div class="grid">
+<div class="card"><div class="label">Fed Balance Sheet</div><div class="big" id="m-balance">—</div><div class="small">WALCL</div></div>
+<div class="card"><div class="label">M2</div><div class="big" id="m-m2">—</div><div class="small">Money supply</div></div>
+<div class="card"><div class="label">HY Spread</div><div class="big" id="m-hy">—</div><div class="small">Option-adjusted spread</div></div>
+<div class="card"><div class="label">IG Spread</div><div class="big" id="m-ig">—</div><div class="small">Corporate credit</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Financial Conditions</h3><table><tr><td>NFCI</td><td id="m-nfci">—</td></tr><tr><td>Fed balance sheet trend</td><td id="m-baltrend">—</td></tr><tr><td>Liquidity regime</td><td id="reg-liq">—</td></tr></table></div><div class="card"><h3>Credit Stress</h3><div class="big amber" id="reg-credit">—</div><div class="small">Threshold-based warning using HY spread; not a recession forecast.</div></div></div>
+<div class="title" style="margin-top:28px">DOLLAR & GLOBAL MARKETS</div>
+<div class="grid">
+<div class="card"><div class="label">DXY</div><div class="big" id="m-dxy">—</div><div class="small">Spot snapshot</div></div>
+<div class="card"><div class="label">USDJPY</div><div class="big" id="m-usdjpy">—</div><div class="small">Spot snapshot</div></div>
+<div class="card"><div class="label">GBPUSD</div><div class="big" id="m-gbp">—</div><div class="small">Spot snapshot</div></div>
+<div class="card"><div class="label">USDCNH</div><div class="big" id="m-usdcn">—</div><div class="small">Spot snapshot</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Commodities</h3><table><tr><td>WTI</td><td id="m-wti">—</td></tr><tr><td>Gold</td><td id="m-gold">—</td></tr><tr><td>Copper</td><td id="m-copper">—</td></tr><tr><td>Natural gas</td><td id="m-natgas">—</td></tr></table></div><div class="card"><h3>Risk & Volatility</h3><table><tr><td>VIX</td><td id="m-vix">—</td></tr><tr><td>Dollar regime</td><td id="m-usdreg">—</td></tr><tr><td>Overall macro regime</td><td id="reg-overall">—</td></tr></table></div></div>
+<div class="title" style="margin-top:28px">MACRO REGIME ENGINE</div>
+<div class="grid"><div class="card"><div class="label">Inflation</div><div class="big" id="rr-inflation">—</div></div><div class="card"><div class="label">Labor</div><div class="big" id="rr-labor">—</div></div><div class="card"><div class="label">Growth</div><div class="big" id="rr-growth">—</div></div><div class="card"><div class="label">Liquidity</div><div class="big" id="rr-liq">—</div></div></div>
+<div class="card" style="margin-top:12px"><h3>Macro Event Intelligence</h3><table><thead><tr><th>Event</th><th>Latest</th><th>Previous</th><th>Frequency</th><th>Market use</th></tr></thead><tbody id="macro-events"></tbody></table><div class="small" style="margin-top:10px">This panel reports published observations where available. It does not invent consensus estimates. For the official FOMC schedule, use the Federal Reserve calendar.</div></div>
+</section>
 <section id="cot"><div class="title">COT POSITIONING</div>
 <div class="card"><div class="callout" id="cot-note">CFTC COT is weekly, not tick-by-tick. Positions are from Tuesday and are generally released Friday at 3:30 p.m. ET.</div>
 <div class="small" id="cot-status" style="margin-top:12px">Waiting for official CFTC data…</div>
@@ -171,8 +227,33 @@ async function load(){
    document.getElementById('heat').innerHTML='<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
  }
 
- const rateRows=[['3M',r.y3m],['10Y',r.y10],['30Y',r.y30]];
+ const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
  document.getElementById('rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
+
+ const m=d.macro||{}, ms=m.series||{};
+ const mv=k=>ms[k]?.value ?? null, mp=k=>ms[k]?.previous ?? null;
+ const mfmt=(x,n=2)=>x==null?'—':fmt(x,n);
+ const macroVal=(id,key,n=2,suffix='')=>{const x=mv(key);document.getElementById(id).textContent=x==null?'—':mfmt(x,n)+suffix;};
+ const macroPair=(id,key,n=2,suffix='')=>{const x=mv(key),y=mp(key);document.getElementById(id).textContent=x==null?'—':`Latest ${mfmt(x,n)}${suffix}${y==null?'':` • Prev ${mfmt(y,n)}${suffix}`}`;};
+ const colorReg=(id,text)=>{const e=document.getElementById(id);e.textContent=text||'—';e.className='big '+(String(text||'').toLowerCase().includes('stress')||String(text||'').toLowerCase().includes('hot')||String(text||'').toLowerCase().includes('contract')?'down':'up');};
+ const money=x=>x==null?'—':(Math.abs(x)>=1000?mfmt(x/1000,2)+'B':mfmt(x,2));
+ macroVal('m-fed','fed_funds',2,'%'); macroVal('m-sofr','sofr',2,'%'); document.getElementById('m-fed-date').textContent=ms.fed_funds?.date||'—'; document.getElementById('m-sofr-date').textContent=ms.sofr?.date||'—';
+ macroVal('m-real10','real_10y',2,'%'); macroVal('m-be10','breakeven_10y',2,'%');
+ const curveRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
+ document.getElementById('macro-rates').innerHTML=curveRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>${v==null?'—':'DAILY'}</td></tr>`).join('');
+ document.getElementById('s-2s10s').textContent=m['2s10s']==null?'—':fmt(m['2s10s'],2)+' pp'; document.getElementById('s-5s30s').textContent=m['5s30s']==null?'—':fmt(m['5s30s'],2)+' pp'; document.getElementById('s-3m10y').textContent=m['3m10y']==null?'—':fmt(m['3m10y'],2)+' pp';
+ const next=m.fomc?.next_meeting||'No upcoming meeting in configured calendar'; document.getElementById('fomc-next').textContent=next; document.getElementById('fomc-note').textContent=m.fomc?.is_sep?'September meeting • Summary of Economic Projections':'Official Federal Reserve FOMC calendar';
+ macroVal('m-walcl','fed_balance_sheet',0); macroVal('m-liq','fed_balance_sheet',0); macroVal('m-rrp','rrp',0); macroVal('m-tga','tga',0);
+ macroPair('m-cpi','cpi',1,'%'); macroPair('m-corecpi','core_cpi',1,'%'); macroPair('m-pce','pce',1,'%'); macroPair('m-corepce','core_pce',1,'%'); macroVal('m-ppi','ppi',1,'%'); macroVal('m-be10b','breakeven_10y',2,'%'); macroVal('m-real10b','real_10y',2,'%');
+ macroPair('m-unrate','unemployment',1,'%'); macroPair('m-payrolls','payrolls',0); macroVal('m-ahe','avg_hourly_earnings',2,''); macroVal('m-part','labor_participation',1,'%'); macroVal('m-icsa','initial_claims',0); macroVal('m-ccsa','continuing_claims',0); macroVal('m-jolts','jolts',0);
+ macroVal('m-gdp','gdp',0); macroVal('m-gdpg','gdp_growth',2,'%'); macroVal('m-indpro','industrial_production',2); macroVal('m-retail','retail_sales',2); macroVal('m-houst','housing_starts',0); macroVal('m-permit','building_permits',0); macroVal('m-sent','consumer_sentiment',1);
+ macroVal('m-balance','fed_balance_sheet',0); macroVal('m-m2','m2',0); macroVal('m-hy','hy_spread',2,'%'); macroVal('m-ig','ig_spread',2,'%'); macroVal('m-nfci','financial_conditions',2); document.getElementById('m-baltrend').textContent=mv('fed_balance_sheet')==null?'—':(mp('fed_balance_sheet')==null?'—':(mv('fed_balance_sheet')>mp('fed_balance_sheet')?'UP':'DOWN'));
+ document.getElementById('m-dxy').textContent=fmt(p.dxy,2); document.getElementById('m-usdjpy').textContent=fmt(p.usdjpy,2); document.getElementById('m-gbp').textContent=fmt(p.gbpusd,4); document.getElementById('m-usdcn').textContent=fmt(p.usdcn,4); document.getElementById('m-wti').textContent=fmt(p.wti,2); document.getElementById('m-gold').textContent=fmt(p.gold,2); document.getElementById('m-copper').textContent=fmt(p.copper,2); document.getElementById('m-natgas').textContent=fmt(p.natgas,2); document.getElementById('m-vix').textContent=fmt(p.vix,2);
+ const rg=m.regime||{}; ['inflation','labor','growth','liquidity','credit','overall'].forEach(k=>{const ids={inflation:['reg-inflation','rr-inflation'],labor:['reg-labor','rr-labor'],growth:['reg-growth','rr-growth'],liquidity:['reg-liq','rr-liq'],credit:['reg-credit'],overall:['reg-overall']}[k]||[]; ids.forEach(id=>colorReg(id,rg[k]));});
+ const usdCh=Number(p.dxy_change); document.getElementById('m-usdreg').textContent=Number.isFinite(usdCh)?(usdCh>0.15?'Strong USD':usdCh<-0.15?'Weak USD':'Neutral USD'):'—';
+ const eventKeys=[['CPI','cpi','Monthly','Inflation / rates'],['Core CPI','core_cpi','Monthly','Inflation / rates'],['PCE','pce','Monthly','Fed inflation gauge'],['Unemployment','unemployment','Monthly','Labor / growth'],['Payrolls','payrolls','Monthly','Labor / NQ'],['GDP growth','gdp_growth','Quarterly','Growth / risk'],['HY spread','hy_spread','Daily','Credit stress'],['Fed balance sheet','fed_balance_sheet','Weekly','Liquidity']];
+ document.getElementById('macro-events').innerHTML=eventKeys.map(([name,key,freq,use])=>`<tr><td>${name}</td><td>${mv(key)==null?'—':mfmt(mv(key),2)}</td><td>${mp(key)==null?'—':mfmt(mp(key),2)}</td><td>${freq}</td><td>${use}</td></tr>`).join('');
+ const macroStatus=m.status==='live'?'LIVE FRED + TREASURY':'PARTIAL — FRED API KEY NOT CONFIGURED'; document.getElementById('macro-banner').innerHTML=m.status==='live'?`<b class="up">${macroStatus}</b><br><span class="small">Economic series are pulled from FRED; official Treasury yields are pulled from Treasury. Values retain their native release frequency.</span>`:`<b class="amber">${macroStatus}</b><br><span class="small">Treasury rates and market snapshots can still update, but the full economic dashboard requires a GitHub Actions secret named <b>FRED_API_KEY</b>.</span>`;
 
  const dxyChange=Number(p.dxy_change);
  document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
