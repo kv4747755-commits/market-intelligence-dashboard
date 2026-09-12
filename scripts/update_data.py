@@ -75,9 +75,70 @@ def treasury_rates():
         return None
 
 
+
+def fetch_cot():
+    """Fetch latest CFTC TFF combined positioning for key financial futures."""
+    import urllib.parse
+
+    endpoint = "https://publicreporting.cftc.gov/resource/yw9f-hn96.json"
+    # TFF Combined covers futures + options and classifies financial
+    # futures into Dealer, Asset Manager, Leveraged Money, Other Reportables
+    # and Non-Reportables.
+    markets = {
+        "Nasdaq-100 E-mini": "209742",
+        "S&P 500 E-mini": "13874A",
+        "Euro FX": "099741",
+        "U.S. Dollar Index": "098662",
+        "10Y Treasury Note": "043602",
+    }
+    out = {}
+    try:
+        codes = ",".join("'%s'" % c for c in markets.values())
+        params = {
+            "$limit": "100",
+            "$order": "report_date_as_yyyy_mm_dd DESC",
+            "$where": "futonly_or_combined='Combined' AND cftc_contract_market_code IN (%s)" % codes,
+        }
+        req = Request(endpoint + "?" + urllib.parse.urlencode(params), headers={
+            "User-Agent": "market-intelligence-dashboard/1.0",
+            "Accept": "application/json",
+        })
+        with urlopen(req, timeout=25) as r:
+            rows = json.loads(r.read().decode("utf-8"))
+
+        code_to_name = {v: k for k, v in markets.items()}
+        for row in rows:
+            code = str(row.get("cftc_contract_market_code") or "")
+            name = code_to_name.get(code)
+            if not name or name in out:
+                continue
+            def num(key):
+                return sf(row.get(key))
+            dealer_net = (num("dealer_positions_long_all") or 0) - (num("dealer_positions_short_all") or 0)
+            asset_net = (num("asset_mgr_positions_long") or 0) - (num("asset_mgr_positions_short") or 0)
+            lev_net = (num("lev_money_positions_long_all") or 0) - (num("lev_money_positions_short_all") or 0)
+            out[name] = {
+                "market": row.get("market_and_exchange_names") or name,
+                "report_date": str(row.get("report_date_as_yyyy_mm_dd") or "")[:10],
+                "open_interest": num("open_interest_all"),
+                "dealer_net": dealer_net,
+                "asset_manager_net": asset_net,
+                "leveraged_money_net": lev_net,
+            }
+        if not out:
+            return {"status": "unavailable", "source": "CFTC TFF Combined", "markets": {}}
+        return {
+            "status": "live",
+            "source": "CFTC TFF Combined",
+            "reporting_basis": "Tuesday positions, generally released Friday 3:30 p.m. ET",
+            "markets": out,
+        }
+    except Exception:
+        return {"status": "unavailable", "source": "CFTC TFF Combined", "markets": {}}
+
 def main():
     with open(OUT,encoding='utf-8') as f:d=json.load(f)
-    d.setdefault('prices',{}); d.setdefault('rates',{})
+    d.setdefault('prices',{}); d.setdefault('rates',{}); d.setdefault('cot',{})
     for k,t in {'ndx':'^NDX','dxy':'DX-Y.NYB','eurusd':'EURUSD=X','vix':'^VIX'}.items():
         v,ch=snap(t)
         if v is not None:d['prices'][k]=v; d['prices'][k+'_change']=ch
@@ -134,6 +195,6 @@ def main():
         o['gamma_flip']=min(flips,key=lambda x:abs(x-S)) if flips else None
         o['dealer_positioning']={'status':'modeled','regime':'Positive gamma' if total>0 else 'Negative gamma' if total<0 else 'Neutral gamma','net_gex':total,'gamma_flip':o['gamma_flip'],'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'}
     except Exception: pass
-    d['options']=o; d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates']
+    d['options']=o; d['cot']=fetch_cot(); d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates','CFTC TFF Combined']
     with open(OUT,'w',encoding='utf-8') as f:json.dump(d,f,indent=2)
 if __name__=='__main__':main()
