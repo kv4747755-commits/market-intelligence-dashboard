@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-12T17:01:51.276213+00:00",
+  "generated_at": "2026-09-12T17:20:17.915650+00:00",
   "prices": {
     "ndx": 29368.439453125,
     "ndx_change": 0.9103015053288033,
@@ -8,14 +8,34 @@
     "eurusd": 1.160092830657959,
     "eurusd_change": -0.28305633624436943,
     "vix": 15.84000015258789,
-    "vix_change": -11.210762235951421
+    "vix_change": -11.210762235951421,
+    "usdjpy": 153.5540008544922,
+    "usdjpy_change": -0.012370138386574858,
+    "gbpusd": 1.353033423423767,
+    "gbpusd_change": -0.15966442585813034,
+    "usdcn": 6.70704984664917,
+    "usdcn_change": null,
+    "wti": 100.05000305175781,
+    "wti_change": -2.3711945995085415,
+    "gold": 4366.2001953125,
+    "gold_change": 0.038955099381365876,
+    "copper": 6.4695000648498535,
+    "copper_change": 0.03865868590551269,
+    "natgas": 2.8310000896453857,
+    "natgas_change": -0.10585818150063986
   },
   "rates": {
     "y3m": 4.07,
     "y10": 4.96,
     "y30": 5.35,
     "source": "U.S. Treasury Daily Treasury Par Yield Curve Rates",
-    "date": "2026-09-11T00:00:00"
+    "date": "2026-09-11T00:00:00",
+    "y1m": 3.93,
+    "y6m": 4.12,
+    "y1": 4.35,
+    "y2": 4.63,
+    "y5": 4.78,
+    "y20": 5.38
   },
   "options": {
     "status": "live",
@@ -966,6 +986,8 @@
   "sources": [
     "yfinance market/options adapter",
     "U.S. Treasury Daily Treasury Par Yield Curve Rates",
+    "FRED economic data",
+    "Federal Reserve FOMC calendar",
     "CFTC TFF Combined",
     "Filtered Google News RSS aggregation"
   ],
@@ -1019,7 +1041,7 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-12T17:01:51.276051+00:00",
+    "updated_at": "2026-09-12T17:20:17.915427+00:00",
     "items": [
       {
         "title": "Dow Jones Futures: Fed Rate Hike Seen As Oil, Yields Pressure Stocks; Apple, Moderna Are New Buys - Investor's Business Daily",
@@ -1118,5 +1140,41 @@
         "impact": "HIGH"
       }
     ]
+  },
+  "macro": {
+    "status": "partial",
+    "source": "FRED + U.S. Treasury official feeds",
+    "updated_at": "2026-09-12T17:20:17.915624+00:00",
+    "frequency_note": "Frequency varies by series: daily, weekly, monthly or quarterly.",
+    "series": {},
+    "rates": {
+      "y1m": 3.93,
+      "y3m": 4.07,
+      "y6m": 4.12,
+      "y1": 4.35,
+      "y2": 4.63,
+      "y5": 4.78,
+      "y10": 4.96,
+      "y20": 5.38,
+      "y30": 5.35
+    },
+    "rates_date": "2026-09-11T00:00:00",
+    "2s10s": 0.33000000000000007,
+    "5s30s": 0.5699999999999994,
+    "3m10y": 0.8899999999999997,
+    "access": "Public FRED graph CSV endpoint",
+    "fomc": {
+      "next_meeting": "2026-09-15 to 2026-09-16",
+      "is_sep": true,
+      "source": "Federal Reserve FOMC calendar"
+    },
+    "regime": {
+      "inflation": "Unavailable",
+      "labor": "Unavailable",
+      "growth": "Unavailable",
+      "liquidity": "Unavailable",
+      "credit": "Unavailable",
+      "overall": "Mixed"
+    }
   }
 }
