@@ -5,6 +5,8 @@ from urllib.request import Request, urlopen
 import urllib.parse
 import xml.etree.ElementTree as ET
 import yfinance as yf
+import re
+
 OUT='data.json'; MULT=100.0
 
 def sf(x):
