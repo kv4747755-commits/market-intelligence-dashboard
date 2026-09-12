@@ -1,6 +1,8 @@
 import json, math
 from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from urllib.request import Request, urlopen
+import urllib.parse
 import xml.etree.ElementTree as ET
 import yfinance as yf
 OUT='data.json'; MULT=100.0
@@ -76,6 +78,68 @@ def treasury_rates():
 
 
 
+
+def fetch_news():
+    """Fetch recent market headlines from Google News RSS searches.
+
+    We store headline metadata only (title, publisher, timestamp, URL);
+    the dashboard does not copy article bodies.
+    """
+    queries = [
+        "Nasdaq OR S&P 500 OR stocks market",
+        "Federal Reserve OR Treasury yields OR inflation",
+        "dollar OR EURUSD OR ECB OR forex",
+        "oil OR crude OR geopolitical markets",
+    ]
+    items = []
+    seen = set()
+
+    for query in queries:
+        url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(query) + "&hl=en-US&gl=US&ceid=US:en"
+        try:
+            req = Request(url, headers={"User-Agent": "market-intelligence-dashboard/1.0"})
+            with urlopen(req, timeout=20) as r:
+                root = ET.fromstring(r.read())
+
+            for item in root.findall(".//item"):
+                title = (item.findtext("title") or "").strip()
+                link = (item.findtext("link") or "").strip()
+                source_node = item.find("source")
+                source = (source_node.text or "").strip() if source_node is not None else "Unknown"
+                pub = (item.findtext("pubDate") or "").strip()
+
+                if not title or not link:
+                    continue
+
+                key = link or title
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                published_at = None
+                if pub:
+                    try:
+                        published_at = parsedate_to_datetime(pub).astimezone(timezone.utc).isoformat()
+                    except Exception:
+                        published_at = pub
+
+                items.append({
+                    "title": title,
+                    "source": source or "Unknown",
+                    "published_at": published_at,
+                    "url": link,
+                })
+        except Exception:
+            continue
+
+    items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+    return {
+        "status": "live" if items else "unavailable",
+        "source": "Google News RSS aggregation",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "items": items[:12],
+    }
+
 def fetch_cot():
     """Fetch latest CFTC TFF combined positioning for key financial futures."""
     import urllib.parse
@@ -138,7 +202,7 @@ def fetch_cot():
 
 def main():
     with open(OUT,encoding='utf-8') as f:d=json.load(f)
-    d.setdefault('prices',{}); d.setdefault('rates',{}); d.setdefault('cot',{})
+    d.setdefault('prices',{}); d.setdefault('rates',{}); d.setdefault('cot',{}); d.setdefault('news',{})
     for k,t in {'ndx':'^NDX','dxy':'DX-Y.NYB','eurusd':'EURUSD=X','vix':'^VIX'}.items():
         v,ch=snap(t)
         if v is not None:d['prices'][k]=v; d['prices'][k+'_change']=ch
@@ -195,6 +259,6 @@ def main():
         o['gamma_flip']=min(flips,key=lambda x:abs(x-S)) if flips else None
         o['dealer_positioning']={'status':'modeled','regime':'Positive gamma' if total>0 else 'Negative gamma' if total<0 else 'Neutral gamma','net_gex':total,'gamma_flip':o['gamma_flip'],'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'}
     except Exception: pass
-    d['options']=o; d['cot']=fetch_cot(); d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates','CFTC TFF Combined']
+    d['options']=o; d['cot']=fetch_cot(); d['news']=fetch_news(); d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates','CFTC TFF Combined','Google News RSS aggregation']
     with open(OUT,'w',encoding='utf-8') as f:json.dump(d,f,indent=2)
 if __name__=='__main__':main()
