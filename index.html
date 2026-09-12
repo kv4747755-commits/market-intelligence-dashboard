@@ -79,7 +79,10 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 </section>
 
 <section id="macro"><div class="title">MACRO & LIQUIDITY</div><div class="card"><h3>US Rates</h3><table><thead><tr><th>Maturity</th><th>Yield</th><th>1D</th></tr></thead><tbody id="rates"></tbody></table></div></section>
-<section id="cot"><div class="title">COT POSITIONING</div><div class="card"><div class="callout">CFTC COT is weekly, not tick-by-tick. The live COT adapter is intentionally not populated until the official source is wired in.</div></div></section>
+<section id="cot"><div class="title">COT POSITIONING</div>
+<div class="card"><div class="callout" id="cot-note">CFTC COT is weekly, not tick-by-tick. Positions are from Tuesday and are generally released Friday at 3:30 p.m. ET.</div>
+<div class="small" id="cot-status" style="margin-top:12px">Waiting for official CFTC data…</div>
+<div class="grid2" id="cot-grid" style="margin-top:12px"></div></div></section>
 <section id="news"><div class="title">MARKET NEWS</div><div class="card"><div class="callout">News provider adapter is the next stage. The dashboard will not label hard-coded headlines as live news.</div></div></section>
 <div class="footer">INFORMATIONAL MARKET TOOL • Not investment advice • Modelled analytics are explicitly labelled • Snapshot generated from the canonical data layer</div>
 </main>
@@ -87,7 +90,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <script>
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
- const p=d.prices||{}, o=d.options||{}, r=d.rates||{};
+ const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{};
  const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
  const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
  const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
@@ -159,6 +162,17 @@ async function load(){
 
  const dxyChange=Number(p.dxy_change);
  document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
+
+ const cotStatus=cot.status||'unavailable';
+ const cotMarkets=cot.markets||{};
+ document.getElementById('cot-status').textContent=cotStatus==='live' ? `LIVE • ${cot.source||'CFTC'} • latest report dates shown per market` : 'CFTC data unavailable — no positioning numbers fabricated.';
+ const cotFmt=(x)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
+ document.getElementById('cot-grid').innerHTML=Object.keys(cotMarkets).map(name=>{
+   const x=cotMarkets[name]||{};
+   const dn=Number(x.dealer_net)||0, an=Number(x.asset_manager_net)||0, ln=Number(x.leveraged_money_net)||0;
+   const cls=v=>v>0?'up':v<0?'down':'';
+   return `<div class="card"><div class="label">${name}</div><div class="small">Report ${x.report_date||'—'}</div><table><tr><td>Dealer net</td><td class="${cls(dn)}">${cotFmt(dn)}</td></tr><tr><td>Asset manager net</td><td class="${cls(an)}">${cotFmt(an)}</td></tr><tr><td>Leveraged money net</td><td class="${cls(ln)}">${cotFmt(ln)}</td></tr></table></div>`;
+ }).join('') || '<div class="callout">CFTC data unavailable — no positioning numbers fabricated.</div>';
 }
 load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e.message+'</div>'));
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.target).scrollIntoView({behavior:'smooth'});document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
