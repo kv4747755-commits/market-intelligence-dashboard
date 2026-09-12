@@ -1,35 +1,13 @@
 {
-  "generated_at": "2026-09-12T11:46:20.496690+00:00",
-  "prices": {
-    "ndx": 29387.0,
-    "ndx_change": 0.864073587836045,
-    "dxy": 99.12000274658203,
-    "dxy_change": 0.030281975779966608,
-    "eurusd": 1.1602274179458618,
-    "eurusd_change": -0.2714877508251723,
-    "vix": 15.84000015258789,
-    "vix_change": -11.210762235951421
+  "generated_at":"2026-09-12T09:23:32Z",
+  "data_quality":{"mode":"prototype-live-price-layer","note":"All dashboard sections consume the same canonical market values. Options/dealer analytics are shown only when a valid chain is available; no fabricated option values are substituted."},
+  "market":{
+    "ndx":{"value":29387.0,"change_pct":0.8641,"source":"yfinance","status":"snapshot"},
+    "dxy":{"value":99.12,"change_pct":0.0303,"source":"yfinance","status":"snapshot"},
+    "eurusd":{"value":1.16023,"change_pct":-0.2715,"source":"yfinance","status":"snapshot"},
+    "vix":{"value":15.84,"change_pct":-11.2108,"source":"yfinance","status":"snapshot"}
   },
-  "rates": {
-    "y3m": 0.03913000106811523,
-    "y10": 0.4974999904632569,
-    "y30": 0.5354000091552734
-  },
-  "options": {
-    "status": "Live chain: ^NDX 2026-09-14",
-    "ticker": "^NDX",
-    "expiry": "2026-09-14",
-    "spot": 29368.439453125,
-    "atm_iv": 10.028689791679382,
-    "expected_move_pct": 74.23569238570784,
-    "expected_move_points": 21801.86437090473,
-    "pcr_oi": 3.0273972602739727,
-    "gamma_flip": 15000.0,
-    "call_wall": 29725.0,
-    "put_wall": 29225.0,
-    "model": "Estimated GEX; dealer-sign assumption, not direct dealer book."
-  },
-  "sources": [
-    "yfinance prototype adapter"
-  ]
+  "rates":{"2y":{"value_pct":null,"change_bps":null},"5y":{"value_pct":null,"change_bps":null},"10y":{"value_pct":0.50,"change_bps":null},"30y":{"value_pct":0.54,"change_bps":null}},
+  "options":{"status":"unavailable","ticker":"^NDX","expiry":null,"spot":null,"atm_iv_pct":null,"expected_move_pct":null,"expected_move_points":null,"pcr_oi":null,"gamma_flip":null,"put_wall":null,"call_wall":null,"net_gex":null,"model":"Estimated GEX only when a valid option chain is available."},
+  "sources":[{"name":"Yahoo Finance prototype adapter","type":"market_snapshot"},{"name":"CFTC COT","type":"weekly","status":"next adapter stage"},{"name":"Treasury/FRED","type":"macro","status":"next adapter stage"},{"name":"News provider","type":"news","status":"next adapter stage"}]
 }
