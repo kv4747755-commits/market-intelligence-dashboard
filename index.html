@@ -34,7 +34,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <div class="grid" id="live-grid"></div>
 <div class="grid2" style="margin-top:12px">
 <div class="card"><h3>Options Engine</h3><div id="options-summary"></div></div>
-<div class="card"><h3>Data Integrity</h3><div class="callout">Every page reads the same <b>data.json</b> snapshot. If an option chain is unavailable, the dashboard shows <b>UNAVAILABLE</b> instead of inventing numbers.</div></div>
+<div class="card"><h3>Data Integrity</h3><div id="data-quality" class="callout">Checking option-chain coverage…</div></div>
 </div>
 </section>
 
@@ -129,11 +129,19 @@ async function load(){
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
  document.getElementById('emp1').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
 
+ const dq=o.data_quality||{};
+ const dqStatus=dq.status||'UNAVAILABLE';
+ const dqClass=dqStatus==='GOOD'?'up':'amber';
+ const dqText=dqStatus==='GOOD'?'GOOD CHAIN COVERAGE':dqStatus==='LIMITED'?'LIMITED CHAIN DATA':'OPTION CHAIN UNAVAILABLE';
+ const dqReason=dq.reason||'No quality assessment available.';
+ document.getElementById('data-quality').innerHTML=`<b class="${dqClass}">${dqText}</b><br><span class="small">${dqReason}</span>${dq.strikes?`<br><span class="small">${dq.strikes} modeled strikes • ${dq.nonzero_oi_strikes||0} with non-zero OI • ${dq.near_atm_nonzero_strikes||0} non-zero strikes within ±5% of spot</span>`:''}`;
+
  const dp=o.dealer_positioning||{};
  const regime=dp.regime||'—';
  const modelStatus=dp.status||'unavailable';
+ const qualityStatus=dqStatus;
  document.getElementById('gamma1').textContent=regime;
- document.getElementById('gamma2').textContent=modelStatus==='modeled'?'MODELED FROM CHAIN':'WAITING FOR VALID CHAIN';
+ document.getElementById('gamma2').textContent=modelStatus==='modeled'?(qualityStatus==='LIMITED'?'MODELED • LIMITED DATA':'MODELED FROM CHAIN'):'WAITING FOR VALID CHAIN';
 
  document.getElementById('pcr').textContent=o.pcr_oi==null?'—':fmt(o.pcr_oi,2);
  document.getElementById('gex').textContent=o.net_gex==null?'—':fmt(o.net_gex,2);
