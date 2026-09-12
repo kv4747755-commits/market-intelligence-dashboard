@@ -1,9 +1,142 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Market Intelligence</title><style>
-:root{--bg:#070b10;--panel:#0d141d;--line:#1d2a37;--text:#e8edf3;--muted:#8794a3;--green:#35d39f;--red:#ff607b;--amber:#f3c65b;--blue:#69a9ff}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#070b10,#09111a);color:var(--text);font-family:Arial,sans-serif}main{max-width:1100px;margin:auto;padding:0 16px 40px}header{position:sticky;top:0;z-index:10;background:rgba(7,11,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0 10px}.head{max-width:1100px;margin:auto;padding:0 16px}.brand{font-size:27px;font-weight:800}.sub{color:var(--muted);margin-top:3px}.badge{float:right;border:1px solid #6b5924;color:var(--amber);padding:9px 14px;border-radius:22px;font-size:13px}.nav{display:flex;gap:8px;overflow-x:auto;padding-top:16px}.nav button{white-space:nowrap;background:#0d151f;border:1px solid #233141;color:#dce5ef;border-radius:12px;padding:11px 16px;font-size:15px}.nav button.active{border-color:#6d9bd0;background:#152130}section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.card{background:linear-gradient(180deg,#0e161f,#0b121a);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.15)}.label{text-transform:uppercase;color:#84909e;font-size:12px;letter-spacing:1.3px}.big{font-size:34px;font-weight:800;margin-top:7px}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}.callout{border-left:4px solid var(--blue);background:#0d1a29;padding:15px;border-radius:12px;line-height:1.45}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi{padding:12px;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;font-size:20px;margin-top:5px}table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;padding:11px 7px;border-bottom:1px solid var(--line)}th{color:#84909e;font-size:12px;text-transform:uppercase}td:last-child,th:last-child{text-align:right}.heat{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:10px}.heat div{padding:10px 4px;text-align:center;border-radius:6px;background:#183040;font-size:11px}.footer{color:#65717f;font-size:12px;text-align:center;padding:35px 0}@media(max-width:760px){.grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.brand{font-size:24px}.badge{font-size:12px;padding:8px 10px}.big{font-size:32px}.heat{grid-template-columns:repeat(6,1fr)}}
-</style></head><body><header><div class="head"><div class="badge">● V3 DATA FOUNDATION — FIXED</div><div class="brand">MARKET INTELLIGENCE</div><div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div><div class="nav"><button class="active" data-target="home">HOME</button><button data-target="nasdaq">NASDAQ</button><button data-target="forex">FOREX</button><button data-target="options">OPTIONS</button><button data-target="macro">MACRO</button><button data-target="cot">COT</button><button data-target="news">NEWS</button></div></div></header><main>
-<section id="home"><div class="title">LIVE DATA LAYER <span class="small">one canonical snapshot</span></div><div class="grid" id="live-grid"></div><div class="grid2" style="margin-top:12px"><div class="card"><h3>Options Engine</h3><div id="options-summary"></div></div><div class="card"><h3>Data Integrity</h3><div class="callout">Every page reads the same <b>data.json → market.*</b> values. If an option chain is unavailable, the dashboard shows <b>UNAVAILABLE</b> instead of inventing numbers.</div></div></div></section>
-<section id="nasdaq"><div class="title">NASDAQ COMMAND CENTER</div><div class="grid"><div class="card"><div class="label">NDX / NQ reference</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div><div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div><div class="card"><div class="label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div><div class="card"><div class="label">Gamma Regime</div><div class="big amber" id="gamma1">—</div><div class="small" id="gamma2">—</div></div></div><div class="grid2" style="margin-top:12px"><div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div><div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">GAMMA FLIP</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div><div class="card"><h3>Scenario Map</h3><table><tr><td>BULL</td><td>Reclaim gamma flip + rates stabilize</td></tr><tr><td>BEAR</td><td>Lose put wall + rates/DXY accelerate</td></tr><tr><td>BASE</td><td>Remain between major option walls</td></tr></table></div></div></section>
-<section id="forex"><div class="title">FOREX INTELLIGENCE</div><div class="grid"><div class="card"><div class="label">EURUSD</div><div class="big" id="eur">—</div><div id="eurchg" class="small">—</div></div><div class="card"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div></div><div class="card"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div></div><div class="card"><div class="label">USD Regime</div><div class="big up">LIVE</div><div class="small">Derived from canonical DXY snapshot</div></div></div><div class="card" style="margin-top:12px"><h3>FX Cross-Market</h3><table><tr><th>Factor</th><th>Move</th><th>Interpretation</th></tr><tr><td>DXY</td><td id="fxdxy">—</td><td>USD context</td></tr><tr><td>EURUSD</td><td id="fxeur">—</td><td>EUR/USD spot</td></tr><tr><td>VIX</td><td id="fxvix">—</td><td>Risk appetite context</td></tr></table></div></section>
-<section id="options"><div class="title">OPTIONS COMMAND CENTER</div><div class="grid"><div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div></div><div class="card"><div class="label">Expected Move</div><div class="big" id="em2">—</div></div><div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div></div><div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div></div></div><div class="grid2" style="margin-top:12px"><div class="card"><h3>Open Interest Heatmap</h3><div class="small">Only populate this when the chain is actually available.</div><div class="heat" id="heat"></div></div><div class="card"><h3>Estimated Dealer Positioning</h3><div class="callout" id="dealer">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div></div></div></section>
-<section id="macro"><div class="title">MACRO & LIQUIDITY</div><div class="card"><h3>US Rates</h3><table><thead><tr><th>Maturity</th><th>Yield</th><th>1D</th></tr></thead><tbody id="rates"></tbody></table></div></section><section id="cot"><div class="title">COT POSITIONING</div><div class="card"><div class="callout">CFTC COT is weekly, not tick-by-tick. The live COT adapter is intentionally not populated until the official source is wired in.</div></div></section><section id="news"><div class="title">MARKET NEWS</div><div class="card"><div class="callout">News provider adapter is the next stage. The dashboard will not label hard-coded headlines as live news.</div></div></section><div class="footer">INFORMATIONAL MARKET TOOL • Not investment advice • Modelled analytics are explicitly labelled • Snapshot generated from the canonical data layer</div></main>
-<script>async function load(){const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>r.json()),m=d.market,o=d.options;const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n}),pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';const cards=[['NQ FUTURES',m.ndx.value,pct(m.ndx.change_pct)],['EURUSD',m.eurusd.value,pct(m.eurusd.change_pct)],['DXY',m.dxy.value,pct(m.dxy.change_pct)],['VIX',m.vix.value,pct(m.vix.change_pct)]];document.getElementById('live-grid').innerHTML=cards.map(c=>`<div class="card"><div class="label">${c[0]}</div><div class="big">${fmt(c[1],c[0]=='EURUSD'?5:2)}</div><div class="${c[2].startsWith('-')?'down':'up'}">${c[2]}</div></div>`).join('');document.getElementById('ndx1').textContent=fmt(m.ndx.value);document.getElementById('ndxchg1').textContent=pct(m.ndx.change_pct);document.getElementById('eur').textContent=fmt(m.eurusd.value,5);document.getElementById('eurchg').textContent=pct(m.eurusd.change_pct);document.getElementById('dxy').textContent=fmt(m.dxy.value);document.getElementById('dxychg').textContent=pct(m.dxy.change_pct);document.getElementById('vix').textContent=fmt(m.vix.value);document.getElementById('vixchg').textContent=pct(m.vix.change_pct);document.getElementById('fxdxy').textContent=pct(m.dxy.change_pct);document.getElementById('fxeur').textContent=pct(m.eurusd.change_pct);document.getElementById('fxvix').textContent=pct(m.vix.change_pct);const u=o.status!=='live',em=u?'UNAVAILABLE':'±'+fmt(o.expected_move_pct,2)+'%',iv=u?'UNAVAILABLE':fmt(o.atm_iv_pct,2)+'%';document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${u?'amber':'up'}">${u?'WAITING':'LIVE'}</b></div></div>`;['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);document.getElementById('emp1').textContent=u?'No valid chain available':'≈ '+fmt(o.expected_move_points)+' points';document.getElementById('gamma1').textContent=u?'WAITING':'LIVE MODEL';document.getElementById('gamma2').textContent=o.model;document.getElementById('pcr').textContent=u?'—':fmt(o.pcr_oi,2);document.getElementById('gex').textContent=u?'—':fmt(o.net_gex,2);document.getElementById('putwall').textContent=u?'—':fmt(o.put_wall);document.getElementById('flip').textContent=u?'—':fmt(o.gamma_flip);document.getElementById('callwall').textContent=u?'—':fmt(o.call_wall);document.getElementById('dealer').textContent=u?'Waiting for a valid option chain. No dealer-positioning number is fabricated.':'Estimated dealer positioning is available and modelled from the chain.';document.getElementById('heat').innerHTML=u?'<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>':'';document.getElementById('rates').innerHTML=Object.entries(d.rates).map(([k,v])=>`<tr><td>${k.toUpperCase()}</td><td>${v.value_pct==null?'—':fmt(v.value_pct,2)+'%'}</td><td>${v.change_bps==null?'—':(v.change_bps>0?'+':'')+fmt(v.change_bps,0)+'bp'}</td></tr>`).join('')}load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e+'</div>'));document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.target).scrollIntoView({behavior:'smooth'});document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Market Intelligence</title>
+<style>
+:root{--bg:#070b10;--panel:#0d141d;--line:#1d2a37;--text:#e8edf3;--muted:#8794a3;--green:#35d39f;--red:#ff607b;--amber:#f3c65b;--blue:#69a9ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#070b10,#09111a);color:var(--text);font-family:Arial,sans-serif}
+main{max-width:1100px;margin:auto;padding:0 16px 40px}header{position:sticky;top:0;z-index:10;background:rgba(7,11,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0 10px}
+.head{max-width:1100px;margin:auto;padding:0 16px}.brand{font-size:27px;font-weight:800}.sub{color:var(--muted);margin-top:3px}.badge{float:right;border:1px solid #6b5924;color:var(--amber);padding:9px 14px;border-radius:22px;font-size:13px}
+.nav{display:flex;gap:8px;overflow-x:auto;padding-top:16px}.nav button{white-space:nowrap;background:#0d151f;border:1px solid #233141;color:#dce5ef;border-radius:12px;padding:11px 16px;font-size:15px}.nav button.active{border-color:#6d9bd0;background:#152130}
+section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:linear-gradient(180deg,#0e161f,#0b121a);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.label{text-transform:uppercase;color:#84909e;font-size:12px;letter-spacing:1.3px}.big{font-size:34px;font-weight:800;margin-top:7px}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}
+.callout{border-left:4px solid var(--blue);background:#0d1a29;padding:15px;border-radius:12px;line-height:1.45}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi{padding:12px;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;font-size:20px;margin-top:5px}
+table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;padding:11px 7px;border-bottom:1px solid var(--line)}th{color:#84909e;font-size:12px;text-transform:uppercase}td:last-child,th:last-child{text-align:right}
+.heat{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:10px}.heat div{padding:10px 4px;text-align:center;border-radius:6px;background:#183040;font-size:11px}.footer{color:#65717f;font-size:12px;text-align:center;padding:35px 0}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.brand{font-size:24px}.badge{font-size:12px;padding:8px 10px}.big{font-size:32px}.heat{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="head">
+<div class="badge">● V3 DATA FOUNDATION — FIXED</div>
+<div class="brand">MARKET INTELLIGENCE</div>
+<div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div>
+<div class="nav">
+<button class="active" data-target="home">HOME</button><button data-target="nasdaq">NASDAQ</button><button data-target="forex">FOREX</button><button data-target="options">OPTIONS</button><button data-target="macro">MACRO</button><button data-target="cot">COT</button><button data-target="news">NEWS</button>
+</div></div></header>
+
+<main>
+<section id="home">
+<div class="title">LIVE DATA LAYER <span class="small">one canonical snapshot</span></div>
+<div class="grid" id="live-grid"></div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Options Engine</h3><div id="options-summary"></div></div>
+<div class="card"><h3>Data Integrity</h3><div class="callout">Every page reads the same <b>data.json</b> snapshot. If an option chain is unavailable, the dashboard shows <b>UNAVAILABLE</b> instead of inventing numbers.</div></div>
+</div>
+</section>
+
+<section id="nasdaq">
+<div class="title">NASDAQ COMMAND CENTER</div>
+<div class="grid">
+<div class="card"><div class="label">NDX / NQ reference</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div>
+<div class="card"><div class="label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
+<div class="card"><div class="label">Gamma Regime</div><div class="big amber" id="gamma1">—</div><div class="small" id="gamma2">—</div></div>
+</div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div>
+<div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">GAMMA FLIP</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div>
+<div class="card"><h3>Scenario Map</h3><table><tr><td>BULL</td><td>Reclaim gamma flip + rates stabilize</td></tr><tr><td>BEAR</td><td>Lose put wall + rates/DXY accelerate</td></tr><tr><td>BASE</td><td>Remain between major option walls</td></tr></table></div>
+</div>
+</section>
+
+<section id="forex">
+<div class="title">FOREX INTELLIGENCE</div>
+<div class="grid">
+<div class="card"><div class="label">EURUSD</div><div class="big" id="eur">—</div><div id="eurchg" class="small">—</div></div>
+<div class="card"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div></div>
+<div class="card"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div></div>
+<div class="card"><div class="label">USD Regime</div><div class="big up" id="usdregime">—</div><div class="small">Derived from canonical DXY snapshot</div></div>
+</div>
+<div class="card" style="margin-top:12px"><h3>FX Cross-Market</h3><table><tr><th>Factor</th><th>Move</th><th>Interpretation</th></tr><tr><td>DXY</td><td id="fxdxy">—</td><td>USD context</td></tr><tr><td>EURUSD</td><td id="fxeur">—</td><td>EUR/USD spot</td></tr><tr><td>VIX</td><td id="fxvix">—</td><td>Risk appetite context</td></tr></table></div>
+</section>
+
+<section id="options">
+<div class="title">OPTIONS COMMAND CENTER</div>
+<div class="grid">
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div></div>
+<div class="card"><div class="label">Expected Move</div><div class="big" id="em2">—</div></div>
+<div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div></div>
+<div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div></div>
+</div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Open Interest Heatmap</h3><div class="small">Only populate this when the chain is actually available.</div><div class="heat" id="heat"></div></div>
+<div class="card"><h3>Estimated Dealer Positioning</h3><div class="callout" id="dealer">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div></div>
+</div>
+</section>
+
+<section id="macro"><div class="title">MACRO & LIQUIDITY</div><div class="card"><h3>US Rates</h3><table><thead><tr><th>Maturity</th><th>Yield</th><th>1D</th></tr></thead><tbody id="rates"></tbody></table></div></section>
+<section id="cot"><div class="title">COT POSITIONING</div><div class="card"><div class="callout">CFTC COT is weekly, not tick-by-tick. The live COT adapter is intentionally not populated until the official source is wired in.</div></div></section>
+<section id="news"><div class="title">MARKET NEWS</div><div class="card"><div class="callout">News provider adapter is the next stage. The dashboard will not label hard-coded headlines as live news.</div></div></section>
+<div class="footer">INFORMATIONAL MARKET TOOL • Not investment advice • Modelled analytics are explicitly labelled • Snapshot generated from the canonical data layer</div>
+</main>
+
+<script>
+async function load(){
+ const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
+ const p=d.prices||{}, o=d.options||{}, r=d.rates||{};
+ const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
+ const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
+ const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
+
+ document.getElementById('live-grid').innerHTML=[
+ q('NQ FUTURES',p.ndx,p.ndx_change),
+ q('EURUSD',p.eurusd,p.eurusd_change,5),
+ q('DXY',p.dxy,p.dxy_change),
+ q('VIX',p.vix,p.vix_change)
+ ].join('');
+
+ document.getElementById('ndx1').textContent=fmt(p.ndx);
+ document.getElementById('ndxchg1').textContent=pct(p.ndx_change);
+ document.getElementById('eur').textContent=fmt(p.eurusd,5);
+ document.getElementById('eurchg').textContent=pct(p.eurusd_change);
+ document.getElementById('dxy').textContent=fmt(p.dxy);
+ document.getElementById('dxychg').textContent=pct(p.dxy_change);
+ document.getElementById('vix').textContent=fmt(p.vix);
+ document.getElementById('vixchg').textContent=pct(p.vix_change);
+ document.getElementById('fxdxy').textContent=pct(p.dxy_change);
+ document.getElementById('fxeur').textContent=pct(p.eurusd_change);
+ document.getElementById('fxvix').textContent=pct(p.vix_change);
+
+ const live=typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
+ const iv=live?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
+ const em=live?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
+ document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${live?'up':'amber'}">${live?'LIVE':'WAITING'}</b></div></div>`;
+
+ ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
+ ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
+ document.getElementById('emp1').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
+ document.getElementById('gamma1').textContent=live?'LIVE MODEL':'WAITING';
+ document.getElementById('gamma2').textContent=o.model||'No model data';
+ document.getElementById('pcr').textContent=o.pcr_oi==null?'—':fmt(o.pcr_oi,2);
+ document.getElementById('gex').textContent=o.net_gex==null?'—':fmt(o.net_gex,2);
+ document.getElementById('putwall').textContent=o.put_wall==null?'—':fmt(o.put_wall);
+ document.getElementById('flip').textContent=o.gamma_flip==null?'—':fmt(o.gamma_flip);
+ document.getElementById('callwall').textContent=o.call_wall==null?'—':fmt(o.call_wall);
+ document.getElementById('dealer').textContent=live?'Estimated dealer positioning is available and modelled from the chain.':'Waiting for a valid option chain. No dealer-positioning number is fabricated.';
+ document.getElementById('heat').innerHTML=live?'<div style="grid-column:1/-1;padding:20px;color:#8794a3">OI heatmap adapter not yet wired.</div>':'<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
+
+ const rateRows=[['3M',r.y3m],['10Y',r.y10],['30Y',r.y30]];
+ document.getElementById('rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
+
+ const dxyChange=Number(p.dxy_change);
+ document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
+}
+load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e.message+'</div>'));
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.target).scrollIntoView({behavior:'smooth'});document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+</script>
+</body>
+</html>
