@@ -1,5 +1,7 @@
 import json, math
 from datetime import datetime, timezone
+from urllib.request import Request, urlopen
+import xml.etree.ElementTree as ET
 import yfinance as yf
 OUT='data.json'; MULT=100.0
 
@@ -25,15 +27,74 @@ def gamma(S,K,sig,T,r=0):
     d1=(math.log(S/K)+(r+.5*sig*sig)*T)/(sig*math.sqrt(T))
     return math.exp(-.5*d1*d1)/(math.sqrt(2*math.pi)*S*sig*math.sqrt(T))
 
+def treasury_rates():
+    """Return the latest official Treasury 3M, 10Y and 30Y par yields."""
+    url = (
+        "https://home.treasury.gov/resource-center/data-chart-center/"
+        "interest-rates/pages/xml"
+        "?data=daily_treasury_yield_curve&field_tdr_date_value="
+        + str(datetime.now(timezone.utc).year)
+    )
+    try:
+        req = Request(url, headers={"User-Agent": "market-intelligence-dashboard/1.0"})
+        with urlopen(req, timeout=20) as r:
+            root = ET.fromstring(r.read())
+
+        records = []
+        for entry in root.iter():
+            if entry.tag.rsplit("}", 1)[-1] != "entry":
+                continue
+
+            values = {}
+            for node in entry.iter():
+                tag = node.tag.rsplit("}", 1)[-1]
+                text = (node.text or "").strip()
+                if text:
+                    values[tag] = text
+
+            date_text = values.get("NEW_DATE")
+            y3m = sf(values.get("BC_3MONTH"))
+            y10 = sf(values.get("BC_10YEAR"))
+            y30 = sf(values.get("BC_30YEAR"))
+
+            if date_text and (y3m is not None or y10 is not None or y30 is not None):
+                records.append({
+                    "date": date_text,
+                    "y3m": y3m,
+                    "y10": y10,
+                    "y30": y30,
+                })
+
+        if not records:
+            return None
+
+        # Treasury's feed is normally newest-first, but sort explicitly.
+        records.sort(key=lambda x: x["date"])
+        return records[-1]
+    except Exception:
+        return None
+
+
 def main():
     with open(OUT,encoding='utf-8') as f:d=json.load(f)
     d.setdefault('prices',{}); d.setdefault('rates',{})
     for k,t in {'ndx':'^NDX','dxy':'DX-Y.NYB','eurusd':'EURUSD=X','vix':'^VIX'}.items():
         v,ch=snap(t)
         if v is not None:d['prices'][k]=v; d['prices'][k+'_change']=ch
-    for k,t in {'y3m':'^IRX','y10':'^TNX','y30':'^TYX'}.items():
-        v,_=snap(t)
-        if v is not None:d['rates'][k]=v
+    # Official U.S. Treasury daily par yield curve.
+    # Treasury publishes the curve as an XML feed; use the latest
+    # available business-day observation so weekend runs do not
+    # fabricate an intraday rate.
+    treasury = treasury_rates()
+    if treasury:
+        for k in ('y3m','y10','y30'):
+            if treasury.get(k) is not None:
+                d['rates'][k] = treasury[k]
+        d['rates']['source'] = 'U.S. Treasury Daily Treasury Par Yield Curve Rates'
+        d['rates']['date'] = treasury.get('date')
+    else:
+        # Keep the previous rates if Treasury is temporarily unreachable.
+        d['rates']['source'] = d['rates'].get('source', 'U.S. Treasury unavailable; previous snapshot retained')
     S=sf(d['prices'].get('ndx'))
     o={'status':'unavailable','ticker':'^NDX','expiry':None,'spot':S,'atm_iv':None,'expected_move_pct':None,'expected_move_points':None,'pcr_oi':None,'gamma_flip':None,'put_wall':None,'call_wall':None,'net_gex':None,'oi_heatmap':[],'dealer_positioning':{'status':'unavailable','regime':None,'net_gex':None,'gamma_flip':None,'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'},'model':'Estimated GEX using listed option OI and modeled gamma; not direct dealer book.'}
     try:
@@ -73,6 +134,6 @@ def main():
         o['gamma_flip']=min(flips,key=lambda x:abs(x-S)) if flips else None
         o['dealer_positioning']={'status':'modeled','regime':'Positive gamma' if total>0 else 'Negative gamma' if total<0 else 'Neutral gamma','net_gex':total,'gamma_flip':o['gamma_flip'],'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'}
     except Exception: pass
-    d['options']=o; d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance prototype adapter']
+    d['options']=o; d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates']
     with open(OUT,'w',encoding='utf-8') as f:json.dump(d,f,indent=2)
 if __name__=='__main__':main()
