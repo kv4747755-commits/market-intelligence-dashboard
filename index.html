@@ -21,7 +21,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 </head>
 <body>
 <header><div class="head">
-<div class="badge">● V3 DATA FOUNDATION — FIXED</div>
+<div class="badge">● V3 DATA FOUNDATION — OPTIONS MODEL</div>
 <div class="brand">MARKET INTELLIGENCE</div>
 <div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div>
 <div class="nav">
@@ -73,7 +73,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div></div>
 </div>
 <div class="grid2" style="margin-top:12px">
-<div class="card"><h3>Open Interest Heatmap</h3><div class="small">Only populate this when the chain is actually available.</div><div class="heat" id="heat"></div></div>
+<div class="card"><h3>Open Interest Heatmap</h3><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><div class="heat" id="heat"></div></div>
 <div class="card"><h3>Estimated Dealer Positioning</h3><div class="callout" id="dealer">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div></div>
 </div>
 </section>
@@ -111,7 +111,7 @@ async function load(){
  document.getElementById('fxeur').textContent=pct(p.eurusd_change);
  document.getElementById('fxvix').textContent=pct(p.vix_change);
 
- const live=typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
+ const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
  const iv=live?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
  const em=live?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
  document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${live?'up':'amber'}">${live?'LIVE':'WAITING'}</b></div></div>`;
@@ -119,15 +119,40 @@ async function load(){
  ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
  document.getElementById('emp1').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
- document.getElementById('gamma1').textContent=live?'LIVE MODEL':'WAITING';
- document.getElementById('gamma2').textContent=o.model||'No model data';
+
+ const dp=o.dealer_positioning||{};
+ const regime=dp.regime||'—';
+ const modelStatus=dp.status||'unavailable';
+ document.getElementById('gamma1').textContent=regime;
+ document.getElementById('gamma2').textContent=modelStatus==='modeled'?'MODELED FROM CHAIN':'WAITING FOR VALID CHAIN';
+
  document.getElementById('pcr').textContent=o.pcr_oi==null?'—':fmt(o.pcr_oi,2);
  document.getElementById('gex').textContent=o.net_gex==null?'—':fmt(o.net_gex,2);
  document.getElementById('putwall').textContent=o.put_wall==null?'—':fmt(o.put_wall);
  document.getElementById('flip').textContent=o.gamma_flip==null?'—':fmt(o.gamma_flip);
  document.getElementById('callwall').textContent=o.call_wall==null?'—':fmt(o.call_wall);
- document.getElementById('dealer').textContent=live?'Estimated dealer positioning is available and modelled from the chain.':'Waiting for a valid option chain. No dealer-positioning number is fabricated.';
- document.getElementById('heat').innerHTML=live?'<div style="grid-column:1/-1;padding:20px;color:#8794a3">OI heatmap adapter not yet wired.</div>':'<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
+
+ if(modelStatus==='modeled'){
+   const gexText=o.net_gex==null?'—':fmt(o.net_gex,2);
+   const flipText=o.gamma_flip==null?'—':fmt(o.gamma_flip);
+   document.getElementById('dealer').innerHTML=
+     `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Gamma Flip: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span>`;
+ }else{
+   document.getElementById('dealer').textContent='Waiting for a valid option chain. No dealer-positioning number is fabricated.';
+ }
+
+ const heat=Array.isArray(o.oi_heatmap)?o.oi_heatmap:[];
+ if(live && heat.length){
+   document.getElementById('heat-status').textContent=`${heat.length} strikes • ${o.expiry||'latest available expiry'} • OI and modeled GEX`;
+   document.getElementById('heat').innerHTML=heat.map(x=>{
+     const net=Number(x.net_gex)||0;
+     const cls=net>0?'up':net<0?'down':'';
+     return `<div><b>${fmt(x.strike,0)}</b><br>C OI ${fmt(x.call_oi,0)}<br>P OI ${fmt(x.put_oi,0)}<br><span class="${cls}">GEX ${fmt(net,0)}</span></div>`;
+   }).join('');
+ }else{
+   document.getElementById('heat-status').textContent='No usable strike-level chain data.';
+   document.getElementById('heat').innerHTML='<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
+ }
 
  const rateRows=[['3M',r.y3m],['10Y',r.y10],['30Y',r.y30]];
  document.getElementById('rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
