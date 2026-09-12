@@ -41,7 +41,7 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <section id="nasdaq">
 <div class="title">NASDAQ COMMAND CENTER</div>
 <div class="grid">
-<div class="card"><div class="label">NDX / NQ reference</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
+<div class="card"><div class="label">NASDAQ-100 INDEX (NDX)</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
 <div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div>
 <div class="card"><div class="label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
 <div class="card"><div class="label">Gamma Regime</div><div class="big amber" id="gamma1">—</div><div class="small" id="gamma2">—</div></div>
@@ -93,7 +93,7 @@ async function load(){
  const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
 
  document.getElementById('live-grid').innerHTML=[
- q('NQ FUTURES',p.ndx,p.ndx_change),
+ q('NASDAQ-100 (NDX)',p.ndx,p.ndx_change),
  q('EURUSD',p.eurusd,p.eurusd_change,5),
  q('DXY',p.dxy,p.dxy_change),
  q('VIX',p.vix,p.vix_change)
