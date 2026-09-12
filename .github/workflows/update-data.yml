@@ -28,6 +28,8 @@ jobs:
       - name: Update data
         run: |
           python scripts/update_data.py
+          env:
+    FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
 
       - name: Save updated data
         run: |
