@@ -228,7 +228,7 @@ async function load(){
  }
 
  const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
- document.getElementById('rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
+ document.getElementById('macro-rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
 
  const m=d.macro||{}, ms=m.series||{};
  const mv=k=>ms[k]?.value ?? null, mp=k=>ms[k]?.previous ?? null;
