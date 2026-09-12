@@ -116,7 +116,7 @@ def fetch_cot():
                 return sf(row.get(key))
             dealer_net = (num("dealer_positions_long_all") or 0) - (num("dealer_positions_short_all") or 0)
             asset_net = (num("asset_mgr_positions_long") or 0) - (num("asset_mgr_positions_short") or 0)
-            lev_net = (num("lev_money_positions_long_all") or 0) - (num("lev_money_positions_short_all") or 0)
+            lev_net = (num("lev_money_positions_long") or 0) - (num("lev_money_positions_short") or 0)
             out[name] = {
                 "market": row.get("market_and_exchange_names") or name,
                 "report_date": str(row.get("report_date_as_yyyy_mm_dd") or "")[:10],
