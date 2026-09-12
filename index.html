@@ -83,14 +83,20 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <div class="card"><div class="callout" id="cot-note">CFTC COT is weekly, not tick-by-tick. Positions are from Tuesday and are generally released Friday at 3:30 p.m. ET.</div>
 <div class="small" id="cot-status" style="margin-top:12px">Waiting for official CFTC data…</div>
 <div class="grid2" id="cot-grid" style="margin-top:12px"></div></div></section>
-<section id="news"><div class="title">MARKET NEWS</div><div class="card"><div class="callout">News provider adapter is the next stage. The dashboard will not label hard-coded headlines as live news.</div></div></section>
+<section id="news">
+<div class="title">MARKET NEWS</div>
+<div class="card">
+  <div class="small" id="news-status">Waiting for market news…</div>
+  <div id="news-grid" class="grid2" style="margin-top:12px"></div>
+</div>
+</section>
 <div class="footer">INFORMATIONAL MARKET TOOL • Not investment advice • Modelled analytics are explicitly labelled • Snapshot generated from the canonical data layer</div>
 </main>
 
 <script>
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
- const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{};
+ const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{};
  const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
  const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
  const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
@@ -173,6 +179,28 @@ async function load(){
    const cls=v=>v>0?'up':v<0?'down':'';
    return `<div class="card"><div class="label">${name}</div><div class="small">Report ${x.report_date||'—'}</div><table><tr><td>Dealer net</td><td class="${cls(dn)}">${cotFmt(dn)}</td></tr><tr><td>Asset manager net</td><td class="${cls(an)}">${cotFmt(an)}</td></tr><tr><td>Leveraged money net</td><td class="${cls(ln)}">${cotFmt(ln)}</td></tr></table></div>`;
  }).join('') || '<div class="callout">CFTC data unavailable — no positioning numbers fabricated.</div>';
+
+ const newsItems=Array.isArray(news.items)?news.items:[];
+ const newsStatus=news.status||'unavailable';
+ document.getElementById('news-status').textContent=
+   newsStatus==='live'
+   ? `LIVE • ${news.source||'News RSS'} • ${newsItems.length} headlines`
+   : 'Market news unavailable — no headlines fabricated.';
+ const safeText=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ const newsFmtTime=s=>{
+   if(!s)return 'Time unavailable';
+   const dt=new Date(s);
+   return Number.isNaN(dt.getTime())?safeText(s):dt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+ };
+ document.getElementById('news-grid').innerHTML=newsItems.map(x=>{
+   return `<div class="card">
+     <div class="label">${safeText(x.source||'Unknown source')}</div>
+     <div style="font-size:17px;font-weight:600;line-height:1.35;margin:8px 0">
+       <a href="${safeText(x.url||'#')}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none">${safeText(x.title)}</a>
+     </div>
+     <div class="small">${newsFmtTime(x.published_at)}</div>
+   </div>`;
+ }).join('') || '<div class="callout">No current market headlines available.</div>';
 }
 load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e.message+'</div>'));
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.target).scrollIntoView({behavior:'smooth'});document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
