@@ -301,7 +301,7 @@ def main():
         # Keep the previous rates if Treasury is temporarily unreachable.
         d['rates']['source'] = d['rates'].get('source', 'U.S. Treasury unavailable; previous snapshot retained')
     S=sf(d['prices'].get('ndx'))
-    o={'status':'unavailable','ticker':'^NDX','expiry':None,'spot':S,'atm_iv':None,'expected_move_pct':None,'expected_move_points':None,'pcr_oi':None,'gamma_flip':None,'put_wall':None,'call_wall':None,'net_gex':None,'oi_heatmap':[],'dealer_positioning':{'status':'unavailable','regime':None,'net_gex':None,'gamma_flip':None,'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'},'model':'Estimated GEX using listed option OI and modeled gamma; not direct dealer book.'}
+    o={'status':'unavailable','ticker':'^NDX','expiry':None,'spot':S,'atm_iv':None,'expected_move_pct':None,'expected_move_points':None,'pcr_oi':None,'gamma_flip':None,'put_wall':None,'call_wall':None,'net_gex':None,'oi_heatmap':[],'data_quality':{'status':'UNAVAILABLE','reason':'No valid option chain','strikes':0,'nonzero_oi_strikes':0,'nonzero_oi_ratio':0,'near_atm_nonzero_strikes':0,'total_call_oi':0,'total_put_oi':0},'dealer_positioning':{'status':'unavailable','regime':None,'net_gex':None,'gamma_flip':None,'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'},'model':'Estimated GEX using listed option OI and modeled gamma; not direct dealer book.'}
     try:
         Tkr=yf.Ticker('^NDX'); ex=list(Tkr.options or [])
         if not ex or S is None: raise ValueError()
@@ -328,6 +328,28 @@ def main():
             cge=cg*co*MULT*S*S*.01; pge=-pg*po*MULT*S*S*.01
             if abs(K-S)<=S*.15: heat.append({'strike':K,'call_oi':co,'put_oi':po,'call_gex':cge,'put_gex':pge,'net_gex':cge+pge})
         o['oi_heatmap']=heat; total=sum(x['net_gex'] for x in heat); o['net_gex']=total
+        total_call_oi=sum(x['call_oi'] for x in heat); total_put_oi=sum(x['put_oi'] for x in heat)
+        nonzero=sum(1 for x in heat if (x['call_oi'] or 0)>0 or (x['put_oi'] or 0)>0)
+        near_atm_nonzero=sum(1 for x in heat if abs(x['strike']-S)<=S*.05 and ((x['call_oi'] or 0)>0 or (x['put_oi'] or 0)>0))
+        nonzero_ratio=(nonzero/len(heat)) if heat else 0
+        quality_status='GOOD'
+        quality_reasons=[]
+        if len(heat)<50: quality_reasons.append('fewer than 50 strikes in the modeled window')
+        if nonzero<20: quality_reasons.append('too few strikes with non-zero open interest')
+        if near_atm_nonzero<6: quality_reasons.append('thin open interest near spot')
+        if total_call_oi+total_put_oi<500: quality_reasons.append('low total open interest')
+        if nonzero_ratio<0.20: quality_reasons.append('sparse open-interest coverage')
+        if quality_reasons: quality_status='LIMITED'
+        o['data_quality']={
+            'status':quality_status,
+            'reason':'; '.join(quality_reasons) if quality_reasons else 'Sufficient strike and open-interest coverage for this modeled snapshot',
+            'strikes':len(heat),
+            'nonzero_oi_strikes':nonzero,
+            'nonzero_oi_ratio':nonzero_ratio,
+            'near_atm_nonzero_strikes':near_atm_nonzero,
+            'total_call_oi':total_call_oi,
+            'total_put_oi':total_put_oi,
+        }
         if heat:
             o['call_wall']=max(heat,key=lambda x:x['call_gex'])['strike']; o['put_wall']=min(heat,key=lambda x:x['put_gex'])['strike']
         def total_at(s):
