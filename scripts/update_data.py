@@ -80,22 +80,65 @@ def treasury_rates():
 
 
 def fetch_news():
-    """Fetch recent market headlines from Google News RSS searches.
+    """Fetch and rank market-relevant headlines from Google News RSS.
 
-    We store headline metadata only (title, publisher, timestamp, URL);
-    the dashboard does not copy article bodies.
+    Only headline metadata is stored. Relevance is scored from market,
+    macro, rates, FX, volatility, commodities and geopolitical terms.
+    Clearly off-topic consumer/entertainment/sports stories are filtered.
     """
     queries = [
-        "Nasdaq OR S&P 500 OR stocks market",
-        "Federal Reserve OR Treasury yields OR inflation",
-        "dollar OR EURUSD OR ECB OR forex",
-        "oil OR crude OR geopolitical markets",
+        '"Federal Reserve" OR "Fed" OR "interest rates" OR CPI OR inflation OR jobs',
+        '"Treasury yields" OR "10-year yield" OR bonds OR "yield curve"',
+        'Nasdaq OR "S&P 500" OR "Wall Street" OR stocks OR equities',
+        'dollar OR DXY OR EURUSD OR euro OR ECB OR forex',
+        'oil OR crude OR OPEC OR commodities OR gold',
+        'tariffs OR sanctions OR Iran OR Ukraine OR geopolitics markets',
+        'options OR volatility OR VIX OR futures',
     ]
+
+    positive = {
+        "fed": 5, "federal reserve": 5, "fomc": 6, "interest rate": 5,
+        "inflation": 5, "cpi": 6, "ppi": 4, "payroll": 5, "jobs": 4,
+        "unemployment": 4, "gdp": 4, "treasury": 5, "yield": 5,
+        "bond": 4, "yield curve": 5, "nasdaq": 5, "s&p 500": 5,
+        "wall street": 4, "stocks": 3, "equities": 3, "futures": 4,
+        "dollar": 5, "dxy": 6, "eurusd": 6, "euro": 3, "ecb": 5,
+        "forex": 4, "currency": 3, "oil": 4, "crude": 5, "opec": 5,
+        "gold": 3, "commodity": 3, "vix": 5, "volatility": 4,
+        "options": 4, "tariff": 4, "sanction": 4, "iran": 4,
+        "ukraine": 3, "russia": 3, "china": 2, "geopolit": 4,
+        "central bank": 5, "rate hike": 6, "rate cut": 6,
+        "earnings": 3, "forecast": 3, "recession": 5, "liquidity": 4,
+    }
+    high = {
+        "fomc", "federal reserve", "fed", "cpi", "inflation", "rate hike",
+        "rate cut", "interest rate", "payroll", "nonfarm", "treasury yield",
+        "yield curve", "oil", "crude", "opec", "ecb", "central bank",
+        "geopolit", "sanction", "tariff", "vix"
+    }
+    exclude = {
+        "lottery", "casino", "sports", "celebrity", "entertainment",
+        "movie", "tv show", "reality tv", "recipe", "restaurant",
+        "shopping", "coupon", "dollar tree", "fashion", "horoscope",
+        "obituary", "wedding", "crime", "local police"
+    }
+
+    # Prefer established market/news sources when scores are otherwise close.
+    source_bonus = {
+        "reuters": 3, "cnbc": 3, "bloomberg": 3, "financial times": 3,
+        "marketwatch": 2, "nasdaq": 2, "associated press": 2,
+        "yahoo finance": 2, "investing.com": 2, "barron's": 2
+    }
+
     items = []
     seen = set()
 
     for query in queries:
-        url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(query) + "&hl=en-US&gl=US&ceid=US:en"
+        url = (
+            "https://news.google.com/rss/search?q="
+            + urllib.parse.quote(query)
+            + "&hl=en-US&gl=US&ceid=US:en"
+        )
         try:
             req = Request(url, headers={"User-Agent": "market-intelligence-dashboard/1.0"})
             with urlopen(req, timeout=20) as r:
@@ -116,6 +159,19 @@ def fetch_news():
                     continue
                 seen.add(key)
 
+                text = f"{title} {source}".lower()
+                if any(term in text for term in exclude):
+                    continue
+
+                score = sum(weight for term, weight in positive.items() if term in text)
+                if score < 4:
+                    continue
+
+                score += max(
+                    (bonus for name, bonus in source_bonus.items() if name in source.lower()),
+                    default=0
+                )
+
                 published_at = None
                 if pub:
                     try:
@@ -123,21 +179,43 @@ def fetch_news():
                     except Exception:
                         published_at = pub
 
+                high_hit = any(term in text for term in high)
+                impact = "HIGH" if high_hit and score >= 8 else ("MEDIUM" if score >= 6 else "LOW")
+
                 items.append({
                     "title": title,
                     "source": source or "Unknown",
                     "published_at": published_at,
                     "url": link,
+                    "relevance_score": score,
+                    "impact": impact,
                 })
         except Exception:
             continue
 
-    items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+    # Deduplicate similar titles after aggregation.
+    unique = []
+    title_keys = set()
+    for x in sorted(
+        items,
+        key=lambda z: (z.get("relevance_score", 0), z.get("published_at") or ""),
+        reverse=True
+    ):
+        k = re.sub(r"[^a-z0-9]+", " ", x["title"].lower()).strip()
+        words = " ".join(k.split()[:12])
+        if words in title_keys:
+            continue
+        title_keys.add(words)
+        unique.append(x)
+
+    unique = unique[:12]
+    unique.sort(key=lambda z: z.get("published_at") or "", reverse=True)
+
     return {
-        "status": "live" if items else "unavailable",
-        "source": "Google News RSS aggregation",
+        "status": "live" if unique else "unavailable",
+        "source": "Filtered Google News RSS aggregation",
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        "items": items[:12],
+        "items": unique,
     }
 
 def fetch_cot():
@@ -259,6 +337,6 @@ def main():
         o['gamma_flip']=min(flips,key=lambda x:abs(x-S)) if flips else None
         o['dealer_positioning']={'status':'modeled','regime':'Positive gamma' if total>0 else 'Negative gamma' if total<0 else 'Neutral gamma','net_gex':total,'gamma_flip':o['gamma_flip'],'model':'Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory.'}
     except Exception: pass
-    d['options']=o; d['cot']=fetch_cot(); d['news']=fetch_news(); d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates','CFTC TFF Combined','Google News RSS aggregation']
+    d['options']=o; d['cot']=fetch_cot(); d['news']=fetch_news(); d['generated_at']=datetime.now(timezone.utc).isoformat(); d['sources']=['yfinance market/options adapter','U.S. Treasury Daily Treasury Par Yield Curve Rates','CFTC TFF Combined','Filtered Google News RSS aggregation']
     with open(OUT,'w',encoding='utf-8') as f:json.dump(d,f,indent=2)
 if __name__=='__main__':main()
