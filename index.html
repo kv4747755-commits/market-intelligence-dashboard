@@ -93,12 +93,12 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 </div>
 <div class="title" style="margin-top:28px">INFLATION & PRICES</div>
 <div class="grid">
-<div class="card"><div class="label">CPI</div><div class="big" id="m-cpi">—</div><div class="small" id="m-cpi-prev">—</div></div>
-<div class="card"><div class="label">Core CPI</div><div class="big" id="m-corecpi">—</div><div class="small" id="m-corecpi-prev">—</div></div>
-<div class="card"><div class="label">PCE</div><div class="big" id="m-pce">—</div><div class="small" id="m-pce-prev">—</div></div>
-<div class="card"><div class="label">Core PCE</div><div class="big" id="m-corepce">—</div><div class="small" id="m-corepce-prev">—</div></div>
+<div class="card"><div class="label">CPI <span class="small">(Index)</span></div><div class="big" id="m-cpi">—</div><div class="small" id="m-cpi-prev">—</div></div>
+<div class="card"><div class="label">Core CPI <span class="small">(Index)</span></div><div class="big" id="m-corecpi">—</div><div class="small" id="m-corecpi-prev">—</div></div>
+<div class="card"><div class="label">PCE <span class="small">(Index)</span></div><div class="big" id="m-pce">—</div><div class="small" id="m-pce-prev">—</div></div>
+<div class="card"><div class="label">Core PCE <span class="small">(Index)</span></div><div class="big" id="m-corepce">—</div><div class="small" id="m-corepce-prev">—</div></div>
 </div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>PPI & Inflation Expectations</h3><table><tr><td>PPI</td><td id="m-ppi">—</td></tr><tr><td>10Y breakeven</td><td id="m-be10b">—</td></tr><tr><td>Real 10Y</td><td id="m-real10b">—</td></tr></table></div><div class="card"><h3>Inflation Regime</h3><div class="big amber" id="reg-inflation">—</div><div class="small">Rule-based classification from latest available data; not a forecast.</div></div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>PPI & Inflation Expectations</h3><table><tr><td>PPI (Index)</td><td id="m-ppi">—</td></tr><tr><td>10Y breakeven</td><td id="m-be10b">—</td></tr><tr><td>Real 10Y</td><td id="m-real10b">—</td></tr></table></div><div class="card"><h3>Inflation Regime</h3><div class="big amber" id="reg-inflation">—</div><div class="small">Rule-based classification from latest available data; not a forecast.</div></div></div>
 <div class="title" style="margin-top:28px">EMPLOYMENT & LABOR</div>
 <div class="grid">
 <div class="card"><div class="label">Unemployment</div><div class="big" id="m-unrate">—</div><div class="small" id="m-unrate-prev">—</div></div>
@@ -244,7 +244,7 @@ async function load(){
  document.getElementById('s-2s10s').textContent=m['2s10s']==null?'—':fmt(m['2s10s'],2)+' pp'; document.getElementById('s-5s30s').textContent=m['5s30s']==null?'—':fmt(m['5s30s'],2)+' pp'; document.getElementById('s-3m10y').textContent=m['3m10y']==null?'—':fmt(m['3m10y'],2)+' pp';
  const next=m.fomc?.next_meeting||'No upcoming meeting in configured calendar'; document.getElementById('fomc-next').textContent=next; document.getElementById('fomc-note').textContent=m.fomc?.is_sep?'September meeting • Summary of Economic Projections':'Official Federal Reserve FOMC calendar';
  macroVal('m-walcl','fed_balance_sheet',0); macroVal('m-liq','fed_balance_sheet',0); macroVal('m-rrp','rrp',0); macroVal('m-tga','tga',0);
- macroPair('m-cpi','cpi',1,'%'); macroPair('m-corecpi','core_cpi',1,'%'); macroPair('m-pce','pce',1,'%'); macroPair('m-corepce','core_pce',1,'%'); macroVal('m-ppi','ppi',1,'%'); macroVal('m-be10b','breakeven_10y',2,'%'); macroVal('m-real10b','real_10y',2,'%');
+ macroPair('m-cpi','cpi',2,''); macroPair('m-corecpi','core_cpi',2,''); macroPair('m-pce','pce',2,''); macroPair('m-corepce','core_pce',2,''); macroVal('m-ppi','ppi',2,''); macroVal('m-be10b','breakeven_10y',2,'%'); macroVal('m-real10b','real_10y',2,'%');
  macroPair('m-unrate','unemployment',1,'%'); macroPair('m-payrolls','payrolls',0); macroVal('m-ahe','avg_hourly_earnings',2,''); macroVal('m-part','labor_participation',1,'%'); macroVal('m-icsa','initial_claims',0); macroVal('m-ccsa','continuing_claims',0); macroVal('m-jolts','jolts',0);
  macroVal('m-gdp','gdp',0); macroVal('m-gdpg','gdp_growth',2,'%'); macroVal('m-indpro','industrial_production',2); macroVal('m-retail','retail_sales',2); macroVal('m-houst','housing_starts',0); macroVal('m-permit','building_permits',0); macroVal('m-sent','consumer_sentiment',1);
  macroVal('m-balance','fed_balance_sheet',0); macroVal('m-m2','m2',0); macroVal('m-hy','hy_spread',2,'%'); macroVal('m-ig','ig_spread',2,'%'); macroVal('m-nfci','financial_conditions',2); document.getElementById('m-baltrend').textContent=mv('fed_balance_sheet')==null?'—':(mp('fed_balance_sheet')==null?'—':(mv('fed_balance_sheet')>mp('fed_balance_sheet')?'UP':'DOWN'));
