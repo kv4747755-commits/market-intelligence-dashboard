@@ -169,6 +169,34 @@ section:not(#home)>.title{padding-top:4px}
 
 /* HOME COMMAND CENTER UPGRADE */
 .home-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;margin-top:8px}.home-map{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.home-stat{padding:10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.home-stat b{display:block;font-size:16px;margin-top:4px}.home-stat span{display:block;font-size:9px;color:#718295;margin-top:3px}.level-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.level-box{padding:10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e;text-align:center}.level-box b{display:block;font-size:15px;margin-top:4px}.watch-list{display:grid;gap:6px}.watch-row{display:flex;justify-content:space-between;gap:12px;padding:8px 9px;border-bottom:1px solid #172635;font-size:11px}.watch-row:last-child{border-bottom:0}.home-news{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.news-mini{padding:10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.news-mini .headline{font-size:11px;line-height:1.35;margin-top:5px}@media(max-width:760px){.home-grid{grid-template-columns:1fr}.home-map{grid-template-columns:repeat(2,1fr)}.level-strip{grid-template-columns:repeat(2,1fr)}.home-news{grid-template-columns:1fr}}
+
+
+/* V6 desktop sidebar redesign */
+@media(min-width:901px){
+  .head{margin-left:248px;padding:0 22px}
+  .nav{width:228px;padding:18px 12px 14px;gap:0;background:linear-gradient(180deg,#080d14 0%,#0a121b 58%,#081018 100%);border-right:1px solid #203141;box-shadow:8px 0 28px rgba(0,0,0,.22)}
+  .nav:before{display:none}
+  .nav-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid #172635;margin-bottom:8px}
+  .nav-logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:10px;font-weight:900;letter-spacing:.5px;color:#dcecff;background:#102237;border:1px solid #315b7d;box-shadow:inset 0 0 12px rgba(89,169,255,.12)}
+  .nav-brand b{display:block;color:#dce6ef;font-size:10px;letter-spacing:1.25px;font-weight:800}
+  .nav-brand span{display:block;color:#617487;font-size:8px;letter-spacing:1.4px;margin-top:3px}
+  .nav-group{margin-top:8px}
+  .nav-group-title{padding:7px 9px 5px;color:#53697c;font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+  .nav button{display:flex;align-items:center;gap:9px;width:100%;height:34px;margin:2px 0;padding:7px 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:#8798a8;font-size:11px;font-weight:650;letter-spacing:.15px}
+  .nav button .nav-icon{flex:0 0 22px;width:22px;height:22px;display:grid;place-items:center;border:1px solid #263b4e;border-radius:6px;color:#70879b;background:#0b151f;font-size:9px;font-weight:800}
+  .nav button:hover{background:#0d1823;border-color:#1b3042;color:#dbe7f2}
+  .nav button.active{background:linear-gradient(90deg,#10273b,#0d1b29);border-color:#2a5373;color:#eaf4fc;box-shadow:inset 3px 0 0 var(--blue),0 5px 14px rgba(0,0,0,.12)}
+  .nav button.active .nav-icon{color:#69b4ff;border-color:#3b6f98;background:#112a3e}
+  .nav-bottom{margin-top:auto;padding:12px 9px 2px;border-top:1px solid #172635;color:#557083;font-size:8px;letter-spacing:1.2px;text-transform:uppercase}
+  .nav-bottom span{color:var(--green);font-size:8px}
+  main{margin-left:248px;padding:8px 22px 42px}
+}
+@media(max-width:900px){
+  .nav-brand,.nav-group-title,.nav-bottom{display:none}
+  .nav-group{display:contents}
+  .nav button{display:flex;align-items:center;gap:6px}
+  .nav button .nav-icon{display:none}
+}
 </style>
 </head>
 <body>
@@ -177,7 +205,21 @@ section:not(#home)>.title{padding-top:4px}
 <div class="brand">MARKET INTELLIGENCE</div>
 <div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div><div class="small" style="margin-top:4px;letter-spacing:.4px">LIVE INTELLIGENCE TERMINAL • MODELED ANALYTICS CLEARLY LABELED</div>
 <div class="nav">
-<button class="active" data-target="home">HOME</button><button data-target="nasdaq">NASDAQ</button><button data-target="forex">FOREX</button><button data-target="options">OPTIONS</button><button data-target="macro">MACRO</button><button data-target="cot">COT</button><button data-target="news">NEWS</button>
+<div class="nav-brand"><div class="nav-logo">MI</div><div><b>MARKET INTELLIGENCE</b><span>COMMAND CENTER</span></div></div>
+<div class="nav-group"><div class="nav-group-title">OVERVIEW</div>
+<button class="active" data-target="home"><span class="nav-icon">⌂</span><span>HOME</span></button>
+</div>
+<div class="nav-group"><div class="nav-group-title">MARKETS</div>
+<button data-target="nasdaq"><span class="nav-icon">N</span><span>NASDAQ</span></button>
+<button data-target="forex"><span class="nav-icon">FX</span><span>FOREX</span></button>
+<button data-target="options"><span class="nav-icon">◈</span><span>OPTIONS</span></button>
+</div>
+<div class="nav-group"><div class="nav-group-title">INTELLIGENCE</div>
+<button data-target="macro"><span class="nav-icon">M</span><span>MACRO</span></button>
+<button data-target="cot"><span class="nav-icon">C</span><span>COT POSITIONING</span></button>
+<button data-target="news"><span class="nav-icon">≡</span><span>MARKET NEWS</span></button>
+</div>
+<div class="nav-bottom"><span>●</span> LIVE DATA</div>
 </div></div></header>
 
 <main>
