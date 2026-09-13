@@ -292,6 +292,7 @@ section:not(#home)>.title{padding-top:4px}
 .strike-filter button{padding:5px 9px;border:1px solid #1d394b;border-radius:7px;background:#08141e;color:#8499a8;font-size:9px;cursor:pointer}
 .strike-filter button.active,.strike-filter button:hover{border-color:#25bfff;color:#e9f8ff;background:#0b1d2a}
 .strike-table-wrap{margin-top:10px;border:1px solid #193749;border-radius:9px;overflow:auto;max-height:310px}
+.gamma-regime-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.gamma-regime-mini{padding:9px 10px;border:1px solid #1b2b3b;border-radius:8px;background:#09141e;min-width:0}.gamma-regime-mini b{display:block;font-size:16px;margin-top:3px}.gamma-regime-mini span{display:block;font-size:9px;color:#718295;margin-top:3px;line-height:1.3}.gamma-positive{color:var(--green)}.gamma-negative{color:var(--red)}.gamma-neutral{color:var(--amber)}
 .options-detail table{margin-top:0;border-collapse:separate;border-spacing:0;width:100%;font-size:10px}
 .options-detail th{position:sticky;top:0;z-index:2;background:#091721;color:#7f96a7;text-transform:uppercase;letter-spacing:.7px}
 .options-detail td,.options-detail th{padding:9px 10px;border-bottom:1px solid #142c3a;white-space:nowrap}
@@ -378,7 +379,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="card"><div class="label">NASDAQ-100 INDEX (NDX)</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
 <div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div>
 <div class="card"><div class="label" id="home-em-label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
-<div class="card"><div class="label">Gamma Regime</div><div class="big amber" id="gamma1">—</div><div class="small" id="gamma2">—</div></div>
+<div class="card"><div class="label">Gamma Regimes</div><div class="gamma-regime-pair"><div class="gamma-regime-mini"><div class="small">0DTE</div><b id="gamma-0dte">—</b><span id="gamma-0dte-sub">Intraday gamma</span></div><div class="gamma-regime-mini"><div class="small">ALL EXP</div><b id="gamma-all">—</b><span id="gamma-all-sub">Multi-expiry gamma</span></div></div></div>
 </div>
 <div class="card" style="margin-top:12px">
 <h3>NASDAQ MARKET READ</h3>
@@ -403,6 +404,16 @@ section:not(#home)>.title{padding-top:4px}
 <div class="small" style="margin-top:10px">These are dashboard state-change conditions, not entry or exit signals.</div>
 </div>
 <div class="small" style="margin-top:10px">Rules-based interpretation only — not a price prediction or trading signal.</div>
+</div>
+<div class="card" style="margin-top:12px">
+<h3>WHY NQ IS MOVING</h3>
+<div class="callout" id="nq-why-headline">Synthesizing options, volatility, dollar and macro drivers…</div>
+<table style="margin-top:10px"><tr><th>Driver</th><th>Current evidence</th><th>Pressure</th></tr>
+<tr><td>0DTE Gamma</td><td id="nq-why-0dte">—</td><td id="nq-why-0dte-impact">—</td></tr>
+<tr><td>All-exp Gamma</td><td id="nq-why-all">—</td><td id="nq-why-all-impact">—</td></tr>
+<tr><td>Rates / Dollar</td><td id="nq-why-rates">—</td><td id="nq-why-rates-impact">—</td></tr>
+<tr><td>Volatility</td><td id="nq-why-vol2">—</td><td id="nq-why-vol2-impact">—</td></tr></table>
+<div class="small" style="margin-top:9px">The engine explains the current cross-market setup from the canonical snapshot. It does not infer actual dealer trades or predict price.</div>
 </div>
 <div class="card" style="margin-top:12px">
 <div class="section-kicker">Market Structure</div>
@@ -602,7 +613,7 @@ function renderGexProfile(o,p){
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
  const topPcr=document.getElementById('pcr'); if(topPcr){const c=Number(active.call_oi),q=Number(active.put_oi);topPcr.textContent=(c>0&&Number.isFinite(q))?f(q/c,2):(o.pcr_oi==null?'—':f(o.pcr_oi,2));}
- const note=document.getElementById('gex-selected-note'); if(note) note.textContent=usingFallback?`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`:`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`;
+ const note=document.getElementById('gex-selected-note'); if(note){ if(usingFallback) note.textContent=`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`; else if(selectedGexMode==='ALL') note.textContent='Showing ALL EXPIRATIONS modeled GEX.'; else note.textContent=`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`; }
  document.getElementById('gex-expiry').textContent=selectedGexMode==='ALL'?`ALL EXP • ${o.expiry_count||0}`:expiryText;
  const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${selectedLabel} • MODELED`;
  document.getElementById('gex-chart-status').textContent=rows.length?`${selectedLabel} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
@@ -933,8 +944,9 @@ async function load(){
  const regime=Number.isFinite(activeGex)?(activeGex>0?'Positive gamma':activeGex<0?'Negative gamma':'Neutral gamma'):(dp.regime||'—');
  const modelStatus=dp.status||'unavailable';
  const qualityStatus=dqStatus;
- document.getElementById('gamma1').textContent=regime;
- document.getElementById('gamma2').textContent=modelStatus==='modeled'?(qualityStatus==='LIMITED'?'MODELED • LIMITED DATA':'MODELED FROM CHAIN'):'WAITING FOR VALID CHAIN';
+ const setGamma=(id,sub,profile)=>{const el=document.getElementById(id),se=document.getElementById(sub);const n=Number(profile?.net_gex);const ok=profile&&profile.status!=='unavailable'&&Number.isFinite(n);const text=ok?(n>0?'Positive':n<0?'Negative':'Neutral'):'Unavailable';if(el){el.textContent=text;el.className='';el.classList.add(n>0?'gamma-positive':n<0?'gamma-negative':'gamma-neutral');}if(se)se.textContent=ok?`Net GEX ${sensFmt(n)}`:'No valid chain';};
+ setGamma('gamma-0dte','gamma-0dte-sub',o.profiles?.['0DTE']);
+ setGamma('gamma-all','gamma-all-sub',o.profiles?.['ALL']||o);
 
  const activeCallOI=Number(activeProfile.call_oi), activePutOI=Number(activeProfile.put_oi);
  const activePCR=(activeCallOI>0 && Number.isFinite(activePutOI))?activePutOI/activeCallOI:Number(o.pcr_oi);
@@ -1087,6 +1099,21 @@ async function load(){
   const hn=Array.isArray(news.items)?news.items.slice(0,4):[]; const safeHome=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   document.getElementById('home-news').innerHTML=hn.length?hn.map(x=>{const impact=String(x.impact||'LOW').toUpperCase();const cls=impact==='HIGH'?'down':impact==='MEDIUM'?'amber':'up';return `<div class="news-mini"><span class="${cls}" style="font-size:9px;font-weight:800">${impact}</span><div class="headline">${safeHome(x.title)}</div></div>`}).join(''):'<div class="small">No current market headlines available.</div>';
  }
+
+ // WHY NQ IS MOVING: concise rules-based synthesis of the two main gamma regimes and cross-market drivers.
+ const p0=o.profiles?.['0DTE']||{}; const pa=o.profiles?.['ALL']||o;
+ const gammaText=pr=>{const n=Number(pr?.net_gex);if(!Number.isFinite(n))return {read:'Unavailable',impact:'NEUTRAL'};return n>0?{read:`Positive gamma • net ${sensFmt(n)}`,impact:'STABILIZING'}:n<0?{read:`Negative gamma • net ${sensFmt(n)}`,impact:'AMPLIFYING'}:{read:'Neutral gamma',impact:'NEUTRAL'};};
+ const g0=gammaText(p0),ga=gammaText(pa);
+ const ratesRead=(Number(r.y10)!=null&&Number.isFinite(Number(r.y10)))?`10Y ${fmt(r.y10,2)}% • DXY ${fmt(p.dxy,2)}`:`DXY ${fmt(p.dxy,2)}`;
+ const ratesImpact=(Number(p.dxy_change)>0.15)?'HEADWIND':(Number(p.dxy_change)<-0.15)?'SUPPORTIVE':'NEUTRAL';
+ const volRead=Number.isFinite(Number(p.vix_change))?`VIX ${fmt(p.vix,2)} (${pct(p.vix_change)})`:'VIX unavailable';
+ const volImpact=Number(p.vix_change)>5?'HEADWIND':Number(p.vix_change)<-5?'SUPPORTIVE':'NEUTRAL';
+ const whyScores=[g0.impact==='STABILIZING'?1:g0.impact==='AMPLIFYING'?-1:0,ga.impact==='STABILIZING'?1:ga.impact==='AMPLIFYING'?-1:0,ratesImpact==='SUPPORTIVE'?1:ratesImpact==='HEADWIND'?-1:0,volImpact==='SUPPORTIVE'?1:volImpact==='HEADWIND'?-1:0];
+ const whyScore=whyScores.reduce((a,b)=>a+b,0);
+ const whyBias=whyScore>=2?'Supportive setup':whyScore<=-2?'Defensive setup':'Mixed setup';
+ const whyHeadline=document.getElementById('nq-why-headline');if(whyHeadline)whyHeadline.innerHTML=`<b>${whyBias}</b> • 0DTE is ${g0.impact.toLowerCase()}, all-expiry gamma is ${ga.impact.toLowerCase()}, while rates/dollar and volatility provide the remaining pressure.`;
+ [['nq-why-0dte',g0.read],['nq-why-all',ga.read],['nq-why-rates',ratesRead],['nq-why-vol2',volRead]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+ [['nq-why-0dte-impact',g0.impact],['nq-why-all-impact',ga.impact],['nq-why-rates-impact',ratesImpact],['nq-why-vol2-impact',volImpact]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
 
  // Dynamic state-change conditions: every threshold is recalculated from the latest snapshot.
  const upgradeParts=[];
