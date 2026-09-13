@@ -334,17 +334,37 @@ async function load(){
  document.getElementById('nq-macro-read').textContent=macroRead;
  document.getElementById('nq-macro-impact').textContent=macroImpact;
 
- // Show the conditions that would materially change the current dashboard bias.
+ // Dynamic state-change conditions: every threshold is recalculated from the latest snapshot.
  const upgradeParts=[];
  const downgradeParts=[];
- if(Number.isFinite(flip)) upgradeParts.push(`NDX > ${fmt(flip,0)}`);
- if(Number.isFinite(vixCh)) upgradeParts.push(vixCh < 5 ? 'VIX not rising' : 'VIX stabilizes');
- if(Number.isFinite(dxyChange)) upgradeParts.push(dxyChange < 0.15 ? 'DXY not accelerating' : 'DXY stabilizes');
- if(Number.isFinite(putWall)) downgradeParts.push(`NDX < ${fmt(putWall,0)}`);
- if(Number.isFinite(vixCh)) downgradeParts.push(vixCh > 5 ? 'VIX rising' : 'VIX breaks higher');
- if(Number.isFinite(dxyChange)) downgradeParts.push(dxyChange > 0.15 ? 'DXY rising' : 'DXY accelerates');
- document.getElementById('nq-upgrade').textContent=upgradeParts.length?upgradeParts.join(' + '):'Key inputs unavailable';
- document.getElementById('nq-downgrade').textContent=downgradeParts.length?downgradeParts.join(' / '):'Key inputs unavailable';
+ const upgradeReady=[];
+ const downgradeRisk=[];
+ if(Number.isFinite(flip)){
+   const aboveFlip=spot>flip;
+   upgradeParts.push(`NDX ${aboveFlip?'above':'below'} flip ${fmt(flip,0)}`);
+   if(aboveFlip) upgradeReady.push('NDX above gamma flip');
+ }
+ if(Number.isFinite(vixCh)){
+   const vixOk=vixCh<=5;
+   upgradeParts.push(`VIX ${vixCh>0?'+':''}${fmt(vixCh,1)}%`);
+   if(vixOk) upgradeReady.push('VIX not rising >5%');
+   if(vixCh>5) downgradeRisk.push('VIX > +5%');
+ }
+ if(Number.isFinite(dxyChange)){
+   const dxyOk=dxyChange<=0.15;
+   upgradeParts.push(`DXY ${dxyChange>0?'+':''}${fmt(dxyChange,2)}%`);
+   if(dxyOk) upgradeReady.push('DXY not accelerating >0.15%');
+   if(dxyChange>0.15) downgradeRisk.push('DXY > +0.15%');
+ }
+ if(Number.isFinite(putWall)){
+   const abovePut=spot>=putWall;
+   downgradeParts.push(`NDX ${abovePut?'above':'below'} put wall ${fmt(putWall,0)}`);
+   if(!abovePut) downgradeRisk.push('NDX below put wall');
+ }
+ const upgradeState=(Number.isFinite(flip)&&spot>flip&&Number.isFinite(vixCh)&&vixCh<=5&&Number.isFinite(dxyChange)&&dxyChange<=0.15);
+ const downgradeState=(Number.isFinite(putWall)&&spot<putWall)||(Number.isFinite(vixCh)&&vixCh>5)||(Number.isFinite(dxyChange)&&dxyChange>0.15);
+ document.getElementById('nq-upgrade').textContent=upgradeState?'READY • '+upgradeReady.join(' + '):(upgradeParts.length?upgradeParts.join(' • '):'Key inputs unavailable');
+ document.getElementById('nq-downgrade').textContent=downgradeState?'ACTIVE • '+downgradeRisk.join(' / '):(downgradeParts.length?downgradeParts.join(' • '):'Key inputs unavailable');
 
  const cotStatus=cot.status||'unavailable';
  const cotMarkets=cot.markets||{};
