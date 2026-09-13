@@ -404,6 +404,14 @@ def build_macro():
     }
     if curve:
         macro['treasury_curve'] = curve
+        # Treasury spread calculations in percentage points.  Keep these in
+        # the macro payload so the frontend does not have to reconstruct them.
+        def spread(long_key, short_key):
+            a, b = curve.get(long_key), curve.get(short_key)
+            return round(a - b, 4) if a is not None and b is not None else None
+        macro['2s10s'] = spread('y10', 'y2')
+        macro['5s30s'] = spread('y30', 'y5')
+        macro['3m10y'] = spread('y10', 'y3m')
     return macro
 
 
