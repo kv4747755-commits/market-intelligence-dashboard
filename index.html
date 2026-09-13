@@ -443,6 +443,12 @@ section:not(#home)>.title{padding-top:4px}
       <div><div class="options-chart-title">NET GEX PROFILE — NDX</div><div class="small" id="gex-chart-status">Strike-level modeled gamma exposure</div></div>
       <div class="options-chart-tools"><span class="options-tool" id="gex-expiry">—</span><span class="options-tool" id="gex-chain-mode">— • MODELED CHAIN</span></div>
     </div>
+    <div class="gex-mode-switch" aria-label="GEX expiry selector">
+      <button type="button" class="gex-mode-btn" data-gex-mode="0DTE">0DTE</button>
+      <button type="button" class="gex-mode-btn" data-gex-mode="1DTE">1DTE</button>
+      <button type="button" class="gex-mode-btn active" data-gex-mode="ALL">ALL EXP</button>
+    </div>
+    <div class="gex-selected-note" id="gex-selected-note">Showing ALL EXPIRATIONS modeled GEX.</div>
     <div class="options-legend">
       <span><i class="legend-swatch" style="background:#31e0a2"></i>Positive GEX</span>
       <span><i class="legend-swatch" style="background:#ff617b"></i>Negative GEX</span>
@@ -594,6 +600,8 @@ function renderGexProfile(o,p){
  const expiryMode=selectedGexMode==='ALL'?(o.expiry_mode||'MULTI-EXPIRY'):(active.expiry_mode||selectedGexMode);
  const expiryText=active.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
+ const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
+ const topPcr=document.getElementById('pcr'); if(topPcr){const c=Number(active.call_oi),q=Number(active.put_oi);topPcr.textContent=(c>0&&Number.isFinite(q))?f(q/c,2):(o.pcr_oi==null?'—':f(o.pcr_oi,2));}
  const note=document.getElementById('gex-selected-note'); if(note) note.textContent=usingFallback?`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`:`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`;
  document.getElementById('gex-expiry').textContent=selectedGexMode==='ALL'?`ALL EXP • ${o.expiry_count||0}`:expiryText;
  const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${selectedLabel} • MODELED`;
@@ -916,22 +924,29 @@ async function load(){
  document.getElementById('gex-method-note').innerHTML=`<b>Method:</b> ${method} <span class="small">Dealer inventory is not directly observable from listed OI.</span>`;
 
  const dp=o.dealer_positioning||{};
- const activeGex=Number(active.net_gex);
+ const selectedProfile=o.profiles?.[selectedGexMode];
+ const activeProfile=(selectedProfile && selectedProfile.status!=='unavailable' && Array.isArray(selectedProfile.heatmap) && selectedProfile.heatmap.length)?selectedProfile:o;
+ const activeGex=Number(activeProfile.net_gex);
+ const activePutWall=Number(activeProfile.put_wall);
+ const activeCallWall=Number(activeProfile.call_wall);
+ const activeFlip=Number(activeProfile.gamma_flip);
  const regime=Number.isFinite(activeGex)?(activeGex>0?'Positive gamma':activeGex<0?'Negative gamma':'Neutral gamma'):(dp.regime||'—');
  const modelStatus=dp.status||'unavailable';
  const qualityStatus=dqStatus;
  document.getElementById('gamma1').textContent=regime;
  document.getElementById('gamma2').textContent=modelStatus==='modeled'?(qualityStatus==='LIMITED'?'MODELED • LIMITED DATA':'MODELED FROM CHAIN'):'WAITING FOR VALID CHAIN';
 
- document.getElementById('pcr').textContent=o.pcr_oi==null?'—':fmt(o.pcr_oi,2);
+ const activeCallOI=Number(activeProfile.call_oi), activePutOI=Number(activeProfile.put_oi);
+ const activePCR=(activeCallOI>0 && Number.isFinite(activePutOI))?activePutOI/activeCallOI:Number(o.pcr_oi);
+ document.getElementById('pcr').textContent=Number.isFinite(activePCR)?fmt(activePCR,2):'—';
  document.getElementById('gex').textContent=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
- document.getElementById('putwall').textContent=active.put_wall==null?'—':fmt(active.put_wall);
- document.getElementById('flip').textContent=active.gamma_flip==null?'—':fmt(active.gamma_flip);
- document.getElementById('callwall').textContent=active.call_wall==null?'—':fmt(active.call_wall);
+ document.getElementById('putwall').textContent=Number.isFinite(activePutWall)?fmt(activePutWall):'—';
+ document.getElementById('flip').textContent=Number.isFinite(activeFlip)?fmt(activeFlip):'—';
+ document.getElementById('callwall').textContent=Number.isFinite(activeCallWall)?fmt(activeCallWall):'—';
 
  if(modelStatus==='modeled'){
    const gexText=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
-   const flipText=active.gamma_flip==null?'—':fmt(active.gamma_flip);
+   const flipText=Number.isFinite(activeFlip)?fmt(activeFlip):'—';
    document.getElementById('dealer').innerHTML=
      `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Gamma Flip: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span>`;
  }else{
