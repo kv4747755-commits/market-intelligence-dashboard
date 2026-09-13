@@ -219,6 +219,48 @@ section:not(#home)>.title{padding-top:4px}
   section{scroll-margin-top:120px}
 }
 
+
+/* V8 OPTIONS GEX PROFILE */
+.gex-layout{display:grid;grid-template-columns:1.9fr .85fr;gap:10px;margin-top:12px}
+.gex-chart-card{padding:12px;min-width:0}
+.gex-chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gex-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;color:#8da0b2;font-size:10px}
+.gex-legend span{display:inline-flex;align-items:center;gap:5px}.gex-dot{width:10px;height:6px;border-radius:2px;display:inline-block}
+.gex-svg-wrap{margin-top:8px;border:1px solid #172938;border-radius:9px;background:linear-gradient(180deg,#071018,#09131d);overflow:hidden}
+#gex-svg{display:block;width:100%;height:470px}
+.gex-axis{fill:#73879a;font-size:10px;font-family:Inter,system-ui,sans-serif}.gex-axis-strong{fill:#cbd8e4;font-weight:700}
+.gex-grid{stroke:#173040;stroke-width:1}.gex-zero{stroke:#8294a5;stroke-width:1.2}.gex-bar-pos{fill:rgba(49,224,162,.78)}.gex-bar-neg{fill:rgba(255,97,123,.78)}
+.gex-level-put{stroke:#ff617b;stroke-width:1.4;stroke-dasharray:7 5}.gex-level-call{stroke:#31e0a2;stroke-width:1.4;stroke-dasharray:7 5}.gex-level-flip{stroke:#f4c95d;stroke-width:1.5;stroke-dasharray:7 5}.gex-level-spot{stroke:#e8eef5;stroke-width:1.5;stroke-dasharray:3 4}
+.gex-level-label{font-size:9px;font-weight:800;font-family:Inter,system-ui,sans-serif}.gex-panel-title{font-size:10px;color:#718295;letter-spacing:1.2px;text-transform:uppercase}.gex-level-list{display:grid;gap:7px;margin-top:10px}.gex-level-row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-level-row b{font-size:15px}.gex-note{font-size:10px;color:#718295;line-height:1.45;margin-top:10px}.gex-insights{display:grid;gap:7px;margin-top:10px}.gex-insight{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e;font-size:11px;line-height:1.35}.gex-insight strong{display:block;margin-bottom:3px}.gex-detail{margin-top:10px;max-height:250px;overflow:auto}.gex-detail table{margin-top:0;font-size:10px}.gex-detail th,.gex-detail td{padding:6px 5px}.gex-pill{display:inline-block;padding:4px 7px;border-radius:999px;border:1px solid #243746;font-size:9px;color:#a9b8c6}
+@media(max-width:900px){.gex-layout{grid-template-columns:1fr}#gex-svg{height:420px}}
+@media(max-width:600px){#gex-svg{height:390px}.gex-chart-card{padding:9px}.gex-legend{gap:8px}.gex-level-row{padding:8px}.gex-level-row b{font-size:14px}}
+
+/* V8 OPTIONS GEX TERMINAL CHART */
+.options-shell{margin-top:10px}
+.options-layout{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(260px,.85fr);gap:10px;margin-top:10px}
+.options-chart-card{padding:13px;min-width:0}
+.options-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.options-chart-title{font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.options-chart-tools{display:flex;gap:6px;flex-wrap:wrap}
+.options-tool{padding:5px 8px;border:1px solid #243746;border-radius:7px;background:#0a151f;color:#91a2b2;font-size:9px;letter-spacing:.5px}
+.options-legend{display:flex;gap:11px;flex-wrap:wrap;margin-top:8px;color:#8da0b2;font-size:10px}
+.options-legend span{display:inline-flex;align-items:center;gap:5px}.legend-swatch{width:10px;height:5px;border-radius:2px;display:inline-block}
+.options-svg-wrap{margin-top:9px;border:1px solid #172938;border-radius:10px;background:#060d14;overflow:hidden}
+#options-gex-svg{display:block;width:100%;height:500px}
+.opt-axis{fill:#6f8295;font-size:10px;font-family:Inter,system-ui,sans-serif}.opt-axis-strong{fill:#cdd9e5;font-size:10px;font-weight:800;font-family:Inter,system-ui,sans-serif}
+.opt-grid{stroke:#173040;stroke-width:1}.opt-zero{stroke:#6e8191;stroke-width:1.2}
+.opt-bar-pos{fill:rgba(49,224,162,.78)}.opt-bar-neg{fill:rgba(255,97,123,.78)}
+.opt-level-put{stroke:#ff617b;stroke-width:1.5;stroke-dasharray:8 5}.opt-level-call{stroke:#31e0a2;stroke-width:1.5;stroke-dasharray:8 5}.opt-level-flip{stroke:#f4c95d;stroke-width:1.7;stroke-dasharray:8 5}.opt-level-spot{stroke:#edf3f8;stroke-width:1.6;stroke-dasharray:3 4}
+.opt-level-label{font-size:10px;font-weight:800;font-family:Inter,system-ui,sans-serif}
+.options-side{display:grid;gap:10px;align-content:start}
+.options-side-card{padding:13px}.option-level-list{display:grid;gap:7px;margin-top:9px}.option-level{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;padding:9px 10px;border:1px solid #1b2b3b;border-radius:8px;background:#09141e}.option-level i{width:8px;height:8px;border-radius:50%;display:block}.option-level span{font-size:10px;color:#8b9bab;text-transform:uppercase;letter-spacing:.7px}.option-level b{font-size:15px}.option-level.put i{background:var(--red)}.option-level.call i{background:var(--green)}.option-level.flip i{background:var(--amber)}.option-level.spot i{background:#edf3f8}
+.level-ladder{margin-top:10px;padding:10px;border:1px solid #1b2b3b;border-radius:9px;background:#07111a;position:relative;height:112px}.ladder-track{position:absolute;left:20px;right:20px;top:50%;height:2px;background:#294052}.ladder-point{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:7px}.ladder-dot{width:10px;height:10px;border-radius:50%;border:2px solid #07111a;box-shadow:0 0 0 1px currentColor}.ladder-text{font-size:8px;white-space:nowrap;color:#91a2b2}.ladder-value{font-size:9px;font-weight:800;color:#e8eef5;white-space:nowrap}
+.options-insights{display:grid;gap:6px;margin-top:9px}.options-insight{padding:9px 10px;border:1px solid #1b2b3b;border-radius:8px;background:#09141e;font-size:10px;line-height:1.4}.options-insight strong{display:block;margin-bottom:2px;color:#dfe8f0}
+.options-disclaimer{margin-top:8px;font-size:9px;color:#687b8e;line-height:1.45}
+.options-detail{margin-top:10px;max-height:235px;overflow:auto}.options-detail table{margin-top:0;font-size:10px}
+@media(max-width:900px){.options-layout{grid-template-columns:1fr}#options-gex-svg{height:430px}}
+@media(max-width:600px){#options-gex-svg{height:380px}.options-chart-card,.options-side-card{padding:10px}.options-legend{gap:7px;font-size:9px}.option-level b{font-size:14px}}
+
 </style>
 </head>
 <body>
@@ -341,17 +383,57 @@ section:not(#home)>.title{padding-top:4px}
 </section>
 
 <section id="options">
-<div class="title">OPTIONS COMMAND CENTER</div>
+<div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
 <div class="grid">
-<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div></div>
-<div class="card"><div class="label">Expected Move</div><div class="big" id="em2">—</div></div>
-<div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div></div>
-<div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div></div>
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small">Nearest valid expiry</div></div>
+<div class="card"><div class="label">Expected Move</div><div class="big" id="em2">—</div><div class="small" id="opt-em-points">—</div></div>
+<div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div><div class="small">Put OI / Call OI</div></div>
+<div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div><div class="small">Modeled notional exposure</div></div>
 </div>
-<div class="grid2" style="margin-top:12px">
-<div class="card"><h3>Open Interest Heatmap</h3><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><div class="heat" id="heat"></div></div>
-<div class="card"><h3>Estimated Dealer Positioning</h3><div class="callout" id="dealer">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div></div>
+<div class="options-layout">
+  <div class="card options-chart-card">
+    <div class="options-chart-head">
+      <div><div class="options-chart-title">NET GEX PROFILE — NDX</div><div class="small" id="gex-chart-status">Strike-level modeled gamma exposure</div></div>
+      <div class="options-chart-tools"><span class="options-tool" id="gex-expiry">—</span><span class="options-tool">MODELED CHAIN</span></div>
+    </div>
+    <div class="options-legend">
+      <span><i class="legend-swatch" style="background:#31e0a2"></i>Positive GEX</span>
+      <span><i class="legend-swatch" style="background:#ff617b"></i>Negative GEX</span>
+      <span><i class="legend-swatch" style="background:#f4c95d"></i>Gamma Flip</span>
+      <span><i class="legend-swatch" style="background:#edf3f8"></i>Spot</span>
+      <span><i class="legend-swatch" style="background:#31e0a2"></i>Call Wall</span>
+      <span><i class="legend-swatch" style="background:#ff617b"></i>Put Wall</span>
+    </div>
+    <div class="options-svg-wrap"><svg id="options-gex-svg" viewBox="0 0 980 500" preserveAspectRatio="none" aria-label="NDX net gamma exposure profile"></svg></div>
+    <div class="options-disclaimer">Bars show modeled net GEX by strike from the available listed option chain. Horizontal markers are the model's put wall, call wall, gamma flip and current spot. This is not a direct view of dealer inventory.</div>
+  </div>
+  <div class="options-side">
+    <div class="card options-side-card">
+      <div class="gex-panel-title">KEY OPTION LEVELS</div>
+      <div class="option-level-list">
+        <div class="option-level put"><i></i><span>Put Wall</span><b id="gex-put-level">—</b></div>
+        <div class="option-level call"><i></i><span>Call Wall</span><b id="gex-call-level">—</b></div>
+        <div class="option-level flip"><i></i><span>Gamma Flip</span><b id="gex-flip-level">—</b></div>
+        <div class="option-level spot"><i></i><span>Spot</span><b id="gex-spot-level">—</b></div>
+      </div>
+      <div class="gex-panel-title" style="margin-top:13px">LEVEL LADDER</div>
+      <div class="level-ladder"><div class="ladder-track"></div>
+        <div class="ladder-point" id="ladder-put" style="left:15%;color:var(--red)"><div class="ladder-dot"></div><div class="ladder-text">PUT</div><div class="ladder-value" id="ladder-put-v">—</div></div>
+        <div class="ladder-point" id="ladder-call" style="left:48%;color:var(--green)"><div class="ladder-dot"></div><div class="ladder-text">CALL</div><div class="ladder-value" id="ladder-call-v">—</div></div>
+        <div class="ladder-point" id="ladder-spot" style="left:65%;color:#edf3f8"><div class="ladder-dot"></div><div class="ladder-text">SPOT</div><div class="ladder-value" id="ladder-spot-v">—</div></div>
+        <div class="ladder-point" id="ladder-flip" style="left:82%;color:var(--amber)"><div class="ladder-dot"></div><div class="ladder-text">FLIP</div><div class="ladder-value" id="ladder-flip-v">—</div></div>
+      </div>
+      <div class="gex-panel-title" style="margin-top:13px">GEX READ</div>
+      <div class="options-insights" id="gex-insights"><div class="options-insight">Waiting for valid chain data.</div></div>
+    </div>
+    <div class="card options-side-card">
+      <div class="gex-panel-title">ESTIMATED DEALER POSITIONING</div>
+      <div class="callout" id="dealer" style="margin-top:8px">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div>
+      <div class="options-disclaimer">Modeled from listed OI, IV and Black-Scholes gamma. Not direct dealer inventory.</div>
+    </div>
+  </div>
 </div>
+<div class="card options-detail"><h3>STRIKE DETAIL NEAR SPOT</h3><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><table><thead><tr><th>Strike</th><th>Call OI</th><th>Put OI</th><th>Net GEX</th></tr></thead><tbody id="gex-detail-body"></tbody></table></div>
 </section>
 
 <section id="macro">
@@ -426,6 +508,47 @@ section:not(#home)>.title{padding-top:4px}
 </main>
 
 <script>
+function renderGexProfile(o,p){
+ const svg=document.getElementById('options-gex-svg'); if(!svg) return;
+ const f=(v,n=2)=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
+ const rows=Array.isArray(o.oi_heatmap)?o.oi_heatmap.map(x=>({strike:Number(x.strike),net:Number(x.net_gex)||0,call:Number(x.call_oi)||0,put:Number(x.put_oi)||0,callGex:Number(x.call_gex),putGex:Number(x.put_gex)})).filter(x=>Number.isFinite(x.strike)&&Number.isFinite(x.net)).sort((a,b)=>a.strike-b.strike):[];
+ const spot=Number(p.ndx), putWall=Number(o.put_wall), callWall=Number(o.call_wall), flip=Number(o.gamma_flip);
+ const ids=['gex-expiry','gex-chart-status','gex-put-level','gex-call-level','gex-flip-level','gex-spot-level'];
+ document.getElementById('gex-expiry').textContent=o.expiry||'Latest available expiry';
+ document.getElementById('gex-chart-status').textContent=rows.length?`${rows.length} modeled strikes • net GEX by strike`:'No usable strike-level chain data';
+ document.getElementById('gex-put-level').textContent=Number.isFinite(putWall)?f(putWall,0):'—';
+ document.getElementById('gex-call-level').textContent=Number.isFinite(callWall)?f(callWall,0):'—';
+ document.getElementById('gex-flip-level').textContent=Number.isFinite(flip)?f(flip,2):'—';
+ document.getElementById('gex-spot-level').textContent=Number.isFinite(spot)?f(spot,0):'—';
+ ['put','call','flip','spot'].forEach(k=>{const v={put:putWall,call:callWall,flip,spot}[k];const el=document.getElementById('ladder-'+k);const ev=document.getElementById('ladder-'+k+'-v');if(ev)ev.textContent=Number.isFinite(v)?f(v,k==='flip'?0:0):'—';el.style.opacity=Number.isFinite(v)?'1':'.35';});
+ if(!rows.length){svg.innerHTML='<text x="490" y="250" text-anchor="middle" fill="#718295" font-size="14">OPTION CHAIN UNAVAILABLE — PROFILE NOT FABRICATED</text>';return;}
+ const W=980,H=500,L=78,R=105,T=26,B=40,PW=W-L-R,PH=H-T-B,mid=L+PW/2;
+ const minS=Math.min(...rows.map(x=>x.strike)), maxS=Math.max(...rows.map(x=>x.strike));
+ const maxAbs=Math.max(1,...rows.map(x=>Math.abs(x.net)));
+ const y=v=>T+(maxS-v)/(maxS-minS||1)*PH;
+ const x=v=>mid+(v/maxAbs)*(PW/2-20);
+ const barH=Math.max(2,Math.min(13,PH/rows.length*.78));
+ let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="#060d14"/>`;
+ [-1,-.5,0,.5,1].forEach(t=>{const xx=mid+t*(PW/2-20);out+=`<line class="${t===0?'opt-zero':'opt-grid'}" x1="${xx}" y1="${T}" x2="${xx}" y2="${T+PH}"/>`;if(t!==0)out+=`<text class="opt-axis" x="${xx}" y="${H-13}" text-anchor="middle">${Math.round(t*maxAbs/1000)}K</text>`;});
+ const step=Math.max(1,Math.ceil(rows.length/13));
+ rows.forEach((r,i)=>{const yy=y(r.strike),xx=x(r.net),left=Math.min(mid,xx),ww=Math.max(1,Math.abs(xx-mid));out+=`<rect class="${r.net>=0?'opt-bar-pos':'opt-bar-neg'}" x="${left}" y="${yy-barH/2}" width="${ww}" height="${barH}" rx="2"><title>Strike ${f(r.strike,0)} • Net GEX ${f(r.net,0)} • Call OI ${f(r.call,0)} • Put OI ${f(r.put,0)}</title></rect>`;if(i%step===0)out+=`<text class="opt-axis" x="${L-9}" y="${yy+3}" text-anchor="end">${f(r.strike,0)}</text>`;});
+ out+=`<text class="opt-axis-strong" x="22" y="${T+PH/2}" transform="rotate(-90 22 ${T+PH/2})" text-anchor="middle">STRIKE</text><text class="opt-axis-strong" x="${mid}" y="${H-13}" text-anchor="middle">NET GEX (NOTIONAL)</text>`;
+ const levels=[['putWall',putWall,'opt-level-put','PUT WALL','#ff617b'],['callWall',callWall,'opt-level-call','CALL WALL','#31e0a2'],['flip',flip,'opt-level-flip','GAMMA FLIP','#f4c95d'],['spot',spot,'opt-level-spot','SPOT','#edf3f8']];
+ levels.forEach(([key,val,cls,label,color])=>{if(!Number.isFinite(val)||val<minS||val>maxS)return;const yy=y(val);out+=`<line class="${cls}" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/><text class="opt-level-label" x="${W-R+4}" y="${yy-4}" fill="${color}">${label} ${f(val,key==='flip'?2:0)}</text>`;});
+ svg.innerHTML=out;
+ // Normalize ladder positions to actual numeric order so call/flip/spot never appear in a misleading sequence.
+ const vals=[putWall,callWall,flip,spot].filter(Number.isFinite); if(vals.length>=2){const lo=Math.min(...vals),hi=Math.max(...vals);const place=(v)=>Math.max(7,Math.min(93,7+(v-lo)/(hi-lo||1)*86));[['put',putWall],['call',callWall],['spot',spot],['flip',flip]].forEach(([k,v])=>{if(Number.isFinite(v))document.getElementById('ladder-'+k).style.left=place(v)+'%';});}
+ const near=rows.slice().sort((a,b)=>Math.abs(a.strike-spot)-Math.abs(b.strike-spot)).slice(0,14).sort((a,b)=>a.strike-b.strike);
+ document.getElementById('heat-status').textContent=`${rows.length} modeled strikes • ${o.expiry||'latest available expiry'} • nearest ${near.length} shown below`;
+ document.getElementById('gex-detail-body').innerHTML=near.map(r=>`<tr><td>${f(r.strike,0)}</td><td>${f(r.call,0)}</td><td>${f(r.put,0)}</td><td class="${r.net<0?'down':'up'}">${f(r.net,0)}</td></tr>`).join('');
+ const ins=[];
+ if(Number.isFinite(spot)&&Number.isFinite(flip)) ins.push(`<strong>${spot<flip?'Below':'Above'} gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`);
+ if(Number.isFinite(spot)&&Number.isFinite(callWall)) ins.push(`<strong>Call wall ${f(callWall,0)}</strong>${spot<callWall?'Potential overhead resistance.':'Spot is at/above the modeled call wall.'}`);
+ if(Number.isFinite(spot)&&Number.isFinite(putWall)) ins.push(`<strong>Put wall ${f(putWall,0)}</strong>${spot>putWall?'Near-term modeled support.':'Spot is at/below the modeled put wall.'}`);
+ const total=Number(o.net_gex); if(Number.isFinite(total)) ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled net exposure is ${f(total,0)}; negative values can coincide with larger directional moves.`);
+ document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No additional read available.</div>';
+}
+
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
  const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{};
@@ -460,6 +583,7 @@ async function load(){
  ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
  document.getElementById('emp1').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
+ document.getElementById('opt-em-points').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
 
  const dq=o.data_quality||{};
  const dqStatus=dq.status||'UNAVAILABLE';
@@ -490,18 +614,7 @@ async function load(){
    document.getElementById('dealer').textContent='Waiting for a valid option chain. No dealer-positioning number is fabricated.';
  }
 
- const heat=Array.isArray(o.oi_heatmap)?o.oi_heatmap:[];
- if(live && heat.length){
-   document.getElementById('heat-status').textContent=`${heat.length} strikes • ${o.expiry||'latest available expiry'} • OI and modeled GEX`;
-   document.getElementById('heat').innerHTML=heat.map(x=>{
-     const net=Number(x.net_gex)||0;
-     const cls=net>0?'up':net<0?'down':'';
-     return `<div><b>${fmt(x.strike,0)}</b><br>C OI ${fmt(x.call_oi,0)}<br>P OI ${fmt(x.put_oi,0)}<br><span class="${cls}">GEX ${fmt(net,0)}</span></div>`;
-   }).join('');
- }else{
-   document.getElementById('heat-status').textContent='No usable strike-level chain data.';
-   document.getElementById('heat').innerHTML='<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
- }
+ renderGexProfile(o,p);
 
  const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
  document.getElementById('macro-rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
