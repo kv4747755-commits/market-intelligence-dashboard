@@ -5,192 +5,30 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Market Intelligence</title>
 <style>
-:root{--bg:#070b10;--panel:#0d141d;--line:#1d2a37;--text:#e8edf3;--muted:#8794a3;--green:#35d39f;--red:#ff607b;--amber:#f3c65b;--blue:#69a9ff}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#070b10,#09111a);color:var(--text);font-family:Arial,sans-serif}
-main{max-width:1100px;margin:auto;padding:0 16px 40px}header{position:sticky;top:0;z-index:10;background:rgba(7,11,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0 10px}
-.head{max-width:1100px;margin:auto;padding:0 16px}.brand{font-size:27px;font-weight:800}.sub{color:var(--muted);margin-top:3px}.badge{float:right;border:1px solid #6b5924;color:var(--amber);padding:9px 14px;border-radius:22px;font-size:13px}
-.nav{display:flex;gap:8px;overflow-x:auto;padding-top:16px}.nav button{white-space:nowrap;background:#0d151f;border:1px solid #233141;color:#dce5ef;border-radius:12px;padding:11px 16px;font-size:15px}.nav button.active{border-color:#6d9bd0;background:#152130}
-section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.card{background:linear-gradient(180deg,#0e161f,#0b121a);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
-.label{text-transform:uppercase;color:#84909e;font-size:12px;letter-spacing:1.3px}.big{font-size:34px;font-weight:800;margin-top:7px}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}
-.callout{border-left:4px solid var(--blue);background:#0d1a29;padding:15px;border-radius:12px;line-height:1.45}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi{padding:12px;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;font-size:20px;margin-top:5px}
-table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;padding:11px 7px;border-bottom:1px solid var(--line)}th{color:#84909e;font-size:12px;text-transform:uppercase}td:last-child,th:last-child{text-align:right}
-.heat{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:10px}.heat div{padding:10px 4px;text-align:center;border-radius:6px;background:#183040;font-size:11px}.footer{color:#65717f;font-size:12px;text-align:center;padding:35px 0}
-@media(max-width:760px){.grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.brand{font-size:24px}.badge{font-size:12px;padding:8px 10px}.big{font-size:32px}.heat{grid-template-columns:repeat(6,1fr)}}
-
-/* V5 visual system */
-body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 5%,rgba(105,169,255,.08),transparent 28%),radial-gradient(circle at 85% 20%,rgba(53,211,159,.06),transparent 24%);z-index:-1}
-.head{position:relative}.brand{letter-spacing:-.6px}.sub{font-size:13px}
-.nav button{transition:.18s ease}.nav button:hover{transform:translateY(-1px);border-color:#38516b}
-section{scroll-margin-top:118px}.title{display:flex;align-items:baseline;gap:10px;letter-spacing:-.3px}.title:before{content:"";width:5px;height:24px;border-radius:5px;background:linear-gradient(180deg,var(--blue),var(--green));display:inline-block;box-shadow:0 0 14px rgba(105,169,255,.35)}
-.card{position:relative;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.card:hover{transform:translateY(-2px);border-color:#2b4053;box-shadow:0 12px 34px rgba(0,0,0,.22)}
-.card:after{content:"";position:absolute;right:-35px;top:-45px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(105,169,255,.07),transparent 68%);pointer-events:none}
-.section-kicker{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#6f8499;margin-bottom:7px}
-.pulse{display:grid;grid-template-columns:1.15fr 1fr 1fr 1fr;gap:12px;align-items:stretch;margin-bottom:16px}.pulse-hero{background:linear-gradient(135deg,#101c28,#0b141d);border:1px solid #26394b;border-radius:20px;padding:20px;position:relative;overflow:hidden}.pulse-hero:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-90px;top:-105px;background:radial-gradient(circle,rgba(105,169,255,.16),transparent 67%)}.pulse-title{font-size:12px;color:#84909e;letter-spacing:1.4px;text-transform:uppercase}.pulse-regime{font-size:30px;font-weight:900;margin-top:8px;letter-spacing:-.7px}.pulse-note{color:#b9c5d0;font-size:13px;margin-top:8px;line-height:1.4}.pulse-ring{width:58px;height:58px;border-radius:50%;background:conic-gradient(var(--blue) 0 25%,#1a2a39 25% 100%);display:grid;place-items:center;float:right;box-shadow:0 0 24px rgba(105,169,255,.16)}.pulse-ring:after{content:"";width:40px;height:40px;border-radius:50%;background:#0c151e}.pulse-card{background:linear-gradient(180deg,#0f1822,#0b121a);border:1px solid var(--line);border-radius:20px;padding:17px}.pulse-value{font-size:25px;font-weight:850;margin-top:8px}.pulse-sub{font-size:12px;color:var(--muted);margin-top:5px}.range-track{height:8px;border-radius:10px;background:#182532;margin-top:12px;position:relative;overflow:hidden}.range-fill{height:100%;width:50%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));border-radius:10px}.range-dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.12);transform:translate(-50%,-50%);left:50%}.driver-strip{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.driver-chip{padding:7px 10px;border:1px solid #263746;border-radius:999px;font-size:11px;color:#b8c5d2;background:#0c151e}.driver-chip b{font-weight:800}
-.visual-bar{height:13px;border-radius:999px;background:linear-gradient(90deg,rgba(255,96,123,.22),rgba(243,198,91,.25),rgba(53,211,159,.24));border:1px solid #243543;position:relative;margin-top:14px}.visual-marker{position:absolute;top:-5px;width:3px;height:23px;border-radius:4px;background:#fff;box-shadow:0 0 12px rgba(255,255,255,.55);left:50%}.visual-labels{display:flex;justify-content:space-between;color:#778696;font-size:11px;margin-top:7px}
-@media(max-width:760px){.pulse{grid-template-columns:1fr 1fr}.pulse-hero{grid-column:1/-1}.pulse-regime{font-size:27px}.pulse-card{min-height:100px}.title{font-size:22px}}
-@media(max-width:480px){.pulse{grid-template-columns:1fr}.pulse-hero{grid-column:auto}.pulse-card{min-height:0}.pulse-ring{width:50px;height:50px}.pulse-ring:after{width:34px;height:34px}}
-
-/* V6 TERMINAL REDESIGN — compact, structured, visual */
-:root{
-  --bg:#05080d;--panel:#0a1119;--panel2:#0d1721;--line:#1b2a39;
-  --text:#e8eef5;--muted:#718295;--green:#31e0a2;--red:#ff617b;
-  --amber:#f4c95d;--blue:#59a9ff;--cyan:#55d9ff
-}
-html{background:var(--bg)}
-body{
-  background:
-    radial-gradient(circle at 72% 0%,rgba(38,103,163,.10),transparent 32%),
-    linear-gradient(180deg,#05080d 0%,#07101a 100%);
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-  font-size:13px;
-}
-header{
-  position:sticky;top:0;z-index:20;
-  padding:12px 0 8px;
-  background:rgba(5,8,13,.90);
-  border-bottom:1px solid #142332;
-}
-.head{max-width:none;margin:0 0 0 222px;padding:0 22px}
-.brand{font-size:20px;letter-spacing:.5px}
-.sub{font-size:11px;margin-top:2px;letter-spacing:.2px}
-.badge{font-size:10px;padding:6px 10px;border-radius:16px;letter-spacing:.5px}
-.nav{
-  position:fixed;left:0;top:0;bottom:0;width:205px;
-  z-index:30;display:flex;flex-direction:column;gap:4px;
-  padding:18px 12px 18px;
-  overflow-y:auto;overflow-x:hidden;
-  background:linear-gradient(180deg,#070c12,#09111a);
-  border-right:1px solid #182735;
-}
-.nav:before{
-  content:"MARKET INTELLIGENCE";
-  display:block;color:#8ea1b4;font-size:11px;font-weight:800;
-  letter-spacing:1.4px;padding:4px 10px 14px;
-}
-.nav button{
-  width:100%;text-align:left;border:1px solid transparent;
-  background:transparent;color:#8fa0b1;border-radius:9px;
-  padding:10px 11px;font-size:12px;font-weight:650;
-  transition:.15s ease;
-}
-.nav button:before{content:"◦";display:inline-block;width:18px;color:#4f6a82;font-size:15px}
-.nav button:hover{background:#0d1823;border-color:#1b3042;color:#dbe7f2;transform:none}
-.nav button.active{
-  background:linear-gradient(90deg,#102237,#0d1925);
-  border-color:#274865;color:#eaf3fb;
-  box-shadow:inset 3px 0 0 var(--blue);
-}
-.nav button.active:before{content:"●";color:var(--blue)}
-main{max-width:none;margin:0 0 0 222px;padding:8px 22px 42px}
-section{padding-top:20px;scroll-margin-top:78px}
-.title{
-  font-size:17px;font-weight:800;letter-spacing:.4px;
-  margin:0 0 10px;text-transform:uppercase
-}
-.title:before{width:3px;height:18px}
-.small{font-size:11px;color:#7d8ea0}
-.card{
-  background:linear-gradient(180deg,rgba(13,22,31,.97),rgba(8,15,22,.98));
-  border:1px solid #192b3b;border-radius:10px;
-  padding:13px;box-shadow:0 8px 24px rgba(0,0,0,.18);
-}
-.card:hover{transform:none;border-color:#274258;box-shadow:0 10px 28px rgba(0,0,0,.24)}
-.card:after{width:90px;height:90px;right:-30px;top:-35px}
-.card h3{font-size:12px;letter-spacing:.7px;text-transform:uppercase;margin:0 0 10px;color:#d7e2ed}
-.grid,.grid2{gap:8px}
-.grid{grid-template-columns:repeat(4,1fr)}
-.grid2{grid-template-columns:repeat(2,1fr)}
-.label{font-size:10px;letter-spacing:1px;color:#708397}
-.big{font-size:25px;line-height:1.05;margin-top:6px}
-.kpis{gap:7px}.kpi{padding:9px;border-radius:8px}.kpi b{font-size:16px}
-.callout{padding:11px;border-radius:8px;font-size:12px}
-table{font-size:12px}th,td{padding:8px 6px}th{font-size:9px;letter-spacing:.8px}
-.pulse{grid-template-columns:1.45fr repeat(3,1fr);gap:8px;margin-bottom:12px}
-.pulse-hero,.pulse-card{border-radius:11px;padding:13px}
-.pulse-title{font-size:10px;letter-spacing:1.1px}
-.pulse-regime{font-size:24px;margin-top:6px}
-.pulse-note{font-size:11px;margin-top:5px}
-.pulse-ring{width:46px;height:46px}.pulse-ring:after{width:32px;height:32px}
-.pulse-value{font-size:20px}.pulse-sub{font-size:10px}
-.driver-strip{gap:5px;margin-top:9px}.driver-chip{padding:5px 8px;font-size:9px}
-.range-track{height:6px;margin-top:10px}.range-dot{width:10px;height:10px}
-.visual-bar{height:10px;margin-top:11px}
-.visual-labels{font-size:9px;margin-top:5px}
-.section-kicker{font-size:9px;margin-bottom:4px}
-.footer{font-size:10px;padding:24px 0}
-body:after{
-  content:"LIVE • CANONICAL DATA SNAPSHOT";
-  position:fixed;right:14px;bottom:10px;z-index:40;
-  color:#587087;font-size:9px;letter-spacing:1px;
-  pointer-events:none
-}
-
-/* visual section separators */
-section:not(#home){border-top:1px solid #101f2c;margin-top:10px}
-section:not(#home)>.title{padding-top:4px}
-#nasdaq .card:first-child,#forex .card:first-child,#options .card:first-child,#macro .card:first-child{
-  position:relative
-}
-#nasdaq .card:first-child:before,#forex .card:first-child:before,#options .card:first-child:before,#macro .card:first-child:before{
-  content:"LIVE";
-  position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7
-}
-
-/* responsive: turn sidebar back into compact top navigation */
-@media(max-width:900px){
-  header{position:sticky;padding:10px 0 6px}
-  .head{margin:0;padding:0 12px}
-  .brand{font-size:18px}.sub{font-size:10px}
-  .nav{
-    position:static;width:auto;display:flex;flex-direction:row;
-    padding:8px 0 2px;border:0;background:transparent;
-    overflow-x:auto;overflow-y:hidden
-  }
-  .nav:before{display:none}
-  .nav button{width:auto;text-align:center;white-space:nowrap;padding:8px 11px;font-size:11px}
-  .nav button:before{display:none}
-  .nav button.active{box-shadow:none}
-  main{margin:0;padding:8px 12px 36px}
-}
-@media(max-width:680px){
-  .grid{grid-template-columns:repeat(2,1fr)}
-  .pulse{grid-template-columns:1fr 1fr}.pulse-hero{grid-column:1/-1}
-  .grid2{grid-template-columns:1fr}
-  .big{font-size:23px}
-}
-@media(max-width:430px){
-  .grid{grid-template-columns:1fr}
-  .pulse{grid-template-columns:1fr}.pulse-hero{grid-column:auto}
-  .pulse-regime{font-size:22px}
-  body:after{display:none}
-}
-
+:root{--bg:#060a0f;--panel:#0b121a;--panel2:#0e1822;--line:#1d2a38;--line2:#26384a;--text:#dce5ee;--muted:#7f8d9d;--green:#39d7a3;--red:#ff647d;--amber:#f2c75c;--blue:#5da8ff;--cyan:#57d9ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 70% 0%,#112337 0,#080d14 35%,#05080c 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:13px;letter-spacing:.01em}
+header{position:sticky;top:0;z-index:20;height:66px;background:rgba(5,9,14,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);margin-left:218px}
+.head{height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 24px}.brand{font-size:18px;font-weight:800;letter-spacing:.08em}.sub{color:var(--muted);font-size:11px;margin-top:2px}.badge{border:1px solid #695923;color:var(--amber);padding:7px 11px;border-radius:999px;font-size:10px;letter-spacing:.08em}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:218px;background:rgba(7,12,18,.97);border-right:1px solid var(--line);padding:18px 12px;z-index:30;overflow:auto}.side-brand{padding:8px 10px 18px}.side-brand b{font-size:14px;letter-spacing:.09em}.side-brand span{display:block;color:var(--muted);font-size:10px;margin-top:4px}.side-group{color:#536273;font-size:9px;letter-spacing:.15em;font-weight:800;padding:15px 10px 7px}.nav{display:flex;flex-direction:column;gap:4px;padding:0}.nav button{width:100%;text-align:left;white-space:nowrap;background:transparent;border:1px solid transparent;color:#91a0b0;border-radius:9px;padding:9px 10px;font-size:12px;cursor:pointer;transition:.18s}.nav button:hover{background:#0e1822;color:#dbe7f2}.nav button.active{background:linear-gradient(90deg,#102437,#0c1823);border-color:#27435c;color:#fff;box-shadow:inset 3px 0 0 var(--cyan)}
+main{max-width:1240px;margin:0 auto;padding:20px 24px 44px 242px}.title{font-size:17px;font-weight:800;letter-spacing:.08em;margin:0 0 12px}.title .small{font-weight:500;letter-spacing:0}.small{color:var(--muted);font-size:10px;line-height:1.45}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.card{background:linear-gradient(180deg,rgba(15,25,35,.92),rgba(9,15,22,.94));border:1px solid var(--line);border-radius:12px;padding:13px;box-shadow:0 10px 30px rgba(0,0,0,.16)}
+.label{text-transform:uppercase;color:#7e8d9d;font-size:9px;letter-spacing:.12em}.big{font-size:25px;font-weight:800;line-height:1.1;margin-top:6px;letter-spacing:-.02em}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}
+h3{font-size:11px;letter-spacing:.09em;text-transform:uppercase;margin:0 0 9px;color:#cbd7e3}.callout{border-left:3px solid var(--blue);background:linear-gradient(90deg,#0c1a29,#0b151f);padding:11px;border-radius:8px;line-height:1.45;font-size:11px}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.kpi{padding:9px;border:1px solid var(--line);border-radius:8px;background:#0b141e}.kpi b{display:block;font-size:16px;margin-top:4px}
+table{width:100%;border-collapse:collapse;margin-top:6px}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);font-size:11px}th{color:#718092;font-size:9px;text-transform:uppercase;letter-spacing:.09em}td:last-child,th:last-child{text-align:right}
+section{padding-top:2px;display:none}section.section-active{display:block}.footer{color:#566475;font-size:9px;text-align:center;padding:28px 0}.section-divider{height:1px;background:linear-gradient(90deg,transparent,var(--line2),transparent);margin:18px 0}
+/* Compact gamma ladder: fewer strikes, clearer columns, visual intensity without the wall of tiny boxes. */
+.heat{display:block;margin-top:10px;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#080f16}.heat-head,.heat-row{display:grid;grid-template-columns:82px 1fr 1fr 1.15fr;gap:8px;align-items:center}.heat-head{padding:7px 9px;background:#0e1822;color:#718092;font-size:9px;letter-spacing:.08em;text-transform:uppercase}.heat-row{position:relative;padding:7px 9px;border-top:1px solid #14212d;font-size:10px}.heat-row.atm{background:rgba(87,217,255,.055);box-shadow:inset 2px 0 0 var(--cyan)}.heat-row .strike{font-weight:800}.tag{font-size:8px;color:var(--cyan);border:1px solid #24566a;border-radius:999px;padding:2px 5px;margin-left:4px}.barcell{position:relative;min-height:19px;display:flex;align-items:center;gap:6px;overflow:hidden}.barcell .bar{position:absolute;left:0;top:2px;bottom:2px;border-radius:4px;opacity:.22}.bar.call{background:var(--green)}.bar.put{background:var(--red)}.bar.pos{background:var(--green)}.bar.neg{background:var(--red)}.barcell span{position:relative;z-index:1;font-variant-numeric:tabular-nums}.gex-pos{color:var(--green)}.gex-neg{color:var(--red)}
+/* Small visual hierarchy accents */
+section>.title:before{content:"";display:inline-block;width:3px;height:14px;background:var(--cyan);border-radius:2px;margin-right:7px;vertical-align:-2px;box-shadow:0 0 10px rgba(87,217,255,.35)}
+@media(max-width:900px){header{margin-left:0}.sidebar{position:sticky;top:0;width:100%;height:auto;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:7px 10px}.side-brand,.side-group{display:none}.nav{flex-direction:row;overflow-x:auto}.nav button{width:auto;flex:0 0 auto;padding:8px 12px}main{padding:16px}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.head{padding:0 12px}.brand{font-size:15px}.sub{display:none}.badge{font-size:8px;padding:6px 8px}.grid,.grid2{grid-template-columns:1fr}.big{font-size:23px}.heat-head,.heat-row{grid-template-columns:62px 1fr 1fr 1fr;gap:5px}.heat-row{font-size:9px;padding:6px}.heat-head{font-size:8px}}
 </style>
 </head>
 <body>
-<header><div class="head">
-<div class="badge">● V4 MACRO COMMAND CENTER</div>
-<div class="brand">MARKET INTELLIGENCE</div>
-<div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div><div class="small" style="margin-top:4px;letter-spacing:.4px">LIVE INTELLIGENCE TERMINAL • MODELED ANALYTICS CLEARLY LABELED</div>
-<div class="nav">
-<button class="active" data-target="home">HOME</button><button data-target="nasdaq">NASDAQ</button><button data-target="forex">FOREX</button><button data-target="options">OPTIONS</button><button data-target="macro">MACRO</button><button data-target="cot">COT</button><button data-target="news">NEWS</button>
-</div></div></header>
+<header><div class="head"><div><div class="brand">MARKET INTELLIGENCE</div><div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div></div><div class="badge">● LIVE DATA LAYER</div></div></header>
+<aside class="sidebar"><div class="side-brand"><b>MARKET INTELLIGENCE</b><span>Decision terminal</span></div><div class="side-group">OVERVIEW</div><div class="nav"><button class="active" data-target="home">◈ &nbsp; HOME</button></div><div class="side-group">MARKETS</div><div class="nav"><button data-target="nasdaq">▦ &nbsp; NASDAQ</button><button data-target="forex">◎ &nbsp; FOREX</button><button data-target="options">◇ &nbsp; OPTIONS</button></div><div class="side-group">MACRO & POSITIONING</div><div class="nav"><button data-target="macro">◌ &nbsp; MACRO</button><button data-target="cot">◈ &nbsp; COT POSITIONING</button></div><div class="side-group">INTELLIGENCE</div><div class="nav"><button data-target="news">◍ &nbsp; MARKET NEWS</button></div></aside>
 
 <main>
-<section id="home">
-<div class="pulse">
-<div class="pulse-hero">
-<div class="pulse-ring" id="pulse-ring"></div>
-<div class="pulse-title">Market Pulse</div>
-<div class="pulse-regime" id="pulse-regime">LOADING</div>
-<div class="pulse-note" id="pulse-note">Synthesizing options, volatility, dollar and macro conditions.</div>
-<div class="driver-strip" id="pulse-drivers"></div>
-</div>
-<div class="pulse-card"><div class="label">NDX</div><div class="pulse-value" id="pulse-ndx">—</div><div class="pulse-sub" id="pulse-ndxchg">—</div></div>
-<div class="pulse-card"><div class="label">EXPECTED RANGE</div><div class="pulse-value" id="pulse-range">—</div><div class="range-track"><div class="range-fill"></div><div class="range-dot" id="pulse-range-dot"></div></div><div class="pulse-sub">Current spot inside modeled range</div></div>
-<div class="pulse-card"><div class="label">RISK STATE</div><div class="pulse-value" id="pulse-risk">—</div><div class="pulse-sub" id="pulse-risk-sub">Options + volatility</div></div>
-</div>
+<section id="home" class="section-active">
 <div class="title">LIVE DATA LAYER <span class="small">one canonical snapshot</span></div>
 <div class="grid" id="live-grid"></div>
 <div class="grid2" style="margin-top:12px">
@@ -221,22 +59,7 @@ section:not(#home)>.title{padding-top:4px}
 <tr><td>Dollar</td><td id="nq-dollar-read">—</td><td id="nq-dollar-impact">—</td></tr>
 <tr><td>Volatility</td><td id="nq-vix-read">—</td><td id="nq-vix-impact">—</td></tr>
 <tr><td>Macro</td><td id="nq-macro-read">—</td><td id="nq-macro-impact">—</td></tr></table>
-<div class="card" style="margin-top:12px">
-<h3>BIAS TRIGGERS</h3>
-<div class="grid">
-<div class="kpi"><span class="small">UPGRADE TO BULLISH</span><b id="nq-upgrade">—</b></div>
-<div class="kpi"><span class="small">DOWNGRADE TO CAUTIOUS</span><b id="nq-downgrade">—</b></div>
-</div>
-<div class="small" style="margin-top:10px">These are dashboard state-change conditions, not entry or exit signals.</div>
-</div>
 <div class="small" style="margin-top:10px">Rules-based interpretation only — not a price prediction or trading signal.</div>
-</div>
-<div class="card" style="margin-top:12px">
-<div class="section-kicker">Market Structure</div>
-<h3 style="margin:0">NDX Position vs Key Option Levels</h3>
-<div class="visual-bar"><div class="visual-marker" id="nq-spot-marker"></div></div>
-<div class="visual-labels"><span id="nq-put-label">Put wall —</span><span id="nq-flip-label">Gamma flip —</span><span id="nq-call-label">Call wall —</span></div>
-<div class="small" style="margin-top:9px">Visualizes where spot sits relative to the modeled option structure.</div>
 </div>
 <div class="grid2" style="margin-top:12px">
 <div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div>
@@ -265,7 +88,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div></div>
 </div>
 <div class="grid2" style="margin-top:12px">
-<div class="card"><h3>Open Interest Heatmap</h3><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><div class="heat" id="heat"></div></div>
+<div class="card"><h3>Open Interest • Gamma Ladder</h3><div class="small" id="heat-status">Strike proximity, call/put OI and modeled net GEX.</div><div class="heat" id="heat"></div></div>
 <div class="card"><h3>Estimated Dealer Positioning</h3><div class="callout" id="dealer">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div></div>
 </div>
 </section>
@@ -408,15 +231,24 @@ async function load(){
 
  const heat=Array.isArray(o.oi_heatmap)?o.oi_heatmap:[];
  if(live && heat.length){
-   document.getElementById('heat-status').textContent=`${heat.length} strikes • ${o.expiry||'latest available expiry'} • OI and modeled GEX`;
-   document.getElementById('heat').innerHTML=heat.map(x=>{
-     const net=Number(x.net_gex)||0;
-     const cls=net>0?'up':net<0?'down':'';
-     return `<div><b>${fmt(x.strike,0)}</b><br>C OI ${fmt(x.call_oi,0)}<br>P OI ${fmt(x.put_oi,0)}<br><span class="${cls}">GEX ${fmt(net,0)}</span></div>`;
+   const spotForHeat=Number(p.ndx);
+   const validHeat=heat.filter(x=>Number.isFinite(Number(x.strike)));
+   const nearest=Number.isFinite(spotForHeat)
+     ? validHeat.slice().sort((a,b)=>Math.abs(Number(a.strike)-spotForHeat)-Math.abs(Number(b.strike)-spotForHeat)).slice(0,31).sort((a,b)=>Number(a.strike)-Number(b.strike))
+     : validHeat.slice(0,31);
+   const maxOI=Math.max(1,...nearest.flatMap(x=>[Number(x.call_oi)||0,Number(x.put_oi)||0]));
+   const maxGEX=Math.max(1,...nearest.map(x=>Math.abs(Number(x.net_gex)||0)));
+   document.getElementById('heat-status').textContent=`${nearest.length} nearest strikes • ${o.expiry||'latest available expiry'} • bars = relative OI / modeled GEX`;
+   document.getElementById('heat').innerHTML=`<div class="heat-head"><span>STRIKE</span><span>CALL OI</span><span>PUT OI</span><span>NET GEX</span></div>`+nearest.map(x=>{
+     const strike=Number(x.strike), c=Number(x.call_oi)||0, put=Number(x.put_oi)||0, net=Number(x.net_gex)||0;
+     const atm=Number.isFinite(spotForHeat)&&Math.abs(strike-spotForHeat)<=Math.max(25,Math.abs(strike)*0.0015);
+     const cW=Math.min(100,c/maxOI*100), pW=Math.min(100,put/maxOI*100), gW=Math.min(100,Math.abs(net)/maxGEX*100);
+     const gCls=net>0?'gex-pos':net<0?'gex-neg':'';
+     return `<div class="heat-row ${atm?'atm':''}"><div class="strike">${fmt(strike,0)}${atm?'<span class="tag">ATM</span>':''}</div><div class="barcell"><i class="bar call" style="width:${cW}%"></i><span>${fmt(c,0)}</span></div><div class="barcell"><i class="bar put" style="width:${pW}%"></i><span>${fmt(put,0)}</span></div><div class="barcell ${gCls}"><i class="bar ${net>=0?'pos':'neg'}" style="width:${gW}%"></i><span>${net>=0?'+':''}${fmt(net,0)}</span></div></div>`;
    }).join('');
  }else{
    document.getElementById('heat-status').textContent='No usable strike-level chain data.';
-   document.getElementById('heat').innerHTML='<div style="grid-column:1/-1;padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
+   document.getElementById('heat').innerHTML='<div style="padding:20px;color:#8794a3">OPTION CHAIN UNAVAILABLE — HEATMAP NOT FABRICATED</div>';
  }
 
  const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
@@ -452,7 +284,7 @@ async function load(){
 
  // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
  const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
- const emPct=Number(opt.expected_move_pct);
+ const emPct=Number(opt.expected_move_pct), emPts=Number(opt.expected_move_points);
  const vixCh=Number(p.vix_change);
  const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
  const macroReg=m.regime||{};
@@ -502,74 +334,6 @@ async function load(){
  document.getElementById('nq-macro-read').textContent=macroRead;
  document.getElementById('nq-macro-impact').textContent=macroImpact;
 
- // V5 visual layer: compact market pulse and option-structure graphic.
- const pulseReg=document.getElementById('pulse-regime');
- const pulseNote=document.getElementById('pulse-note');
- const pulseNdx=document.getElementById('pulse-ndx');
- const pulseNdxChg=document.getElementById('pulse-ndxchg');
- const pulseRange=document.getElementById('pulse-range');
- const pulseRisk=document.getElementById('pulse-risk');
- const pulseRiskSub=document.getElementById('pulse-risk-sub');
- if(pulseReg){
-   pulseReg.textContent=bias;
-   pulseReg.className='pulse-regime '+(['BEARISH','CAUTIOUS'].includes(bias)?'down':bias==='NEUTRAL'?'amber':'up');
-   pulseNote.textContent=`${optImpact} options • ${vixImpact} volatility • ${macroImpact} macro • ${dollarImpact} dollar`;
-   pulseNdx.textContent=Number.isFinite(spot)?fmt(spot,0):'—';
-   pulseNdxChg.textContent=Number.isFinite(Number(p.ndx_change))?fmt(Number(p.ndx_change),2)+'%':'—';
-   pulseRange.textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
-   const risk=gammaReg.includes('negative')?'EXPANSION RISK':gammaReg.includes('positive')?'MEAN-REVERSION':'MIXED';
-   pulseRisk.textContent=risk; pulseRisk.className='pulse-value '+(risk==='EXPANSION RISK'?'amber':'');
-   pulseRiskSub.textContent=gammaReg.includes('negative')?'Negative gamma can amplify moves':'Gamma regime from modeled option chain';
-   const drivers=[['OPT',optImpact],['VIX',vixImpact],['MACRO',macroImpact],['USD',dollarImpact]];
-   document.getElementById('pulse-drivers').innerHTML=drivers.map(x=>`<span class="driver-chip"><b>${x[0]}</b> ${x[1]}</span>`).join('');
-   const pulseScore=Math.max(0,Math.min(100,50+score*16));
-   document.getElementById('pulse-ring').style.background=`conic-gradient(${score>=0.5?'var(--green)':score<=-0.5?'var(--red)':'var(--amber)'} 0 ${pulseScore}%,#1a2a39 ${pulseScore}% 100%)`;
-   if(Number.isFinite(spot)&&Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)&&rangeHigh>rangeLow){
-     const pct=Math.max(0,Math.min(100,(spot-rangeLow)/(rangeHigh-rangeLow)*100));
-     document.getElementById('pulse-range-dot').style.left=pct+'%';
-   }
- }
- const marker=document.getElementById('nq-spot-marker');
- if(marker&&Number.isFinite(spot)&&Number.isFinite(putWall)&&Number.isFinite(callWall)){
-   const lo=Math.min(putWall,flip,callWall), hi=Math.max(putWall,flip,callWall);
-   const pct=hi>lo?Math.max(0,Math.min(100,(spot-lo)/(hi-lo)*100)):50; marker.style.left=pct+'%';
-   document.getElementById('nq-put-label').textContent='Put wall '+fmt(putWall,0);
-   document.getElementById('nq-flip-label').textContent='Gamma flip '+fmt(flip,0);
-   document.getElementById('nq-call-label').textContent='Call wall '+fmt(callWall,0);
- }
-
- // Dynamic state-change conditions: every threshold is recalculated from the latest snapshot.
- const upgradeParts=[];
- const downgradeParts=[];
- const upgradeReady=[];
- const downgradeRisk=[];
- if(Number.isFinite(flip)){
-   const aboveFlip=spot>flip;
-   upgradeParts.push(`NDX > gamma flip ${fmt(flip,0)}`);
-   if(aboveFlip) upgradeReady.push('NDX above gamma flip');
- }
- if(Number.isFinite(vixCh)){
-   const vixOk=vixCh<=5;
-   upgradeParts.push('VIX not rising >5%');
-   if(vixOk) upgradeReady.push('VIX not rising >5%');
-   if(vixCh>5) downgradeRisk.push('VIX > +5%');
- }
- if(Number.isFinite(dxyChange)){
-   const dxyOk=dxyChange<=0.15;
-   upgradeParts.push('DXY not accelerating >0.15%');
-   if(dxyOk) upgradeReady.push('DXY not accelerating >0.15%');
-   if(dxyChange>0.15) downgradeRisk.push('DXY > +0.15%');
- }
- if(Number.isFinite(putWall)){
-   const abovePut=spot>=putWall;
-   downgradeParts.push(`NDX < put wall ${fmt(putWall,0)}`);
-   if(!abovePut) downgradeRisk.push('NDX below put wall');
- }
- const upgradeState=(Number.isFinite(flip)&&spot>flip&&Number.isFinite(vixCh)&&vixCh<=5&&Number.isFinite(dxyChange)&&dxyChange<=0.15);
- const downgradeState=(Number.isFinite(putWall)&&spot<putWall)||(Number.isFinite(vixCh)&&vixCh>5)||(Number.isFinite(dxyChange)&&dxyChange>0.15);
- document.getElementById('nq-upgrade').textContent=upgradeState?'READY • '+upgradeReady.join(' + '):(upgradeParts.length?upgradeParts.join(' • '):'Key inputs unavailable');
- document.getElementById('nq-downgrade').textContent=downgradeState?'ACTIVE • '+downgradeRisk.join(' / '):(downgradeParts.length?downgradeParts.join(' • '):'Key inputs unavailable');
-
  const cotStatus=cot.status||'unavailable';
  const cotMarkets=cot.markets||{};
  document.getElementById('cot-status').textContent=cotStatus==='live' ? `LIVE • ${cot.source||'CFTC'} • latest report dates shown per market` : 'CFTC data unavailable — no positioning numbers fabricated.';
@@ -609,7 +373,7 @@ async function load(){
  }).join('') || '<div class="callout">No current market headlines available.</div>';
 }
 load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e.message+'</div>'));
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.getElementById(b.dataset.target).scrollIntoView({behavior:'smooth'});document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{const target=b.dataset.target;document.querySelectorAll('main > section').forEach(s=>s.classList.remove('section-active'));const el=document.getElementById(target);if(el)el.classList.add('section-active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});});
 </script>
 </body>
 </html>
