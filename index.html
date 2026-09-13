@@ -60,6 +60,14 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <tr><td>Dollar</td><td id="nq-dollar-read">—</td><td id="nq-dollar-impact">—</td></tr>
 <tr><td>Volatility</td><td id="nq-vix-read">—</td><td id="nq-vix-impact">—</td></tr>
 <tr><td>Macro</td><td id="nq-macro-read">—</td><td id="nq-macro-impact">—</td></tr></table>
+<div class="card" style="margin-top:12px">
+<h3>BIAS TRIGGERS</h3>
+<div class="grid">
+<div class="kpi"><span class="small">UPGRADE TO BULLISH</span><b id="nq-upgrade">—</b></div>
+<div class="kpi"><span class="small">DOWNGRADE TO CAUTIOUS</span><b id="nq-downgrade">—</b></div>
+</div>
+<div class="small" style="margin-top:10px">These are dashboard state-change conditions, not entry or exit signals.</div>
+</div>
 <div class="small" style="margin-top:10px">Rules-based interpretation only — not a price prediction or trading signal.</div>
 </div>
 <div class="grid2" style="margin-top:12px">
@@ -276,7 +284,7 @@ async function load(){
 
  // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
  const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
- const emPct=Number(opt.expected_move_pct), emPts=Number(opt.expected_move_points);
+ const emPct=Number(opt.expected_move_pct);
  const vixCh=Number(p.vix_change);
  const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
  const macroReg=m.regime||{};
@@ -325,6 +333,18 @@ async function load(){
  document.getElementById('nq-vix-impact').textContent=vixImpact;
  document.getElementById('nq-macro-read').textContent=macroRead;
  document.getElementById('nq-macro-impact').textContent=macroImpact;
+
+ // Show the conditions that would materially change the current dashboard bias.
+ const upgradeParts=[];
+ const downgradeParts=[];
+ if(Number.isFinite(flip)) upgradeParts.push(`NDX > ${fmt(flip,0)}`);
+ if(Number.isFinite(vixCh)) upgradeParts.push(vixCh < 5 ? 'VIX not rising' : 'VIX stabilizes');
+ if(Number.isFinite(dxyChange)) upgradeParts.push(dxyChange < 0.15 ? 'DXY not accelerating' : 'DXY stabilizes');
+ if(Number.isFinite(putWall)) downgradeParts.push(`NDX < ${fmt(putWall,0)}`);
+ if(Number.isFinite(vixCh)) downgradeParts.push(vixCh > 5 ? 'VIX rising' : 'VIX breaks higher');
+ if(Number.isFinite(dxyChange)) downgradeParts.push(dxyChange > 0.15 ? 'DXY rising' : 'DXY accelerates');
+ document.getElementById('nq-upgrade').textContent=upgradeParts.length?upgradeParts.join(' + '):'Key inputs unavailable';
+ document.getElementById('nq-downgrade').textContent=downgradeParts.length?downgradeParts.join(' / '):'Key inputs unavailable';
 
  const cotStatus=cot.status||'unavailable';
  const cotMarkets=cot.markets||{};
