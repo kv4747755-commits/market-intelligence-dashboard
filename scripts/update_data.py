@@ -694,9 +694,58 @@ def main():
                 modes = [x["mode"] for x in expiry_stats]
                 expiry_mode = "0DTE" if "0DTE" in modes else ("1DTE" if "1DTE" in modes else "MULTI-EXPIRY")
                 nearest_expiry = selected[0][0]
+                # Build switchable near-term profiles so the frontend can compare
+                # 0DTE, 1DTE and the full multi-expiry aggregate without fabricating data.
+                def make_profile(profile_rows, label):
+                    if not profile_rows:
+                        return {"status":"unavailable","label":label,"heatmap":[],"expiry":None,"net_gex":None,"call_wall":None,"put_wall":None,"gamma_flip":None}
+                    ps = {}
+                    for row in profile_rows:
+                        K = row["strike"]
+                        a = ps.setdefault(K, {"strike":K,"call_oi":0.0,"put_oi":0.0,"call_gex":0.0,"put_gex":0.0,"net_gex":0.0})
+                        for key in ("call_oi","put_oi","call_gex","put_gex","net_gex"):
+                            a[key] += row[key]
+                    ph = [ps[k] for k in sorted(ps) if abs(k-spot) <= spot*0.15]
+                    if not ph:
+                        return {"status":"unavailable","label":label,"heatmap":[]}
+                    ptotal = sum(x["net_gex"] for x in ph)
+                    cc = [x for x in ph if x["call_gex"] > 0]
+                    pp = [x for x in ph if x["put_gex"] < 0]
+                    pcw = max(cc,key=lambda x:x["call_gex"])["strike"] if cc else None
+                    ppw = min(pp,key=lambda x:x["put_gex"])["strike"] if pp else None
+                    def ptotal_at(S):
+                        value=0.0
+                        for row in profile_rows:
+                            if abs(row["strike"]-S)>spot*0.15: continue
+                            cg,_,_=bs_terms(S,row["strike"],row["iv_call"],row["T"])
+                            pg,_,_=bs_terms(S,row["strike"],row["iv_put"],row["T"])
+                            value += (cg*row["call_oi"]-pg*row["put_oi"])*MULT*S*S*0.01
+                        return value
+                    px=[spot*0.90+(spot*0.20)*i/120 for i in range(121)]
+                    py=[ptotal_at(x) for x in px]
+                    pflip=[]
+                    for j in range(len(px)-1):
+                        if py[j]==0: pflip.append(px[j])
+                        elif py[j]*py[j+1]<0: pflip.append(px[j]-py[j]*(px[j+1]-px[j])/(py[j+1]-py[j]))
+                    p_gamma=min(pflip,key=lambda x:abs(x-spot)) if pflip else None
+                    return {
+                        "status":"live","label":label,"expiry":profile_rows[0].get("expiry"),
+                        "expiry_mode":profile_rows[0].get("expiry_mode"),"heatmap":ph,"net_gex":ptotal,
+                        "call_wall":pcw,"put_wall":ppw,"gamma_flip":p_gamma,
+                        "call_oi":sum(x["call_oi"] for x in ph),"put_oi":sum(x["put_oi"] for x in ph),
+                    }
+
+                by_mode = {}
+                for mode in ("0DTE", "1DTE"):
+                    matching = [x for x in all_rows if x.get("expiry_mode") == mode]
+                    by_mode[mode] = make_profile(matching, mode)
+                by_mode["ALL"] = make_profile(all_rows, "ALL EXPIRATIONS")
+
                 options.update({
                     "status": "live",
                     "expiry": nearest_expiry,
+                    "profile_mode": "ALL",
+                    "profiles": by_mode,
                     "expiry_mode": expiry_mode,
                     "expiry_label": expiry_mode,
                     "spot": spot,
