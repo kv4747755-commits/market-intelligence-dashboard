@@ -46,6 +46,22 @@ table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;p
 <div class="card"><div class="label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
 <div class="card"><div class="label">Gamma Regime</div><div class="big amber" id="gamma1">—</div><div class="small" id="gamma2">—</div></div>
 </div>
+<div class="card" style="margin-top:12px">
+<h3>NASDAQ MARKET READ</h3>
+<div class="callout" id="nq-read">Building rules-based market read from options, volatility, dollar and macro snapshot…</div>
+<div class="grid" style="margin-top:12px">
+<div class="kpi"><span class="small">BIAS</span><b id="nq-bias">—</b></div>
+<div class="kpi"><span class="small">EXPECTED RANGE</span><b id="nq-range">—</b></div>
+<div class="kpi"><span class="small">VOLATILITY</span><b id="nq-vol">—</b></div>
+<div class="kpi"><span class="small">MACRO PRESSURE</span><b id="nq-macro">—</b></div>
+</div>
+<table style="margin-top:12px"><tr><th>Driver</th><th>Read</th><th>Impact</th></tr>
+<tr><td>Options location</td><td id="nq-opt-read">—</td><td id="nq-opt-impact">—</td></tr>
+<tr><td>Dollar</td><td id="nq-dollar-read">—</td><td id="nq-dollar-impact">—</td></tr>
+<tr><td>Volatility</td><td id="nq-vix-read">—</td><td id="nq-vix-impact">—</td></tr>
+<tr><td>Macro</td><td id="nq-macro-read">—</td><td id="nq-macro-impact">—</td></tr></table>
+<div class="small" style="margin-top:10px">Rules-based interpretation only — not a price prediction or trading signal.</div>
+</div>
 <div class="grid2" style="margin-top:12px">
 <div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div>
 <div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">GAMMA FLIP</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div>
@@ -257,6 +273,58 @@ async function load(){
 
  const dxyChange=Number(p.dxy_change);
  document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
+
+ // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
+ const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
+ const emPct=Number(opt.expected_move_pct), emPts=Number(opt.expected_move_points);
+ const vixCh=Number(p.vix_change);
+ const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
+ const macroReg=m.regime||{};
+ let score=0, optRead='No usable options location', optImpact='NEUTRAL';
+ if(Number.isFinite(spot)&&Number.isFinite(flip)){
+   if(spot>flip){score+=1; optRead='Above gamma flip'; optImpact='BULLISH';}
+   else if(spot<flip){score-=1; optRead='Below gamma flip'; optImpact='BEARISH';}
+   else {optRead='At gamma flip'; optImpact='NEUTRAL';}
+ }
+ if(gammaReg.includes('negative')){
+   optRead += ' • negative gamma = wider moves';
+   score += Number.isFinite(spot)&&Number.isFinite(flip)?(spot>flip?0.5:-0.5):0;
+ }
+ let dollarRead='Neutral USD', dollarImpact='NEUTRAL';
+ if(Number.isFinite(dxyChange)){
+   if(dxyChange>0.15){score-=1; dollarRead='DXY rising'; dollarImpact='BEARISH';}
+   else if(dxyChange<-0.15){score+=1; dollarRead='DXY falling'; dollarImpact='BULLISH';}
+ }
+ let vixRead='VIX stable', vixImpact='NEUTRAL';
+ if(Number.isFinite(vixCh)){
+   if(vixCh>5){score-=1; vixRead='VIX rising'; vixImpact='BEARISH';}
+   else if(vixCh<-5){score+=1; vixRead='VIX falling'; vixImpact='BULLISH';}
+ }
+ let macroScore=0;
+ if(String(macroReg.growth||'').toLowerCase().includes('expand')) macroScore+=1;
+ if(String(macroReg.liquidity||'').toLowerCase().includes('expand')) macroScore+=1;
+ if(String(macroReg.inflation||'').toLowerCase().includes('hot')) macroScore-=1;
+ if(String(macroReg.credit||'').toLowerCase().includes('stress')) macroScore-=1;
+ score += macroScore*0.75;
+ const macroRead=macroScore>0.5?'Supportive growth/liquidity':macroScore<-0.5?'Inflation/credit headwind':'Mixed macro';
+ const macroImpact=macroScore>0.5?'BULLISH':macroScore<-0.5?'BEARISH':'NEUTRAL';
+ let bias='NEUTRAL';
+ if(score>=2) bias='BULLISH'; else if(score>=0.5) bias='CONSTRUCTIVE'; else if(score<=-2) bias='BEARISH'; else if(score<=-0.5) bias='CAUTIOUS';
+ const biasEl=document.getElementById('nq-bias'); biasEl.textContent=bias; biasEl.className='up'; if(['BEARISH','CAUTIOUS'].includes(bias)) biasEl.className='down'; if(bias==='NEUTRAL') biasEl.className='amber';
+ const rangeLow=Number.isFinite(spot)&&Number.isFinite(emPct)?spot*(1-emPct/100):null;
+ const rangeHigh=Number.isFinite(spot)&&Number.isFinite(emPct)?spot*(1+emPct/100):null;
+ document.getElementById('nq-range').textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
+ document.getElementById('nq-vol').textContent=gammaReg.includes('negative')?'EXPANSION RISK':gammaReg.includes('positive')?'MEAN-REVERSION':'MIXED';
+ document.getElementById('nq-macro').textContent=macroImpact;
+ document.getElementById('nq-read').innerHTML=`<b>${bias}</b> • ${optRead}. ${macroRead}. ${vixRead}. ${dollarRead}.`;
+ document.getElementById('nq-opt-read').textContent=Number.isFinite(flip)?`${fmt(spot,0)} vs flip ${fmt(flip,0)}`:'—';
+ document.getElementById('nq-opt-impact').textContent=optImpact;
+ document.getElementById('nq-dollar-read').textContent=dollarRead;
+ document.getElementById('nq-dollar-impact').textContent=dollarImpact;
+ document.getElementById('nq-vix-read').textContent=vixRead;
+ document.getElementById('nq-vix-impact').textContent=vixImpact;
+ document.getElementById('nq-macro-read').textContent=macroRead;
+ document.getElementById('nq-macro-impact').textContent=macroImpact;
 
  const cotStatus=cot.status||'unavailable';
  const cotMarkets=cot.markets||{};
