@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Market Intelligence</title>
+<style>
+:root{--bg:#070b10;--panel:#0d141d;--line:#1d2a37;--text:#e8edf3;--muted:#8794a3;--green:#35d39f;--red:#ff607b;--amber:#f3c65b;--blue:#69a9ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#070b10,#09111a);color:var(--text);font-family:Arial,sans-serif}
+main{max-width:1100px;margin:auto;padding:0 16px 40px}header{position:sticky;top:0;z-index:10;background:rgba(7,11,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0 10px}
+.head{max-width:1100px;margin:auto;padding:0 16px}.brand{font-size:27px;font-weight:800}.sub{color:var(--muted);margin-top:3px}.badge{float:right;border:1px solid #6b5924;color:var(--amber);padding:9px 14px;border-radius:22px;font-size:13px}
+.nav{display:flex;gap:8px;overflow-x:auto;padding-top:16px}.nav button{white-space:nowrap;background:#0d151f;border:1px solid #233141;color:#dce5ef;border-radius:12px;padding:11px 16px;font-size:15px}.nav button.active{border-color:#6d9bd0;background:#152130}
+section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}
+.gex-mode-switch{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 8px}.gex-mode-btn{background:#0d1822;border:1px solid #263847;color:#aebdcb;border-radius:10px;padding:8px 12px;font-size:12px;cursor:pointer}.gex-mode-btn.active{border-color:#69a9ff;background:#15283a;color:#eef6ff}.gex-mode-btn:disabled{opacity:.35;cursor:not-allowed}.gex-selected-note{margin:4px 0 10px;color:#8794a3;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.card{background:linear-gradient(180deg,#0e161f,#0b121a);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
+.label{text-transform:uppercase;color:#84909e;font-size:12px;letter-spacing:1.3px}.big{font-size:34px;font-weight:800;margin-top:7px}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}
+.callout{border-left:4px solid var(--blue);background:#0d1a29;padding:15px;border-radius:12px;line-height:1.45}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi{padding:12px;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;font-size:20px;margin-top:5px}
+table{width:100%;border-collapse:collapse;margin-top:8px}th,td{text-align:left;padding:11px 7px;border-bottom:1px solid var(--line)}th{color:#84909e;font-size:12px;text-transform:uppercase}td:last-child,th:last-child{text-align:right}
+.heat{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:10px}.heat div{padding:10px 4px;text-align:center;border-radius:6px;background:#183040;font-size:11px}.footer{color:#65717f;font-size:12px;text-align:center;padding:35px 0}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.brand{font-size:24px}.badge{font-size:12px;padding:8px 10px}.big{font-size:32px}.heat{grid-template-columns:repeat(6,1fr)}}
+
+/* V5 visual system */
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 15% 5%,rgba(105,169,255,.08),transparent 28%),radial-gradient(circle at 85% 20%,rgba(53,211,159,.06),transparent 24%);z-index:-1}
+.head{position:relative}.brand{letter-spacing:-.6px}.sub{font-size:13px}
+.nav button{transition:.18s ease}.nav button:hover{transform:translateY(-1px);border-color:#38516b}
+section{scroll-margin-top:118px}.title{display:flex;align-items:baseline;gap:10px;letter-spacing:-.3px}.title:before{content:"";width:5px;height:24px;border-radius:5px;background:linear-gradient(180deg,var(--blue),var(--green));display:inline-block;box-shadow:0 0 14px rgba(105,169,255,.35)}
+.card{position:relative;overflow:hidden;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.card:hover{transform:translateY(-2px);border-color:#2b4053;box-shadow:0 12px 34px rgba(0,0,0,.22)}
+.card:after{content:"";position:absolute;right:-35px;top:-45px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(105,169,255,.07),transparent 68%);pointer-events:none}
+.section-kicker{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#6f8499;margin-bottom:7px}
+.pulse{display:grid;grid-template-columns:1.15fr 1fr 1fr 1fr;gap:12px;align-items:stretch;margin-bottom:16px}.pulse-hero{background:linear-gradient(135deg,#101c28,#0b141d);border:1px solid #26394b;border-radius:20px;padding:20px;position:relative;overflow:hidden}.pulse-hero:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-90px;top:-105px;background:radial-gradient(circle,rgba(105,169,255,.16),transparent 67%)}.pulse-title{font-size:12px;color:#84909e;letter-spacing:1.4px;text-transform:uppercase}.pulse-regime{font-size:30px;font-weight:900;margin-top:8px;letter-spacing:-.7px}.pulse-note{color:#b9c5d0;font-size:13px;margin-top:8px;line-height:1.4}.pulse-ring{width:58px;height:58px;border-radius:50%;background:conic-gradient(var(--blue) 0 25%,#1a2a39 25% 100%);display:grid;place-items:center;float:right;box-shadow:0 0 24px rgba(105,169,255,.16)}.pulse-ring:after{content:"";width:40px;height:40px;border-radius:50%;background:#0c151e}.pulse-card{background:linear-gradient(180deg,#0f1822,#0b121a);border:1px solid var(--line);border-radius:20px;padding:17px}.pulse-value{font-size:25px;font-weight:850;margin-top:8px}.pulse-sub{font-size:12px;color:var(--muted);margin-top:5px}.range-track{height:8px;border-radius:10px;background:#182532;margin-top:12px;position:relative;overflow:hidden}.range-fill{height:100%;width:50%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));border-radius:10px}.range-dot{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.12);transform:translate(-50%,-50%);left:50%}.driver-strip{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.driver-chip{padding:7px 10px;border:1px solid #263746;border-radius:999px;font-size:11px;color:#b8c5d2;background:#0c151e}.driver-chip b{font-weight:800}
+.visual-bar{height:13px;border-radius:999px;background:linear-gradient(90deg,rgba(255,96,123,.22),rgba(243,198,91,.25),rgba(53,211,159,.24));border:1px solid #243543;position:relative;margin-top:14px}.visual-marker{position:absolute;top:-5px;width:3px;height:23px;border-radius:4px;background:#fff;box-shadow:0 0 12px rgba(255,255,255,.55);left:50%}.visual-labels{display:flex;justify-content:space-between;color:#778696;font-size:11px;margin-top:7px}
+@media(max-width:760px){.pulse{grid-template-columns:1fr 1fr}.pulse-hero{grid-column:1/-1}.pulse-regime{font-size:27px}.pulse-card{min-height:100px}.title{font-size:22px}}
+@media(max-width:480px){.pulse{grid-template-columns:1fr}.pulse-hero{grid-column:auto}.pulse-card{min-height:0}.pulse-ring{width:50px;height:50px}.pulse-ring:after{width:34px;height:34px}}
+
+/* V6 TERMINAL REDESIGN — compact, structured, visual */
+:root{
+  --bg:#05080d;--panel:#0a1119;--panel2:#0d1721;--line:#1b2a39;
+  --text:#e8eef5;--muted:#718295;--green:#31e0a2;--red:#ff617b;
+  --amber:#f4c95d;--blue:#59a9ff;--cyan:#55d9ff
+}
+html{background:var(--bg)}
+body{
+  background:
+    radial-gradient(circle at 72% 0%,rgba(38,103,163,.10),transparent 32%),
+    linear-gradient(180deg,#05080d 0%,#07101a 100%);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  font-size:13px;
+}
+header{
+  position:sticky;top:0;z-index:20;
+  padding:12px 0 8px;
+  background:rgba(5,8,13,.90);
+  border-bottom:1px solid #142332;
+}
+.head{max-width:none;margin:0 0 0 280px;padding:0 24px}
+.brand{font-size:20px;letter-spacing:.5px}
+.sub{font-size:11px;margin-top:2px;letter-spacing:.2px}
+.badge{font-size:10px;padding:6px 10px;border-radius:16px;letter-spacing:.5px}
+.nav{
+  position:fixed;left:0;top:0;bottom:0;width:260px;
+  z-index:30;display:flex;flex-direction:column;gap:4px;
+  padding:22px 18px 18px;
+  overflow-y:auto;overflow-x:hidden;
+  background:linear-gradient(180deg,#070c12,#09111a);
+  border-right:1px solid #182735;
+}
+.nav:before{
+  content:"MARKET INTELLIGENCE";
+  display:block;color:#8ea1b4;font-size:11px;font-weight:800;
+  letter-spacing:1.6px;padding:6px 12px 16px;font-size:12px;
+}
+.nav button{
+  width:100%;text-align:left;border:1px solid transparent;
+  background:transparent;color:#8fa0b1;border-radius:9px;
+  padding:13px 14px;font-size:15px;font-weight:650;
+  transition:.15s ease;
+}
+.nav button:before{content:"◦";display:inline-block;width:18px;color:#4f6a82;font-size:15px}
+.nav button:hover{background:#0d1823;border-color:#1b3042;color:#dbe7f2;transform:none}
+.nav button.active{
+  background:linear-gradient(90deg,#102237,#0d1925);
+  border-color:#274865;color:#eaf3fb;
+  box-shadow:inset 3px 0 0 var(--blue);
+}
+.nav button.active:before{content:"●";color:var(--blue)}
+main{max-width:none;margin:0 0 0 280px;padding:8px 24px 42px}
+section{padding-top:20px;scroll-margin-top:78px}
+.title{
+  font-size:17px;font-weight:800;letter-spacing:.4px;
+  margin:0 0 10px;text-transform:uppercase
+}
+.title:before{width:3px;height:18px}
+.small{font-size:11px;color:#7d8ea0}
+.card{
+  background:linear-gradient(180deg,rgba(13,22,31,.97),rgba(8,15,22,.98));
+  border:1px solid #192b3b;border-radius:10px;
+  padding:13px;box-shadow:0 8px 24px rgba(0,0,0,.18);
+}
+.card:hover{transform:none;border-color:#274258;box-shadow:0 10px 28px rgba(0,0,0,.24)}
+.card:after{width:90px;height:90px;right:-30px;top:-35px}
+.card h3{font-size:12px;letter-spacing:.7px;text-transform:uppercase;margin:0 0 10px;color:#d7e2ed}
+.grid,.grid2{gap:8px}
+.grid{grid-template-columns:repeat(4,1fr)}
+.grid2{grid-template-columns:repeat(2,1fr)}
+.label{font-size:10px;letter-spacing:1px;color:#708397}
+.big{font-size:25px;line-height:1.05;margin-top:6px}
+.kpis{gap:7px}.kpi{padding:9px;border-radius:8px}.kpi b{font-size:16px}
+.callout{padding:11px;border-radius:8px;font-size:12px}
+table{font-size:12px}th,td{padding:8px 6px}th{font-size:9px;letter-spacing:.8px}
+.pulse{grid-template-columns:1.45fr repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pulse-hero,.pulse-card{border-radius:11px;padding:13px}
+.pulse-title{font-size:10px;letter-spacing:1.1px}
+.pulse-regime{font-size:24px;margin-top:6px}
+.pulse-note{font-size:11px;margin-top:5px}
+.pulse-ring{width:46px;height:46px}.pulse-ring:after{width:32px;height:32px}
+.pulse-value{font-size:20px}.pulse-sub{font-size:10px}
+.driver-strip{gap:5px;margin-top:9px}.driver-chip{padding:5px 8px;font-size:9px}
+.range-track{height:6px;margin-top:10px}.range-dot{width:10px;height:10px}
+.visual-bar{height:10px;margin-top:11px}
+.visual-labels{font-size:9px;margin-top:5px}
+.section-kicker{font-size:9px;margin-bottom:4px}
+.footer{font-size:10px;padding:24px 0}
+body:after{
+  content:"LIVE • CANONICAL DATA SNAPSHOT";
+  position:fixed;right:14px;bottom:10px;z-index:40;
+  color:#587087;font-size:9px;letter-spacing:1px;
+  pointer-events:none
+}
+
+/* visual section separators */
+section:not(#home){border-top:1px solid #101f2c;margin-top:10px}
+section:not(#home)>.title{padding-top:4px}
+#nasdaq .card:first-child,#forex .card:first-child,#options .card:first-child,#macro .card:first-child{
+  position:relative
+}
+#nasdaq .card:first-child:before,#forex .card:first-child:before,#options .card:first-child:before,#macro .card:first-child:before{
+  content:"LIVE";
+  position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7
+}
+
+/* responsive: turn sidebar back into compact top navigation */
+@media(max-width:900px){
+  header{position:sticky;padding:10px 0 6px}
+  .head{margin:0;padding:0 12px}
+  .brand{font-size:18px}.sub{font-size:10px}
+  .nav{
+    position:static;width:auto;display:flex;flex-direction:row;
+    padding:8px 0 2px;border:0;background:transparent;
+    overflow-x:auto;overflow-y:hidden
+  }
+  .nav:before{display:none}
+  .nav button{width:auto;text-align:center;white-space:nowrap;padding:8px 11px;font-size:11px}
+  .nav button:before{display:none}
+  .nav button.active{box-shadow:none}
+  main{margin:0;padding:8px 12px 36px}
+}
+@media(max-width:680px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .pulse{grid-template-columns:1fr 1fr}.pulse-hero{grid-column:1/-1}
+  .grid2{grid-template-columns:1fr}
+  .big{font-size:23px}
+}
+@media(max-width:430px){
+  .grid{grid-template-columns:1fr}
+  .pulse{grid-template-columns:1fr}.pulse-hero{grid-column:auto}
+  .pulse-regime{font-size:22px}
+  body:after{display:none}
+}
+
+
+/* HOME COMMAND CENTER UPGRADE */
+.home-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;margin-top:8px}.home-map{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.home-stat{padding:10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.home-stat b{display:block;font-size:16px;margin-top:4px}.home-stat span{display:block;font-size:9px;color:#718295;margin-top:3px}.level-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.level-box{padding:10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e;text-align:center}.level-box b{display:block;font-size:15px;margin-top:4px}.watch-list{display:grid;gap:6px}.watch-row{display:flex;justify-content:space-between;gap:12px;padding:8px 9px;border-bottom:1px solid #172635;font-size:11px}.watch-row:last-child{border-bottom:0}.home-news{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.news-mini{padding:10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.news-mini .headline{font-size:11px;line-height:1.35;margin-top:5px}@media(max-width:760px){.home-grid{grid-template-columns:1fr}.home-map{grid-template-columns:repeat(2,1fr)}.level-strip{grid-template-columns:repeat(2,1fr)}.home-news{grid-template-columns:1fr}}
+
+
+/* V6 desktop sidebar redesign */
+@media(min-width:901px){
+  .head{margin-left:248px;padding:0 22px}
+  .nav{width:228px;padding:18px 12px 14px;gap:0;background:linear-gradient(180deg,#080d14 0%,#0a121b 58%,#081018 100%);border-right:1px solid #203141;box-shadow:8px 0 28px rgba(0,0,0,.22)}
+  .nav:before{display:none}
+  .nav-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid #172635;margin-bottom:8px}
+  .nav-logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:10px;font-weight:900;letter-spacing:.5px;color:#dcecff;background:#102237;border:1px solid #315b7d;box-shadow:inset 0 0 12px rgba(89,169,255,.12)}
+  .nav-brand b{display:block;color:#dce6ef;font-size:10px;letter-spacing:1.25px;font-weight:800}
+  .nav-brand span{display:block;color:#617487;font-size:8px;letter-spacing:1.4px;margin-top:3px}
+  .nav-group{margin-top:8px}
+  .nav-group-title{padding:7px 9px 5px;color:#53697c;font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}
+  .nav button{display:flex;align-items:center;gap:9px;width:100%;height:34px;margin:2px 0;padding:7px 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:#8798a8;font-size:11px;font-weight:650;letter-spacing:.15px}
+  .nav button .nav-icon{flex:0 0 22px;width:22px;height:22px;display:grid;place-items:center;border:1px solid #263b4e;border-radius:6px;color:#70879b;background:#0b151f;font-size:9px;font-weight:800}
+  .nav button:hover{background:#0d1823;border-color:#1b3042;color:#dbe7f2}
+  .nav button.active{background:linear-gradient(90deg,#10273b,#0d1b29);border-color:#2a5373;color:#eaf4fc;box-shadow:inset 3px 0 0 var(--blue),0 5px 14px rgba(0,0,0,.12)}
+  .nav button.active .nav-icon{color:#69b4ff;border-color:#3b6f98;background:#112a3e}
+  .nav-bottom{margin-top:auto;padding:12px 9px 2px;border-top:1px solid #172635;color:#557083;font-size:8px;letter-spacing:1.2px;text-transform:uppercase}
+  .nav-bottom span{color:var(--green);font-size:8px}
+  main{margin-left:248px;padding:8px 22px 42px}
+}
+@media(max-width:900px){
+  .nav-brand,.nav-group-title,.nav-bottom{display:none}
+  .nav-group{display:contents}
+  .nav button{display:flex;align-items:center;gap:6px}
+  .nav button .nav-icon{display:none}
+}
+
+/* V7 DESKTOP HORIZONTAL COMMAND BAR */
+@media(min-width:901px){
+  header{padding:12px 0 0}
+  .head{max-width:1280px;margin:0 auto;padding:0 22px}
+  .brand{font-size:20px}.sub{font-size:11px}
+  .nav{position:static;width:100%;height:auto;min-height:52px;margin-top:12px;padding:7px 0;display:flex;flex-direction:row;align-items:center;gap:7px;overflow-x:auto;overflow-y:hidden;background:linear-gradient(180deg,#0a121b,#081018);border:0;border-top:1px solid #1a2b3a;border-bottom:1px solid #1a2b3a;box-shadow:none}
+  .nav:before{display:none}
+  .nav-brand{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding:0 12px 0 2px;margin:0 5px 0 0;border:0;border-right:1px solid #1b2d3d}
+  .nav-logo{width:27px;height:27px;border-radius:7px;font-size:9px}
+  .nav-brand b{font-size:9px;letter-spacing:1px}.nav-brand span{font-size:7px;letter-spacing:1.1px;margin-top:2px}
+  .nav-group{display:flex;align-items:center;gap:5px;margin:0;flex:0 0 auto}.nav-group-title{display:none}
+  .nav button{display:flex;align-items:center;gap:7px;width:auto;height:34px;margin:0;padding:6px 10px;border:1px solid transparent;border-radius:8px;white-space:nowrap;background:transparent;color:#8193a4;font-size:10px;font-weight:700}
+  .nav button .nav-icon{flex:0 0 20px;width:20px;height:20px;border-radius:5px;font-size:8px}
+  .nav button:hover{background:#0d1823;border-color:#20384d}
+  .nav button.active{background:linear-gradient(180deg,#12283a,#0d1c2a);border-color:#315b7d;box-shadow:inset 0 2px 0 var(--blue),0 3px 10px rgba(0,0,0,.16)}
+  .nav button.active:before{display:none}
+  .nav-bottom{display:flex;align-items:center;margin:0 0 0 auto;padding:0 4px 0 10px;border:0;font-size:7px;white-space:nowrap}
+  main{max-width:1280px;margin:0 auto;padding:8px 22px 42px}
+  section{scroll-margin-top:120px}
+}
+
+
+/* V8 OPTIONS GEX PROFILE */
+.gex-layout{display:grid;grid-template-columns:1.9fr .85fr;gap:10px;margin-top:12px}
+.gex-chart-card{padding:12px;min-width:0}
+.gex-chart-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gex-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;color:#8da0b2;font-size:10px}
+.gex-legend span{display:inline-flex;align-items:center;gap:5px}.gex-dot{width:10px;height:6px;border-radius:2px;display:inline-block}
+.gex-svg-wrap{margin-top:8px;border:1px solid #172938;border-radius:9px;background:linear-gradient(180deg,#071018,#09131d);overflow:hidden}
+#gex-svg{display:block;width:100%;height:470px}
+.gex-axis{fill:#73879a;font-size:10px;font-family:Inter,system-ui,sans-serif}.gex-axis-strong{fill:#cbd8e4;font-weight:700}
+.gex-grid{stroke:#173040;stroke-width:1}.gex-zero{stroke:#8294a5;stroke-width:1.2}.gex-bar-pos{fill:rgba(49,224,162,.78)}.gex-bar-neg{fill:rgba(255,97,123,.78)}
+.gex-level-put{stroke:#ff617b;stroke-width:1.4;stroke-dasharray:7 5}.gex-level-call{stroke:#31e0a2;stroke-width:1.4;stroke-dasharray:7 5}.gex-level-flip{stroke:#f4c95d;stroke-width:1.5;stroke-dasharray:7 5}.gex-level-spot{stroke:#e8eef5;stroke-width:1.5;stroke-dasharray:3 4}
+.gex-level-label{font-size:9px;font-weight:800;font-family:Inter,system-ui,sans-serif}.gex-panel-title{font-size:10px;color:#718295;letter-spacing:1.2px;text-transform:uppercase}.gex-level-list{display:grid;gap:7px;margin-top:10px}.gex-level-row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-level-row b{font-size:15px}.gex-note{font-size:10px;color:#718295;line-height:1.45;margin-top:10px}.gex-insights{display:grid;gap:7px;margin-top:10px}.gex-insight{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e;font-size:11px;line-height:1.35}.gex-insight strong{display:block;margin-bottom:3px}.gex-detail{margin-top:10px;max-height:250px;overflow:auto}.gex-detail table{margin-top:0;font-size:10px}.gex-detail th,.gex-detail td{padding:6px 5px}.gex-pill{display:inline-block;padding:4px 7px;border-radius:999px;border:1px solid #243746;font-size:9px;color:#a9b8c6}
+@media(max-width:900px){.gex-layout{grid-template-columns:1fr}#gex-svg{height:420px}}
+@media(max-width:600px){#gex-svg{height:390px}.gex-chart-card{padding:9px}.gex-legend{gap:8px}.gex-level-row{padding:8px}.gex-level-row b{font-size:14px}}
+
+/* V8 OPTIONS GEX TERMINAL CHART */
+.options-shell{margin-top:10px}
+.options-layout{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(260px,.85fr);gap:10px;margin-top:10px}
+.options-chart-card{padding:13px;min-width:0}
+.options-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.options-chart-title{font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.options-chart-tools{display:flex;gap:6px;flex-wrap:wrap}
+.options-tool{padding:5px 8px;border:1px solid #243746;border-radius:7px;background:#0a151f;color:#91a2b2;font-size:9px;letter-spacing:.5px}
+.options-legend{display:flex;gap:11px;flex-wrap:wrap;margin-top:8px;color:#8da0b2;font-size:10px}
+.options-legend span{display:inline-flex;align-items:center;gap:5px}.legend-swatch{width:10px;height:5px;border-radius:2px;display:inline-block}
+.options-svg-wrap{margin-top:9px;border:1px solid #172938;border-radius:10px;background:#060d14;overflow:hidden}
+#options-gex-svg{display:block;width:100%;height:500px;cursor:grab;touch-action:none;user-select:none}
+.opt-axis{fill:#6f8295;font-size:10px;font-family:Inter,system-ui,sans-serif}.opt-axis-strong{fill:#cdd9e5;font-size:10px;font-weight:800;font-family:Inter,system-ui,sans-serif}
+.opt-grid{stroke:#173040;stroke-width:1}.opt-zero{stroke:#6e8191;stroke-width:1.2}
+.opt-bar-pos{fill:rgba(49,224,162,.78)}.opt-bar-neg{fill:rgba(255,97,123,.78)}
+.opt-level-put{stroke:#ff617b;stroke-width:1.5;stroke-dasharray:8 5}.opt-level-call{stroke:#31e0a2;stroke-width:1.5;stroke-dasharray:8 5}.opt-level-flip{stroke:#f4c95d;stroke-width:1.7;stroke-dasharray:8 5}.opt-level-spot{stroke:#edf3f8;stroke-width:1.6;stroke-dasharray:3 4}
+.opt-level-label{font-size:10px;font-weight:800;font-family:Inter,system-ui,sans-serif;paint-order:stroke;stroke:#06101a;stroke-width:3px}
+.options-side{display:grid;gap:10px;align-content:start}
+.options-side-card{padding:13px}.option-level-list{display:grid;gap:7px;margin-top:9px}.option-level{display:grid;grid-template-columns:10px 1fr auto;gap:8px;align-items:center;padding:9px 10px;border:1px solid #1b2b3b;border-radius:8px;background:#09141e}.option-level i{width:8px;height:8px;border-radius:50%;display:block}.option-level span{font-size:10px;color:#8b9bab;text-transform:uppercase;letter-spacing:.7px}.option-level b{font-size:15px}.option-level.put i{background:var(--red)}.option-level.call i{background:var(--green)}.option-level.flip i{background:var(--amber)}.option-level.spot i{background:#edf3f8}
+.level-ladder{margin-top:10px;padding:10px;border:1px solid #1b2b3b;border-radius:9px;background:#07111a;position:relative;height:112px}.ladder-track{position:absolute;left:20px;right:20px;top:50%;height:2px;background:#294052}.ladder-point{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:7px}.ladder-dot{width:10px;height:10px;border-radius:50%;border:2px solid #07111a;box-shadow:0 0 0 1px currentColor}.ladder-text{font-size:8px;white-space:nowrap;color:#91a2b2}.ladder-value{font-size:9px;font-weight:800;color:#e8eef5;white-space:nowrap}
+.options-insights{display:grid;gap:6px;margin-top:9px}.options-insight{padding:9px 10px;border:1px solid #1b2b3b;border-radius:8px;background:#09141e;font-size:10px;line-height:1.4}.options-insight strong{display:block;margin-bottom:2px;color:#dfe8f0}
+.options-disclaimer{margin-top:8px;font-size:9px;color:#687b8e;line-height:1.45}
+.options-detail{margin-top:10px;max-height:235px;overflow:auto}.options-detail table{margin-top:0;font-size:10px}
+@media(max-width:900px){.options-layout{grid-template-columns:1fr}#options-gex-svg{height:430px}}
+
+/* OPTIONS TERMINAL V5 — interactive GEX chart */
+.options-chart-card{padding:14px;background:linear-gradient(180deg,#07131e 0%,#06101a 100%);border-color:#1b4055}
+.options-chart-tools{align-items:center}
+.options-tool{cursor:pointer;transition:.15s;border-color:#21465d;background:#081622;color:#9fb2c3}
+.options-tool:hover{border-color:#25bfff;color:#dff6ff;background:#0b1d2a}
+.options-tool.active{border-color:#25bfff;color:#eafaff;box-shadow:0 0 0 1px #25bfff33 inset}
+.options-svg-wrap{position:relative;background:#040b12;border-color:#183447;box-shadow:inset 0 0 40px #0008}
+#options-gex-svg{height:540px;cursor:crosshair}
+.opt-grid{stroke:#183040;stroke-width:1;opacity:.72}
+.opt-zero{stroke:#718798;stroke-width:1.4;opacity:.85}
+.opt-bar-pos{fill:#22d89a;opacity:.82;transition:opacity .12s,filter .12s}
+.opt-bar-neg{fill:#ff596f;opacity:.82;transition:opacity .12s,filter .12s}
+.opt-bar-hover{opacity:1;filter:drop-shadow(0 0 5px currentColor)}
+.opt-crosshair{stroke:#d8eef8;stroke-width:1;stroke-dasharray:4 4;opacity:.55;pointer-events:none}
+.opt-hover-dot{fill:#fff;stroke:#0a1721;stroke-width:2;pointer-events:none}
+.opt-tooltip{fill:#07131d;stroke:#2b607c;stroke-width:1.2;filter:drop-shadow(0 5px 14px #0009);pointer-events:none}
+.opt-tooltip-text{fill:#e7f5fb;font-size:11px;font-weight:700}
+.opt-tooltip-sub{fill:#9db1bf;font-size:10px}
+.opt-axis{fill:#7890a1;font-size:10px}
+.opt-axis-strong{fill:#a9bdca;font-size:10px;font-weight:700;letter-spacing:.7px}
+.opt-level-put{stroke:#ff617b;stroke-width:1.5;stroke-dasharray:7 5}.opt-level-call{stroke:#31e0a2;stroke-width:1.5;stroke-dasharray:7 5}.opt-level-flip{stroke:#f4c95d;stroke-width:1.7;stroke-dasharray:3 4}.opt-level-spot{stroke:#edf3f8;stroke-width:1.4;stroke-dasharray:2 5}
+.opt-level-label{font-size:10px;font-weight:800;paint-order:stroke;stroke:#06101a;stroke-width:4px}
+.options-interactive-note{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:7px;color:#71899a;font-size:9px}
+.options-interactive-note b{color:#a9c2d0}
+.options-detail{padding:14px;background:linear-gradient(180deg,#07131e,#06101a);border-color:#1b4055}
+.strike-toolbar{display:flex;gap:7px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:6px}
+.strike-filter{display:flex;gap:6px;flex-wrap:wrap}
+.strike-filter button{padding:5px 9px;border:1px solid #1d394b;border-radius:7px;background:#08141e;color:#8499a8;font-size:9px;cursor:pointer}
+.strike-filter button.active,.strike-filter button:hover{border-color:#25bfff;color:#e9f8ff;background:#0b1d2a}
+.strike-table-wrap{margin-top:10px;border:1px solid #193749;border-radius:9px;overflow:auto;max-height:310px}
+.gamma-regime-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.gamma-regime-mini{padding:9px 10px;border:1px solid #1b2b3b;border-radius:8px;background:#09141e;min-width:0}.gamma-regime-mini b{display:block;font-size:16px;margin-top:3px}.gamma-regime-mini span{display:block;font-size:9px;color:#718295;margin-top:3px;line-height:1.3}.gamma-positive{color:var(--green)}.gamma-negative{color:var(--red)}.gamma-neutral{color:var(--amber)}
+.options-detail table{margin-top:0;border-collapse:separate;border-spacing:0;width:100%;font-size:10px}
+.options-detail th{position:sticky;top:0;z-index:2;background:#091721;color:#7f96a7;text-transform:uppercase;letter-spacing:.7px}
+.options-detail td,.options-detail th{padding:9px 10px;border-bottom:1px solid #142c3a;white-space:nowrap}
+.options-detail tbody tr{transition:.12s}
+.options-detail tbody tr:hover{background:#0c2432}
+.options-detail tbody tr.level-put{background:#ff617b0c}.options-detail tbody tr.level-call{background:#31e0a20c}.options-detail tbody tr.level-flip{background:#f4c95d12}.options-detail tbody tr.level-spot{background:#edf3f808}
+.gex-number{font-variant-numeric:tabular-nums;font-weight:700}
+.gex-mini{height:5px;min-width:90px;max-width:140px;background:#0d202c;border-radius:99px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:7px}.gex-mini i{display:block;height:100%;border-radius:99px}
+@media(max-width:900px){#options-gex-svg{height:470px}}
+@media(max-width:600px){#options-gex-svg{height:420px}.options-interactive-note{display:block;line-height:1.6}}
+
+@media(max-width:600px){#options-gex-svg{height:380px}.options-chart-card,.options-side-card{padding:10px}.options-legend{gap:7px;font-size:9px}.option-level b{font-size:14px}}
+/* V9 MODELED GEX QUALITY + SENSITIVITIES */
+.gex-model-card{margin-top:10px}.gex-model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}.gex-model-stat{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-model-stat .k{font-size:9px;color:#718295;letter-spacing:.8px;text-transform:uppercase}.gex-model-stat .v{font-size:14px;font-weight:800;margin-top:3px}.gex-model-stat .s{font-size:9px;color:#718295;margin-top:2px;line-height:1.35}.gex-expiry-wrap{margin-top:10px;overflow:auto}.gex-expiry-table{width:100%;border-collapse:collapse;font-size:9px}.gex-expiry-table th,.gex-expiry-table td{padding:6px 5px;border-bottom:1px solid #172634;text-align:right;white-space:nowrap}.gex-expiry-table th:first-child,.gex-expiry-table td:first-child{text-align:left}.gex-method-note{margin-top:9px;font-size:9px;line-height:1.45;color:#718295}.gex-method-note b{color:#a9b8c6}
+@media(max-width:600px){.gex-model-grid{grid-template-columns:repeat(2,1fr)}}
+
+</style>
+</head>
+<body>
+<header><div class="head">
+<div class="badge">● V4 MACRO COMMAND CENTER</div>
+<div class="brand">MARKET INTELLIGENCE</div>
+<div class="sub">Options • Forex • Nasdaq • Macro • Positioning • Volatility</div><div class="small" style="margin-top:4px;letter-spacing:.4px">LIVE INTELLIGENCE TERMINAL • MODELED ANALYTICS CLEARLY LABELED</div>
+<div class="nav">
+<div class="nav-brand"><div class="nav-logo">MI</div><div><b>MARKET INTELLIGENCE</b><span>COMMAND CENTER</span></div></div>
+<div class="nav-group"><div class="nav-group-title">OVERVIEW</div>
+<button class="active" data-target="home"><span class="nav-icon">⌂</span><span>HOME</span></button>
+</div>
+<div class="nav-group"><div class="nav-group-title">MARKETS</div>
+<button data-target="nasdaq"><span class="nav-icon">N</span><span>NASDAQ</span></button>
+<button data-target="forex"><span class="nav-icon">FX</span><span>FOREX</span></button>
+<button data-target="options"><span class="nav-icon">◈</span><span>OPTIONS</span></button>
+</div>
+<div class="nav-group"><div class="nav-group-title">INTELLIGENCE</div>
+<button data-target="macro"><span class="nav-icon">M</span><span>MACRO</span></button>
+<button data-target="cot"><span class="nav-icon">C</span><span>COT POSITIONING</span></button>
+<button data-target="news"><span class="nav-icon">≡</span><span>MARKET NEWS</span></button>
+</div>
+<div class="nav-bottom"><span>●</span> LIVE DATA</div>
+</div></div></header>
+
+<main>
+<section id="home">
+<div class="pulse">
+<div class="pulse-hero">
+<div class="pulse-ring" id="pulse-ring"></div>
+<div class="pulse-title">Market Pulse</div>
+<div class="pulse-regime" id="pulse-regime">LOADING</div>
+<div class="pulse-note" id="pulse-note">Synthesizing options, volatility, dollar and macro conditions.</div>
+<div class="driver-strip" id="pulse-drivers"></div>
+</div>
+<div class="pulse-card"><div class="label">NDX</div><div class="pulse-value" id="pulse-ndx">—</div><div class="pulse-sub" id="pulse-ndxchg">—</div></div>
+<div class="pulse-card"><div class="label">EXPECTED RANGE</div><div class="pulse-value" id="pulse-range">—</div><div class="range-track"><div class="range-fill"></div><div class="range-dot" id="pulse-range-dot"></div></div><div class="pulse-sub">Current spot inside modeled range</div></div>
+<div class="pulse-card"><div class="label">RISK STATE</div><div class="pulse-value" id="pulse-risk">—</div><div class="pulse-sub" id="pulse-risk-sub">Options + volatility</div></div>
+</div>
+<div class="title">LIVE DATA LAYER <span class="small">one canonical snapshot</span></div>
+<div class="grid" id="live-grid"></div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Options Engine</h3><div id="options-summary"></div></div>
+<div class="card"><h3>Data Integrity</h3><div id="data-quality" class="callout">Checking option-chain coverage…</div></div>
+</div>
+<div class="title" style="margin-top:18px">MARKET MAP <span class="small">fast cross-market context</span></div>
+<div class="home-map">
+<div class="home-stat"><div class="label">NDX</div><b id="home-map-ndx">—</b><span id="home-map-ndx-chg">—</span></div>
+<div class="home-stat"><div class="label">DXY</div><b id="home-map-dxy">—</b><span id="home-map-dxy-chg">—</span></div>
+<div class="home-stat"><div class="label">VIX</div><b id="home-map-vix">—</b><span id="home-map-vix-chg">—</span></div>
+<div class="home-stat"><div class="label">10Y YIELD</div><b id="home-map-10y">—</b><span>US Treasury</span></div>
+<div class="home-stat"><div class="label">WTI</div><b id="home-map-wti">—</b><span>Crude oil</span></div>
+<div class="home-stat"><div class="label">GOLD</div><b id="home-map-gold">—</b><span>Spot snapshot</span></div>
+</div>
+<div class="home-grid">
+<div class="card"><h3>KEY LEVELS & RANGE</h3><div class="level-strip"><div class="level-box"><div class="small">PUT WALL</div><b id="home-putwall">—</b></div><div class="level-box"><div class="small">GAMMA FLIP</div><b id="home-flip">—</b></div><div class="level-box"><div class="small">SPOT</div><b id="home-spot">—</b></div><div class="level-box"><div class="small">CALL WALL</div><b id="home-callwall">—</b></div><div class="level-box"><div class="small">EXP. RANGE</div><b id="home-emrange">—</b></div></div><div class="small" style="margin-top:9px">Modeled option levels. Expected range is volatility-derived, not a price target.</div></div>
+<div class="card"><h3>MACRO WATCH</h3><div class="watch-list"><div class="watch-row"><span>Inflation</span><b id="home-watch-inflation">—</b></div><div class="watch-row"><span>Growth</span><b id="home-watch-growth">—</b></div><div class="watch-row"><span>Liquidity</span><b id="home-watch-liquidity">—</b></div><div class="watch-row"><span>Credit</span><b id="home-watch-credit">—</b></div><div class="watch-row"><span>Next FOMC</span><b id="home-watch-fomc">—</b></div></div></div>
+</div>
+<div class="home-grid">
+<div class="card"><h3>WHY THE MARKET MATTERS NOW</h3><div class="watch-list"><div class="watch-row"><span>Options</span><b id="home-why-options">—</b></div><div class="watch-row"><span>Volatility</span><b id="home-why-vol">—</b></div><div class="watch-row"><span>Dollar</span><b id="home-why-dollar">—</b></div><div class="watch-row"><span>Macro</span><b id="home-why-macro">—</b></div></div><div class="small" style="margin-top:8px">Rules-based observations from the same snapshot; not trading signals.</div></div>
+<div class="card"><h3>LATEST MARKET NEWS</h3><div id="home-news" class="home-news"><div class="small">Loading market headlines…</div></div><div class="small" style="margin-top:8px">Top headlines are filtered by market relevance. Open NEWS for the full feed.</div></div>
+</div>
+</section>
+
+<section id="nasdaq">
+<div class="title">NASDAQ COMMAND CENTER</div>
+<div class="grid">
+<div class="card"><div class="label">NASDAQ-100 INDEX (NDX)</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div>
+<div class="card"><div class="label" id="home-em-label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
+<div class="card"><div class="label">Gamma Regimes</div><div class="gamma-regime-pair"><div class="gamma-regime-mini"><div class="small">0DTE</div><b id="gamma-0dte">—</b><span id="gamma-0dte-sub">Intraday gamma</span></div><div class="gamma-regime-mini"><div class="small">ALL EXP</div><b id="gamma-all">—</b><span id="gamma-all-sub">Multi-expiry gamma</span></div></div></div>
+</div>
+<div class="card" style="margin-top:12px">
+<h3>NASDAQ MARKET READ</h3>
+<div class="callout" id="nq-read">Building rules-based market read from options, volatility, dollar and macro snapshot…</div>
+<div class="grid" style="margin-top:12px">
+<div class="kpi"><span class="small">BIAS</span><b id="nq-bias">—</b></div>
+<div class="kpi"><span class="small">EXPECTED RANGE</span><b id="nq-range">—</b></div>
+<div class="kpi"><span class="small">VOLATILITY</span><b id="nq-vol">—</b></div>
+<div class="kpi"><span class="small">MACRO PRESSURE</span><b id="nq-macro">—</b></div>
+</div>
+<table style="margin-top:12px"><tr><th>Driver</th><th>Read</th><th>Impact</th></tr>
+<tr><td>Options location</td><td id="nq-opt-read">—</td><td id="nq-opt-impact">—</td></tr>
+<tr><td>Dollar</td><td id="nq-dollar-read">—</td><td id="nq-dollar-impact">—</td></tr>
+<tr><td>Volatility</td><td id="nq-vix-read">—</td><td id="nq-vix-impact">—</td></tr>
+<tr><td>Macro</td><td id="nq-macro-read">—</td><td id="nq-macro-impact">—</td></tr></table>
+<div class="card" style="margin-top:12px">
+<h3>BIAS TRIGGERS</h3>
+<div class="grid">
+<div class="kpi"><span class="small">UPGRADE TO BULLISH</span><b id="nq-upgrade">—</b></div>
+<div class="kpi"><span class="small">DOWNGRADE TO CAUTIOUS</span><b id="nq-downgrade">—</b></div>
+</div>
+<div class="small" style="margin-top:10px">These are dashboard state-change conditions, not entry or exit signals.</div>
+</div>
+<div class="small" style="margin-top:10px">Rules-based interpretation only — not a price prediction or trading signal.</div>
+</div>
+<div class="card" style="margin-top:12px">
+<h3>WHY NQ IS MOVING</h3>
+<div class="callout" id="nq-why-headline">Synthesizing options, volatility, dollar and macro drivers…</div>
+<table style="margin-top:10px"><tr><th>Driver</th><th>Current evidence</th><th>Pressure</th></tr>
+<tr><td>0DTE Gamma</td><td id="nq-why-0dte">—</td><td id="nq-why-0dte-impact">—</td></tr>
+<tr><td>All-exp Gamma</td><td id="nq-why-all">—</td><td id="nq-why-all-impact">—</td></tr>
+<tr><td>Rates / Dollar</td><td id="nq-why-rates">—</td><td id="nq-why-rates-impact">—</td></tr>
+<tr><td>Volatility</td><td id="nq-why-vol2">—</td><td id="nq-why-vol2-impact">—</td></tr></table>
+<div class="small" style="margin-top:9px">The engine explains the current cross-market setup from the canonical snapshot. It does not infer actual dealer trades or predict price.</div>
+</div>
+<div class="card" style="margin-top:12px">
+<div class="section-kicker">Market Structure</div>
+<h3 style="margin:0">NDX Position vs Key Option Levels</h3>
+<div class="visual-bar"><div class="visual-marker" id="nq-spot-marker"></div></div>
+<div class="visual-labels"><span id="nq-put-label">Put wall —</span><span id="nq-flip-label">Gamma flip —</span><span id="nq-call-label">Call wall —</span></div>
+<div class="small" style="margin-top:9px">Visualizes where spot sits relative to the modeled option structure.</div>
+</div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div>
+<div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">GAMMA FLIP</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div>
+<div class="card"><h3>Scenario Map</h3><table><tr><td>BULL</td><td>Reclaim gamma flip + rates stabilize</td></tr><tr><td>BEAR</td><td>Lose put wall + rates/DXY accelerate</td></tr><tr><td>BASE</td><td>Remain between major option walls</td></tr></table></div>
+</div>
+</section>
+
+<section id="forex">
+<div class="title">FOREX INTELLIGENCE</div>
+<div class="grid">
+<div class="card"><div class="label">EURUSD</div><div class="big" id="eur">—</div><div id="eurchg" class="small">—</div></div>
+<div class="card"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div></div>
+<div class="card"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div></div>
+<div class="card"><div class="label">USD Regime</div><div class="big up" id="usdregime">—</div><div class="small">Derived from canonical DXY snapshot</div></div>
+</div>
+<div class="card" style="margin-top:12px"><h3>FX Cross-Market</h3><table><tr><th>Factor</th><th>Move</th><th>Interpretation</th></tr><tr><td>DXY</td><td id="fxdxy">—</td><td>USD context</td></tr><tr><td>EURUSD</td><td id="fxeur">—</td><td>EUR/USD spot</td></tr><tr><td>VIX</td><td id="fxvix">—</td><td>Risk appetite context</td></tr></table></div>
+</section>
+
+<section id="options">
+<div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
+<div class="grid">
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small" id="opt-expiry-mode">Expiry mode —</div></div>
+<div class="card"><div class="label" id="em-label">Expected Move</div><div class="big" id="em2">—</div><div class="small" id="opt-em-points">—</div></div>
+<div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div><div class="small">Put OI / Call OI</div></div>
+<div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div><div class="small">Modeled notional exposure</div></div>
+</div>
+<div class="options-layout">
+  <div class="card options-chart-card">
+    <div class="options-chart-head">
+      <div><div class="options-chart-title">NET GEX PROFILE — NDX</div><div class="small" id="gex-chart-status">Strike-level modeled gamma exposure</div></div>
+      <div class="options-chart-tools"><span class="options-tool" id="gex-expiry">—</span><span class="options-tool" id="gex-chain-mode">— • MODELED CHAIN</span></div>
+    </div>
+    <div class="gex-mode-switch" aria-label="GEX expiry selector">
+      <button type="button" class="gex-mode-btn" data-gex-mode="0DTE">0DTE</button>
+      <button type="button" class="gex-mode-btn" data-gex-mode="1DTE">1DTE</button>
+      <button type="button" class="gex-mode-btn active" data-gex-mode="ALL">ALL EXP</button>
+    </div>
+    <div class="gex-selected-note" id="gex-selected-note">Showing ALL EXPIRATIONS modeled GEX.</div>
+    <div class="options-legend">
+      <span><i class="legend-swatch" style="background:#31e0a2"></i>Positive GEX</span>
+      <span><i class="legend-swatch" style="background:#ff617b"></i>Negative GEX</span>
+      <span><i class="legend-swatch" style="background:#f4c95d"></i>Gamma Flip</span>
+      <span><i class="legend-swatch" style="background:#edf3f8"></i>Spot</span>
+      <span><i class="legend-swatch" style="background:#31e0a2"></i>Call Wall</span>
+      <span><i class="legend-swatch" style="background:#ff617b"></i>Put Wall</span>
+    </div>
+    <div class="options-svg-wrap"><svg id="options-gex-svg" viewBox="0 0 980 500" preserveAspectRatio="none" aria-label="NDX net gamma exposure profile"></svg></div>
+    <div class="options-disclaimer">Bars show modeled net GEX by strike from the available listed option chain. Horizontal markers are the model's put wall, call wall, gamma flip and current spot. This is not a direct view of dealer inventory.</div>
+  </div>
+  <div class="options-side">
+    <div class="card options-side-card">
+      <div class="gex-panel-title">KEY OPTION LEVELS</div>
+      <div class="option-level-list">
+        <div class="option-level put"><i></i><span>Put Wall</span><b id="gex-put-level">—</b></div>
+        <div class="option-level call"><i></i><span>Call Wall</span><b id="gex-call-level">—</b></div>
+        <div class="option-level flip"><i></i><span>Gamma Flip</span><b id="gex-flip-level">—</b></div>
+        <div class="option-level spot"><i></i><span>Spot</span><b id="gex-spot-level">—</b></div>
+      </div>
+      <div class="gex-panel-title" style="margin-top:13px">LEVEL LADDER</div>
+      <div class="level-ladder"><div class="ladder-track"></div>
+        <div class="ladder-point" id="ladder-put" style="left:15%;color:var(--red)"><div class="ladder-dot"></div><div class="ladder-text">PUT</div><div class="ladder-value" id="ladder-put-v">—</div></div>
+        <div class="ladder-point" id="ladder-call" style="left:48%;color:var(--green)"><div class="ladder-dot"></div><div class="ladder-text">CALL</div><div class="ladder-value" id="ladder-call-v">—</div></div>
+        <div class="ladder-point" id="ladder-spot" style="left:65%;color:#edf3f8"><div class="ladder-dot"></div><div class="ladder-text">SPOT</div><div class="ladder-value" id="ladder-spot-v">—</div></div>
+        <div class="ladder-point" id="ladder-flip" style="left:82%;color:var(--amber)"><div class="ladder-dot"></div><div class="ladder-text">FLIP</div><div class="ladder-value" id="ladder-flip-v">—</div></div>
+      </div>
+      <div class="gex-panel-title" style="margin-top:13px">GEX READ</div>
+      <div class="options-insights" id="gex-insights"><div class="options-insight">Waiting for valid chain data.</div></div>
+    </div>
+    <div class="card options-side-card">
+      <div class="gex-panel-title">ESTIMATED DEALER POSITIONING</div>
+      <div class="callout" id="dealer" style="margin-top:8px">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div>
+      <div class="options-disclaimer">Modeled from listed OI, IV and Black-Scholes gamma. Not direct dealer inventory.</div>
+    </div>
+    <div class="card options-side-card gex-model-card">
+      <div class="gex-panel-title">GEX MODEL QUALITY & SENSITIVITIES</div>
+      <div class="gex-model-grid">
+        <div class="gex-model-stat"><div class="k">Confidence</div><div class="v" id="gex-confidence">—</div><div class="s" id="gex-quality">—</div></div>
+        <div class="gex-model-stat"><div class="k">Expirations</div><div class="v" id="gex-expiry-count">—</div><div class="s" id="gex-expiry-list">—</div></div>
+        <div class="gex-model-stat"><div class="k">Vanna</div><div class="v" id="gex-vanna">—</div><div class="s">Modeled aggregate sensitivity</div></div>
+        <div class="gex-model-stat"><div class="k">Charm</div><div class="v" id="gex-charm">—</div><div class="s">Modeled aggregate sensitivity</div></div>
+        <div class="gex-model-stat"><div class="k">Strike coverage</div><div class="v" id="gex-strike-coverage">—</div><div class="s" id="gex-oi-coverage">—</div></div>
+        <div class="gex-model-stat"><div class="k">Near-ATM OI</div><div class="v" id="gex-atm-coverage">—</div><div class="s">Non-zero strikes within ±5% spot</div></div>
+      </div>
+      <div class="gex-expiry-wrap"><table class="gex-expiry-table"><thead><tr><th>Expiry</th><th>Mode</th><th>Net GEX</th><th>Call OI</th><th>Put OI</th></tr></thead><tbody id="gex-expiry-body"><tr><td colspan="5">Waiting for multi-expiry data.</td></tr></tbody></table></div>
+      <div class="gex-method-note" id="gex-method-note"><b>Method:</b> Multi-expiry Black-Scholes gamma model from listed OI/IV. Dealer side is inferred by a conventional sign assumption.</div>
+    </div>
+  </div>
+</div>
+<div class="card options-detail"><h3>STRIKE DETAILS <span class="small">NEAR SPOT • OI + MODELED GEX</span></h3>
+<div class="strike-toolbar"><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><div class="strike-filter"><button class="active" data-strike-filter="near">NEAR SPOT</button><button data-strike-filter="all">ALL LOADED</button></div></div>
+<div class="strike-table-wrap"><table><thead><tr><th>Strike</th><th>Distance</th><th>Call OI</th><th>Put OI</th><th>Net GEX</th><th>Structure</th></tr></thead><tbody id="gex-detail-body"></tbody></table></div>
+<div class="options-interactive-note"><span>Hover a row to inspect its strike and modeled exposure.</span><b>Values are from the loaded option chain snapshot.</b></div></div>
+</section>
+
+<section id="macro">
+<div class="title">MACRO COMMAND CENTER <span class="small">rates • inflation • labor • growth • liquidity • credit • global risk</span></div>
+<div id="macro-banner" class="callout" style="margin-bottom:12px">Loading macro data…</div>
+<div class="grid">
+<div class="card"><div class="label">Fed Funds</div><div class="big" id="m-fed">—</div><div class="small" id="m-fed-date">—</div></div>
+<div class="card"><div class="label">SOFR</div><div class="big" id="m-sofr">—</div><div class="small" id="m-sofr-date">—</div></div>
+<div class="card"><div class="label">10Y Real Yield</div><div class="big" id="m-real10">—</div><div class="small">FRED DFII10</div></div>
+<div class="card"><div class="label">10Y Breakeven</div><div class="big" id="m-be10">—</div><div class="small">Inflation expectations</div></div>
+</div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Yield Curve</h3><table><thead><tr><th>Maturity</th><th>Yield</th><th>Curve</th></tr></thead><tbody id="macro-rates"></tbody></table><div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">2s10s</span><b id="s-2s10s">—</b></div><div class="kpi"><span class="small">5s30s</span><b id="s-5s30s">—</b></div><div class="kpi"><span class="small">3M10Y</span><b id="s-3m10y">—</b></div></div><div class="callout" style="margin-top:12px"><b id="curve-direction">Curve: —</b><br><span class="small" id="curve-implication">Waiting for curve history.</span><br><span class="small" id="curve-interpretation">Direction is calculated from the previous saved snapshot; this is a descriptive macro signal, not a forecast.</span></div></div>
+<div class="card"><h3>Fed & Policy</h3><div class="callout"><b id="fomc-next">—</b><br><span class="small" id="fomc-note">Official Federal Reserve calendar</span></div><table style="margin-top:10px"><tr><td>Fed balance sheet</td><td id="m-walcl">—</td></tr><tr><td>Bank reserves / liquidity</td><td id="m-liq">—</td></tr><tr><td>Reverse repo</td><td id="m-rrp">—</td></tr><tr><td>TGA</td><td id="m-tga">—</td></tr></table></div>
+</div>
+<div class="title" style="margin-top:28px">INFLATION & PRICES</div>
+<div class="grid">
+<div class="card"><div class="label">CPI <span class="small">(Index)</span></div><div class="big" id="m-cpi">—</div><div class="small" id="m-cpi-prev">—</div></div>
+<div class="card"><div class="label">Core CPI <span class="small">(Index)</span></div><div class="big" id="m-corecpi">—</div><div class="small" id="m-corecpi-prev">—</div></div>
+<div class="card"><div class="label">PCE <span class="small">(Index)</span></div><div class="big" id="m-pce">—</div><div class="small" id="m-pce-prev">—</div></div>
+<div class="card"><div class="label">Core PCE <span class="small">(Index)</span></div><div class="big" id="m-corepce">—</div><div class="small" id="m-corepce-prev">—</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>PPI & Inflation Expectations</h3><table><tr><td>PPI (Index)</td><td id="m-ppi">—</td></tr><tr><td>10Y breakeven</td><td id="m-be10b">—</td></tr><tr><td>Real 10Y</td><td id="m-real10b">—</td></tr></table></div><div class="card"><h3>Inflation Regime</h3><div class="big amber" id="reg-inflation">—</div><div class="small">Rule-based classification from latest available data; not a forecast.</div></div></div>
+<div class="title" style="margin-top:28px">EMPLOYMENT & LABOR</div>
+<div class="grid">
+<div class="card"><div class="label">Unemployment</div><div class="big" id="m-unrate">—</div><div class="small" id="m-unrate-prev">—</div></div>
+<div class="card"><div class="label">Nonfarm Payrolls</div><div class="big" id="m-payrolls">—</div><div class="small" id="m-payrolls-prev">—</div></div>
+<div class="card"><div class="label">Avg Hourly Earnings</div><div class="big" id="m-ahe">—</div><div class="small">Monthly series</div></div>
+<div class="card"><div class="label">Labor Participation</div><div class="big" id="m-part">—</div><div class="small">Civilian labor force</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Claims & Jobs</h3><table><tr><td>Initial claims</td><td id="m-icsa">—</td></tr><tr><td>Continuing claims</td><td id="m-ccsa">—</td></tr><tr><td>JOLTS openings</td><td id="m-jolts">—</td></tr></table></div><div class="card"><h3>Labor Regime</h3><div class="big" id="reg-labor">—</div><div class="small">Derived from unemployment rate.</div></div></div>
+<div class="title" style="margin-top:28px">GROWTH & ACTIVITY</div>
+<div class="grid">
+<div class="card"><div class="label">GDP</div><div class="big" id="m-gdp">—</div><div class="small">Real GDP level</div></div>
+<div class="card"><div class="label">GDP Growth</div><div class="big" id="m-gdpg">—</div><div class="small">Annualized quarterly rate</div></div>
+<div class="card"><div class="label">Industrial Production</div><div class="big" id="m-indpro">—</div><div class="small">Index level</div></div>
+<div class="card"><div class="label">Retail Sales</div><div class="big" id="m-retail">—</div><div class="small">Index level</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Housing & Sentiment</h3><table><tr><td>Housing starts</td><td id="m-houst">—</td></tr><tr><td>Building permits</td><td id="m-permit">—</td></tr><tr><td>Consumer sentiment</td><td id="m-sent">—</td></tr></table></div><div class="card"><h3>Growth Regime</h3><div class="big" id="reg-growth">—</div><div class="small">Rule-based classification from GDP growth.</div></div></div>
+<div class="title" style="margin-top:28px">LIQUIDITY & CREDIT</div>
+<div class="grid">
+<div class="card"><div class="label">Fed Balance Sheet</div><div class="big" id="m-balance">—</div><div class="small">WALCL</div></div>
+<div class="card"><div class="label">M2</div><div class="big" id="m-m2">—</div><div class="small">Money supply</div></div>
+<div class="card"><div class="label">HY Spread</div><div class="big" id="m-hy">—</div><div class="small">Option-adjusted spread</div></div>
+<div class="card"><div class="label">IG Spread</div><div class="big" id="m-ig">—</div><div class="small">Corporate credit</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Financial Conditions</h3><table><tr><td>NFCI</td><td id="m-nfci">—</td></tr><tr><td>Fed balance sheet trend</td><td id="m-baltrend">—</td></tr><tr><td>Liquidity regime</td><td id="reg-liq">—</td></tr></table></div><div class="card"><h3>Credit Stress</h3><div class="big amber" id="reg-credit">—</div><div class="small">Threshold-based warning using HY spread; not a recession forecast.</div></div></div>
+<div class="title" style="margin-top:28px">DOLLAR & GLOBAL MARKETS</div>
+<div class="grid">
+<div class="card"><div class="label">DXY</div><div class="big" id="m-dxy">—</div><div class="small">Spot snapshot</div></div>
+<div class="card"><div class="label">USDJPY</div><div class="big" id="m-usdjpy">—</div><div class="small">Spot snapshot</div></div>
+<div class="card"><div class="label">GBPUSD</div><div class="big" id="m-gbp">—</div><div class="small">Spot snapshot</div></div>
+<div class="card"><div class="label">USDCNH</div><div class="big" id="m-usdcn">—</div><div class="small">Spot snapshot</div></div>
+</div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Commodities</h3><table><tr><td>WTI</td><td id="m-wti">—</td></tr><tr><td>Gold</td><td id="m-gold">—</td></tr><tr><td>Copper</td><td id="m-copper">—</td></tr><tr><td>Natural gas</td><td id="m-natgas">—</td></tr></table></div><div class="card"><h3>Risk & Volatility</h3><table><tr><td>VIX</td><td id="m-vix">—</td></tr><tr><td>Dollar regime</td><td id="m-usdreg">—</td></tr><tr><td>Overall macro regime</td><td id="reg-overall">—</td></tr></table></div></div>
+<div class="title" style="margin-top:28px">MACRO REGIME ENGINE</div>
+<div class="grid"><div class="card"><div class="label">Inflation</div><div class="big" id="rr-inflation">—</div></div><div class="card"><div class="label">Labor</div><div class="big" id="rr-labor">—</div></div><div class="card"><div class="label">Growth</div><div class="big" id="rr-growth">—</div></div><div class="card"><div class="label">Liquidity</div><div class="big" id="rr-liq">—</div></div></div>
+<div class="card" style="margin-top:12px"><h3>Macro Event Intelligence</h3><table><thead><tr><th>Event</th><th>Latest</th><th>Previous</th><th>Frequency</th><th>Market use</th></tr></thead><tbody id="macro-events"></tbody></table><div class="small" style="margin-top:10px">This panel reports published observations where available. It does not invent consensus estimates. For the official FOMC schedule, use the Federal Reserve calendar.</div></div>
+</section>
+<section id="cot"><div class="title">COT POSITIONING</div>
+<div class="card"><div class="callout" id="cot-note">CFTC COT is weekly, not tick-by-tick. Positions are from Tuesday and are generally released Friday at 3:30 p.m. ET.</div>
+<div class="small" id="cot-status" style="margin-top:12px">Waiting for official CFTC data…</div>
+<div class="grid2" id="cot-grid" style="margin-top:12px"></div></div></section>
+<section id="news">
+<div class="title">MARKET NEWS</div>
+<div class="card">
+  <div class="small" id="news-status">Waiting for market news…</div>
+  <div id="news-grid" class="grid2" style="margin-top:12px"></div>
+</div>
+</section>
+<div class="footer">INFORMATIONAL MARKET TOOL • Not investment advice • Modelled analytics are explicitly labelled • Snapshot generated from the canonical data layer</div>
+</main>
+
+<script>
+let selectedGexMode='ALL';
+function setGexMode(mode){
+ selectedGexMode=mode;
+ document.querySelectorAll('.gex-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.gexMode===mode));
+}
+function renderGexProfile(o,p){
+ const svg=document.getElementById('options-gex-svg'); if(!svg) return;
+ const profiles=o.profiles||{};
+ let profile=profiles[selectedGexMode];
+ if(!profile || profile.status==='unavailable' || !Array.isArray(profile.heatmap) || !profile.heatmap.length){
+   if(selectedGexMode!=='ALL' && profiles.ALL?.heatmap?.length) profile=profiles.ALL;
+ }
+ const usingFallback=selectedGexMode!=='ALL' && (!profile || profile.label!==(selectedGexMode));
+ const active=profile&&profile.heatmap?.length?profile:o;
+ const f=(v,n=2)=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
+ const rows=Array.isArray(active.heatmap||active.oi_heatmap)?(active.heatmap||active.oi_heatmap).map(x=>({
+   strike:Number(x.strike),net:Number(x.net_gex)||0,call:Number(x.call_oi)||0,put:Number(x.put_oi)||0,
+   callGex:Number(x.call_gex)||0,putGex:Number(x.put_gex)||0
+ })).filter(x=>Number.isFinite(x.strike)&&Number.isFinite(x.net)).sort((a,b)=>a.strike-b.strike):[];
+ const spot=Number(p.ndx), putWall=Number(active.put_wall), callWall=Number(active.call_wall), flip=Number(active.gamma_flip);
+ const expiryMode=selectedGexMode==='ALL'?(o.expiry_mode||'MULTI-EXPIRY'):(active.expiry_mode||selectedGexMode);
+ const expiryText=active.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
+ const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
+ const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
+ const topPcr=document.getElementById('pcr'); if(topPcr){const c=Number(active.call_oi),q=Number(active.put_oi);topPcr.textContent=(c>0&&Number.isFinite(q))?f(q/c,2):(o.pcr_oi==null?'—':f(o.pcr_oi,2));}
+ const note=document.getElementById('gex-selected-note'); if(note){ if(usingFallback) note.textContent=`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`; else if(selectedGexMode==='ALL') note.textContent='Showing ALL EXPIRATIONS modeled GEX.'; else note.textContent=`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`; }
+ document.getElementById('gex-expiry').textContent=selectedGexMode==='ALL'?`ALL EXP • ${o.expiry_count||0}`:expiryText;
+ const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${selectedLabel} • MODELED`;
+ document.getElementById('gex-chart-status').textContent=rows.length?`${selectedLabel} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
+ document.getElementById('gex-put-level').textContent=Number.isFinite(putWall)?f(putWall,0):'—';
+ document.getElementById('gex-call-level').textContent=Number.isFinite(callWall)?f(callWall,0):'—';
+ document.getElementById('gex-flip-level').textContent=Number.isFinite(flip)?f(flip,2):'—';
+ document.getElementById('gex-spot-level').textContent=Number.isFinite(spot)?f(spot,0):'—';
+ ['put','call','flip','spot'].forEach(k=>{
+   const v={put:putWall,call:callWall,flip,spot}[k];
+   const el=document.getElementById('ladder-'+k),ev=document.getElementById('ladder-'+k+'-v');
+   if(ev)ev.textContent=Number.isFinite(v)?f(v,0):'—';
+   if(el)el.style.opacity=Number.isFinite(v)?'1':'.35';
+ });
+ if(!rows.length){
+   svg.innerHTML='<text x="490" y="270" text-anchor="middle" fill="#718295" font-size="14">OPTION CHAIN UNAVAILABLE — PROFILE NOT FABRICATED</text>';
+   return;
+ }
+
+ const W=1080,H=540,L=82,R=155,T=24,B=46,PW=W-L-R,PH=H-T-B,mid=L+PW/2;
+ const dataMin=Math.min(...rows.map(x=>x.strike)),dataMax=Math.max(...rows.map(x=>x.strike));
+ const fullSpan=Math.max(1,dataMax-dataMin);
+ const keyVals=[putWall,callWall,flip,spot].filter(Number.isFinite);
+ const keyLo=keyVals.length?Math.min(...keyVals):spot;
+ const keyHi=keyVals.length?Math.max(...keyVals):spot;
+ const keySpan=Math.max(1,keyHi-keyLo);
+
+ // Start focused on the important option levels, not the entire chain.
+ const MAX_ZOOM=12;
+ let zoom=Math.min(MAX_ZOOM,fullSpan/Math.max(1200,keySpan*6));
+ if(!Number.isFinite(zoom)||zoom<1)zoom=1;
+ let center=Number.isFinite(spot)?spot:(keyLo+keyHi)/2;
+ let dragging=false,lastY=0;
+
+ const abs=rows.map(x=>Math.abs(x.net)).sort((a,b)=>a-b);
+ const q=abs[Math.max(0,Math.floor(abs.length*.95)-1)]||1;
+ const scale=Math.max(1,q);
+
+ const clampCenter=(c,span)=>Math.max(dataMin+span/2,Math.min(dataMax-span/2,c));
+ const getWindow=()=>{
+   const span=Math.min(fullSpan,fullSpan/zoom),c=clampCenter(center,span);
+   return {lo:c-span/2,hi:c+span/2,span};
+ };
+ const setControls=()=>{
+   const z=document.getElementById('gex-zoom-level');
+   if(z)z.textContent=`${zoom<1.05?'1':zoom.toFixed(1)}×`;
+ };
+ const render=()=>{
+   const win=getWindow(),minS=win.lo,maxS=win.hi;
+   const y=v=>T+(maxS-v)/(maxS-minS||1)*PH;
+   const barH=Math.max(4,Math.min(16,PH/Math.max(8,rows.length*(zoom<2?1:Math.min(1.6,zoom*.42)))*.95));
+   const half=PW/2-24;
+   const x=v=>mid+(Math.max(-scale,Math.min(scale,v))/scale)*half;
+
+   let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="#040b12"/>`;
+
+   // Clean horizontal strike grid + readable price labels.
+   const ticks=8;
+   for(let i=0;i<=ticks;i++){
+     const yy=T+i*PH/ticks,sv=maxS-(maxS-minS)*i/ticks;
+     out+=`<line class="opt-grid" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/>`;
+     out+=`<text class="opt-axis" x="${L-10}" y="${yy+3}" text-anchor="end">${f(sv,0)}</text>`;
+   }
+
+   // Vertical GEX scale only; zero is the center.
+   [-1,-.5,0,.5,1].forEach(t=>{
+     const xx=mid+t*half;
+     out+=`<line class="${t===0?'opt-zero':'opt-grid'}" x1="${xx}" y1="${T}" x2="${xx}" y2="${T+PH}"/>`;
+     out+=`<text class="opt-axis" x="${xx}" y="${H-14}" text-anchor="middle">${Math.round(t*scale/1000)}K</text>`;
+   });
+
+   // Simple GEX bars. No extra profile lines that can look like vertical gamma lines.
+   rows.forEach(r=>{
+     if(r.strike<minS||r.strike>maxS)return;
+     const yy=y(r.strike),xx=x(r.net),left=Math.min(mid,xx),ww=Math.max(1,Math.abs(xx-mid));
+     const cls=r.net>=0?'opt-bar-pos':'opt-bar-neg';
+     out+=`<rect class="${cls}" data-strike="${r.strike}" data-net="${r.net}" data-call="${r.call}" data-put="${r.put}" data-callg="${r.callGex}" data-putg="${r.putGex}" x="${left}" y="${yy-barH/2}" width="${ww}" height="${barH}" rx="2"/>`;
+   });
+
+   // All key levels are horizontal and labeled on the right.
+   const levels=[
+     ['putWall',putWall,'opt-level-put','PUT WALL','#ff617b'],
+     ['callWall',callWall,'opt-level-call','CALL WALL','#31e0a2'],
+     ['flip',flip,'opt-level-flip','GAMMA FLIP','#f4c95d'],
+     ['spot',spot,'opt-level-spot','SPOT','#edf3f8']
+   ];
+   levels.forEach(([key,val,cls,label,color])=>{
+     if(!Number.isFinite(val)||val<minS||val>maxS)return;
+     const yy=y(val);
+     out+=`<line class="${cls}" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/>`;
+     out+=`<rect x="${W-R+3}" y="${yy-10}" width="${R-8}" height="20" rx="5" fill="#07131d" opacity=".92"/>`;
+     out+=`<text class="opt-level-label" x="${W-R+10}" y="${yy+3}" fill="${color}">${label} ${f(val,key==='flip'?2:0)}</text>`;
+   });
+
+   out+=`<line id="gex-cross-v" class="opt-crosshair" x1="${mid}" y1="${T}" x2="${mid}" y2="${T+PH}"/>`;
+   out+=`<line id="gex-cross-h" class="opt-crosshair" x1="${L}" y1="${T+PH/2}" x2="${W-R}" y2="${T+PH/2}"/>`;
+   out+=`<circle id="gex-hover-dot" class="opt-hover-dot" cx="${mid}" cy="${T+PH/2}" r="4" opacity="0"/>`;
+   out+=`<text class="opt-axis-strong" x="22" y="${T+PH/2}" transform="rotate(-90 22 ${T+PH/2})" text-anchor="middle">STRIKE PRICE</text>`;
+   out+=`<text class="opt-axis-strong" x="${mid}" y="${H-14}" text-anchor="middle">NET GEX (NOTIONAL)</text>`;
+   out+=`<g id="gex-tip" opacity="0"><rect class="opt-tooltip" x="0" y="0" width="220" height="94" rx="7"/>
+     <text id="gex-tip-title" class="opt-tooltip-text" x="12" y="20"></text>
+     <text id="gex-tip-net" class="opt-tooltip-sub" x="12" y="40"></text>
+     <text id="gex-tip-oi" class="opt-tooltip-sub" x="12" y="57"></text>
+     <text id="gex-tip-gex" class="opt-tooltip-sub" x="12" y="74"></text></g>`;
+   svg.innerHTML=out;
+   setControls();
+
+   const tip=document.getElementById('gex-tip'),crossV=document.getElementById('gex-cross-v'),
+     crossH=document.getElementById('gex-cross-h'),dot=document.getElementById('gex-hover-dot');
+   const tipTitle=document.getElementById('gex-tip-title'),tipNet=document.getElementById('gex-tip-net'),
+     tipOi=document.getElementById('gex-tip-oi'),tipGex=document.getElementById('gex-tip-gex');
+   const visible=rows.filter(r=>r.strike>=minS&&r.strike<=maxS);
+   const barEls=[...svg.querySelectorAll('rect[data-strike]')];
+
+   const showTip=e=>{
+     if(!visible.length)return;
+     const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+     const ctm=svg.getScreenCTM();if(!ctm)return;
+     const q=pt.matrixTransform(ctm.inverse());
+     const r=visible.reduce((best,x)=>Math.abs(y(x.strike)-q.y)<Math.abs(y(best.strike)-q.y)?x:best,visible[0]);
+     const yy=y(r),xx=x(r.net);
+     crossV.setAttribute('x1',q.x);crossV.setAttribute('x2',q.x);
+     crossH.setAttribute('y1',yy);crossH.setAttribute('y2',yy);
+     dot.setAttribute('cx',xx);dot.setAttribute('cy',yy);dot.setAttribute('opacity','1');
+     tipTitle.textContent=`STRIKE ${f(r.strike,0)}`;
+     tipNet.textContent=`Net GEX  ${f(r.net,0)}`;
+     tipOi.textContent=`Call OI ${f(r.call,0)}  •  Put OI ${f(r.put,0)}`;
+     tipGex.textContent=`Call GEX ${f(r.callGex,0)}  •  Put GEX ${f(r.putGex,0)}`;
+     const tx=Math.min(W-228,Math.max(L+8,q.x+14)),ty=Math.min(H-104,Math.max(T+8,yy-48));
+     tip.setAttribute('transform',`translate(${tx} ${ty})`);tip.setAttribute('opacity','1');
+     barEls.forEach(el=>el.classList.toggle('opt-bar-hover',Number(el.dataset.strike)===r.strike));
+   };
+
+   svg.onmousemove=showTip;
+   svg.onmouseleave=()=>{
+     tip.setAttribute('opacity','0');dot.setAttribute('opacity','0');
+     barEls.forEach(el=>el.classList.remove('opt-bar-hover'));
+   };
+
+   svg.onpointerdown=e=>{
+     dragging=true;lastY=e.clientY;svg.setPointerCapture?.(e.pointerId);svg.style.cursor='grabbing';
+   };
+   svg.onpointermove=e=>{
+     if(!dragging)return;
+     const dy=e.clientY-lastY;lastY=e.clientY;
+     const span=getWindow().span;
+     center-=dy/(svg.clientHeight||H)*span;
+     center=clampCenter(center,span);
+     render();
+   };
+   svg.onpointerup=e=>{
+     dragging=false;svg.releasePointerCapture?.(e.pointerId);svg.style.cursor='grab';
+   };
+   svg.onpointercancel=()=>{dragging=false;svg.style.cursor='grab';};
+
+   svg.onwheel=e=>{
+     e.preventDefault();
+     const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+     const ctm=svg.getScreenCTM();if(!ctm)return;
+     const q=pt.matrixTransform(ctm.inverse());
+     const old=getWindow();
+     let cursorStrike=old.hi-(q.y-T)/PH*old.span;
+
+     // If the pointer is over an empty far-away area, keep zoom anchored near spot.
+     if(Number.isFinite(spot)&&Math.abs(cursorStrike-spot)>old.span*.25)cursorStrike=spot;
+     const nearest=rows.reduce((best,r)=>Math.abs(r.strike-cursorStrike)<Math.abs(best.strike-cursorStrike)?r:best,rows[0]);
+     cursorStrike=nearest?nearest.strike:cursorStrike;
+
+     const factor=e.deltaY<0?1.32:(1/1.32);
+     const next=Math.max(1,Math.min(MAX_ZOOM,zoom*factor));
+     const nextSpan=Math.min(fullSpan,fullSpan/next);
+     const ratio=(cursorStrike-old.lo)/(old.span||1);
+     center=cursorStrike-Math.max(0,Math.min(1,ratio))*nextSpan;
+     center=clampCenter(center,nextSpan);
+     zoom=next;
+     render();
+   };
+ };
+
+ // Compact controls. Zoom is expressed as x, never 1000%.
+ const tools=document.querySelector('.options-chart-tools');
+ if(tools){
+   ['gex-zoom-out','gex-zoom-in','gex-fit-walls','gex-reset-view','gex-zoom-level'].forEach(id=>document.getElementById(id)?.remove());
+   const mk=(id,text,title,fn)=>{
+     const b=document.createElement('button');b.type='button';b.id=id;b.className='options-tool';b.textContent=text;b.title=title;b.onclick=fn;tools.appendChild(b);return b;
+   };
+   mk('gex-zoom-out','−','Zoom out',()=>{
+     zoom=Math.max(1,zoom/1.35);
+     center=clampCenter(Number.isFinite(spot)?spot:center,Math.min(fullSpan,fullSpan/zoom));
+     render();
+   });
+   mk('gex-zoom-in','+','Zoom in on the key levels',()=>{
+     zoom=Math.min(MAX_ZOOM,zoom*1.35);
+     center=clampCenter(Number.isFinite(spot)?spot:center,Math.min(fullSpan,fullSpan/zoom));
+     render();
+   });
+   mk('gex-fit-walls','FIT CORE','Focus on Put Wall, Call Wall, Gamma Flip and Spot',()=>{
+     const vs=keyVals.length?keyVals:[spot];
+     const lo=Math.min(...vs),hi=Math.max(...vs),span=Math.max(500,(hi-lo)*4);
+     zoom=Math.min(MAX_ZOOM,fullSpan/span);
+     center=(lo+hi)/2;
+     center=clampCenter(center,Math.min(fullSpan,fullSpan/Math.max(1,zoom)));
+     render();
+   });
+   mk('gex-reset-view','RESET','Show the full loaded option chain',()=>{
+     zoom=1;center=Number.isFinite(spot)?spot:(dataMin+dataMax)/2;render();
+   });
+   const z=document.createElement('span');z.id='gex-zoom-level';z.className='options-tool';z.title='Chart zoom';z.textContent='1×';tools.appendChild(z);
+ }
+
+ // Honest level ladder.
+ const vals=[putWall,callWall,flip,spot].filter(Number.isFinite);
+ if(vals.length>=2){
+   const lo=Math.min(...vals),hi=Math.max(...vals),place=v=>Math.max(7,Math.min(93,7+(v-lo)/(hi-lo||1)*86));
+   [['put',putWall],['call',callWall],['spot',spot],['flip',flip]].forEach(([k,v])=>{
+     if(Number.isFinite(v)){const el=document.getElementById('ladder-'+k);if(el)el.style.left=place(v)+'%';}
+   });
+ }
+
+ const near=rows.slice().sort((a,b)=>Math.abs(a.strike-spot)-Math.abs(b.strike-spot));
+ const renderTable=(mode='near')=>{
+   const list=(mode==='all'?rows:near.slice(0,14)).slice().sort((a,b)=>a.strike-b.strike);
+   document.getElementById('heat-status').textContent=`${rows.length} modeled strikes • ${expiryText} • ${mode==='all'?'all loaded':'nearest '+list.length+' shown'}`;
+   document.getElementById('gex-detail-body').innerHTML=list.map(r=>{
+     const cls=(Number.isFinite(putWall)&&Math.abs(r.strike-putWall)<1)?'level-put':
+       (Number.isFinite(callWall)&&Math.abs(r.strike-callWall)<1)?'level-call':
+       (Number.isFinite(flip)&&Math.abs(r.strike-flip)<2)?'level-flip':
+       (Number.isFinite(spot)&&Math.abs(r.strike-spot)<2)?'level-spot':'';
+     const tag=cls==='level-put'?'PUT WALL':cls==='level-call'?'CALL WALL':cls==='level-flip'?'GAMMA FLIP':cls==='level-spot'?'SPOT':'';
+     const bar=Math.min(100,Math.abs(r.net)/(Math.max(1,...list.map(x=>Math.abs(x.net))))*100);
+     const dist=Number.isFinite(spot)?((r.strike-spot)/spot*100):NaN;
+     return `<tr class="${cls}"><td><b>${f(r.strike,0)}</b>${tag?`<span class="small" style="margin-left:6px">${tag}</span>`:''}</td><td>${Number.isFinite(dist)?`${dist>=0?'+':''}${dist.toFixed(2)}%`:'—'}</td><td>${f(r.call,0)}</td><td>${f(r.put,0)}</td><td class="gex-number ${r.net<0?'down':'up'}">${f(r.net,0)}<span class="gex-mini"><i style="width:${bar}%;background:${r.net<0?'#ff617b':'#31e0a2'}"></i></span></td><td>${r.net<0?'Negative GEX':'Positive GEX'}</td></tr>`;
+   }).join('');
+ };
+ renderTable('near');
+ document.querySelectorAll('[data-strike-filter]').forEach(btn=>{
+   btn.onclick=()=>{
+     document.querySelectorAll('[data-strike-filter]').forEach(b=>b.classList.remove('active'));
+     btn.classList.add('active');renderTable(btn.dataset.strikeFilter);
+   };
+ });
+ const total=Number(active.net_gex),ins=[];
+ if(Number.isFinite(spot)&&Number.isFinite(flip)){ if(spot>flip)ins.push(`<strong>Above gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else if(spot<flip)ins.push(`<strong>Below gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else ins.push(`<strong>At gamma flip</strong>Spot is near the modeled gamma flip.`); }
+ const levelInsight=(name,level)=>{ if(!Number.isFinite(level))return; const dist=Math.abs(spot-level)/spot; const where=dist<=0.003?'near spot':level>spot?'above spot':'below spot'; ins.push(`<strong>${name} ${f(level,0)}</strong>${where==='near spot'?'Spot is near this modeled concentration level.':where==='above spot'?'Overhead modeled level above spot.':'Downside modeled level below spot.'}`); };
+ levelInsight('Call wall',callWall); levelInsight('Put wall',putWall);
+ if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled ${selectedLabel.toLowerCase()} exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
+ document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No valid GEX interpretation available.</div>';
+ document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Gamma Flip: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span></div>`;
+ render();
+}
+
+async function load(){
+ const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
+ const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{};
+ const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
+ const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
+ const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
+
+ document.getElementById('live-grid').innerHTML=[
+ q('NASDAQ-100 (NDX)',p.ndx,p.ndx_change),
+ q('EURUSD',p.eurusd,p.eurusd_change,5),
+ q('DXY',p.dxy,p.dxy_change),
+ q('VIX',p.vix,p.vix_change)
+ ].join('');
+
+ document.getElementById('ndx1').textContent=fmt(p.ndx);
+ document.getElementById('ndxchg1').textContent=pct(p.ndx_change);
+ document.getElementById('eur').textContent=fmt(p.eurusd,5);
+ document.getElementById('eurchg').textContent=pct(p.eurusd_change);
+ document.getElementById('dxy').textContent=fmt(p.dxy);
+ document.getElementById('dxychg').textContent=pct(p.dxy_change);
+ document.getElementById('vix').textContent=fmt(p.vix);
+ document.getElementById('vixchg').textContent=pct(p.vix_change);
+ document.getElementById('fxdxy').textContent=pct(p.dxy_change);
+ document.getElementById('fxeur').textContent=pct(p.eurusd_change);
+ document.getElementById('fxvix').textContent=pct(p.vix_change);
+
+ const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
+ const expiryMode=o.expiry_mode||'NEAREST';
+ const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
+ const expiryCount=Number(o.expiry_count)||0;
+ const gexExpiryText=expiryCount>1?`ALL EXPIRATIONS • ${expiryCount} EXPIRIES`:expiryText;
+ document.getElementById('opt-expiry-mode').textContent=expiryText;
+ document.getElementById('em-label').textContent=`Expected Move • ${expiryMode}`;
+ const homeEmLabel=document.getElementById('home-em-label'); if(homeEmLabel) homeEmLabel.textContent=`Expected Move • ${expiryMode}`;
+ const iv=live?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
+ const em=live?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
+ document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE • ${expiryMode}</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${live?'up':'amber'}">${live?'LIVE':'WAITING'}</b></div></div>`;
+
+ ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
+ ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
+ document.getElementById('emp1').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
+ document.getElementById('opt-em-points').textContent=live?'≈ '+fmt(o.expected_move_points)+' points':'No valid chain available';
+
+ const dq=o.data_quality||{};
+ const dqStatus=dq.status||'UNAVAILABLE';
+ const dqClass=dqStatus==='GOOD'?'up':'amber';
+ const dqText=dqStatus==='GOOD'?'GOOD CHAIN COVERAGE':dqStatus==='LIMITED'?'LIMITED CHAIN DATA':'OPTION CHAIN UNAVAILABLE';
+ const dqReason=dq.reason||'No quality assessment available.';
+ document.getElementById('data-quality').innerHTML=`<b class="${dqClass}">${dqText}</b><br><span class="small">${dqReason}</span>${dq.strikes?`<br><span class="small">${dq.strikes} modeled strikes • ${dq.nonzero_oi_strikes||0} with non-zero OI • ${dq.near_atm_nonzero_strikes||0} non-zero strikes within ±5% of spot</span>`:''}`;
+
+ const cov=o.coverage||{};
+ const confidence=String(o.gex_confidence||o.dealer_positioning?.confidence||'—').toUpperCase();
+ const confidenceClass=confidence==='HIGH'?'up':confidence==='MEDIUM'?'amber':'down';
+ const confEl=document.getElementById('gex-confidence'); if(confEl){confEl.textContent=confidence;confEl.className='v '+confidenceClass;}
+ const qualityEl=document.getElementById('gex-quality'); if(qualityEl) qualityEl.textContent=dq.status?`${dq.status} • ${dqReason}`:'—';
+ const expList=Array.isArray(o.expiry_dates)?o.expiry_dates:[];
+ const expCount=Number(o.expiry_count)||expList.length||0;
+ document.getElementById('gex-expiry-count').textContent=expCount?String(expCount):'—';
+ document.getElementById('gex-expiry-list').textContent=expList.length?expList.slice(0,4).join(' • ')+(expList.length>4?' • …':''):'—';
+ const sensFmt=x=>{const n=Number(x);if(!Number.isFinite(n))return '—';const a=Math.abs(n),u=a>=1e9?'B':a>=1e6?'M':a>=1e3?'K':'';const v=u?(n/(u==='B'?1e9:u==='M'?1e6:1e3)):n;return `${v>=0?'+':''}${v.toFixed(2)}${u}`};
+ document.getElementById('gex-vanna').textContent=sensFmt(o.vanna);
+ document.getElementById('gex-charm').textContent=sensFmt(o.charm);
+ document.getElementById('gex-strike-coverage').textContent=cov.strikes?`${cov.strikes}`:'—';
+ document.getElementById('gex-oi-coverage').textContent=cov.nonzero_oi_strikes!=null?`${cov.nonzero_oi_strikes} with non-zero OI`:'—';
+ document.getElementById('gex-atm-coverage').textContent=cov.near_atm_nonzero_strikes!=null?`${cov.near_atm_nonzero_strikes}`:'—';
+ const expRows=Array.isArray(o.expiry_breakdown)?o.expiry_breakdown:[];
+ document.getElementById('gex-expiry-body').innerHTML=expRows.length?expRows.map(x=>`<tr><td>${x.expiry||'—'}</td><td>${x.mode||'—'}</td><td class="${Number(x.net_gex)<0?'down':'up'}">${sensFmt(x.net_gex)}</td><td>${fmt(x.call_oi,0)}</td><td>${fmt(x.put_oi,0)}</td></tr>`).join(''):'<tr><td colspan="5">No multi-expiry breakdown available.</td></tr>';
+ const method=o.gex_methodology||'Multi-expiry Black-Scholes gamma model from listed OI/IV.';
+ document.getElementById('gex-method-note').innerHTML=`<b>Method:</b> ${method} <span class="small">Dealer inventory is not directly observable from listed OI.</span>`;
+
+ const dp=o.dealer_positioning||{};
+ const selectedProfile=o.profiles?.[selectedGexMode];
+ const activeProfile=(selectedProfile && selectedProfile.status!=='unavailable' && Array.isArray(selectedProfile.heatmap) && selectedProfile.heatmap.length)?selectedProfile:o;
+ const activeGex=Number(activeProfile.net_gex);
+ const activePutWall=Number(activeProfile.put_wall);
+ const activeCallWall=Number(activeProfile.call_wall);
+ const activeFlip=Number(activeProfile.gamma_flip);
+ const regime=Number.isFinite(activeGex)?(activeGex>0?'Positive gamma':activeGex<0?'Negative gamma':'Neutral gamma'):(dp.regime||'—');
+ const modelStatus=dp.status||'unavailable';
+ const qualityStatus=dqStatus;
+ const setGamma=(id,sub,profile)=>{const el=document.getElementById(id),se=document.getElementById(sub);const n=Number(profile?.net_gex);const ok=profile&&profile.status!=='unavailable'&&Number.isFinite(n);const text=ok?(n>0?'Positive':n<0?'Negative':'Neutral'):'Unavailable';if(el){el.textContent=text;el.className='';el.classList.add(n>0?'gamma-positive':n<0?'gamma-negative':'gamma-neutral');}if(se)se.textContent=ok?`Net GEX ${sensFmt(n)}`:'No valid chain';};
+ setGamma('gamma-0dte','gamma-0dte-sub',o.profiles?.['0DTE']);
+ setGamma('gamma-all','gamma-all-sub',o.profiles?.['ALL']||o);
+
+ const activeCallOI=Number(activeProfile.call_oi), activePutOI=Number(activeProfile.put_oi);
+ const activePCR=(activeCallOI>0 && Number.isFinite(activePutOI))?activePutOI/activeCallOI:Number(o.pcr_oi);
+ document.getElementById('pcr').textContent=Number.isFinite(activePCR)?fmt(activePCR,2):'—';
+ document.getElementById('gex').textContent=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
+ document.getElementById('putwall').textContent=Number.isFinite(activePutWall)?fmt(activePutWall):'—';
+ document.getElementById('flip').textContent=Number.isFinite(activeFlip)?fmt(activeFlip):'—';
+ document.getElementById('callwall').textContent=Number.isFinite(activeCallWall)?fmt(activeCallWall):'—';
+
+ if(modelStatus==='modeled'){
+   const gexText=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
+   const flipText=Number.isFinite(activeFlip)?fmt(activeFlip):'—';
+   document.getElementById('dealer').innerHTML=
+     `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Gamma Flip: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span>`;
+ }else{
+   document.getElementById('dealer').textContent='Waiting for a valid option chain. No dealer-positioning number is fabricated.';
+ }
+
+ window.__MI_DATA__=d; window.__MI_RENDER_OPTIONS__=()=>renderGexProfile((window.__MI_DATA__||{}).options||{},(window.__MI_DATA__||{}).prices||{});
+ document.querySelectorAll('.gex-mode-btn').forEach(btn=>{const pr=o.profiles?.[btn.dataset.gexMode];btn.disabled=btn.dataset.gexMode!=='ALL' && (!pr || pr.status==='unavailable' || !pr.heatmap?.length);});
+ renderGexProfile(o,p);
+
+ const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
+ document.getElementById('macro-rates').innerHTML=rateRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>—</td></tr>`).join('');
+
+ const m=d.macro||{}, ms=m.series||{};
+ const mv=k=>ms[k]?.value ?? null, mp=k=>ms[k]?.previous ?? null;
+ const mfmt=(x,n=2)=>x==null?'—':fmt(x,n);
+ const macroVal=(id,key,n=2,suffix='')=>{const x=mv(key);document.getElementById(id).textContent=x==null?'—':mfmt(x,n)+suffix;};
+ const macroPair=(id,key,n=2,suffix='')=>{const x=mv(key),y=mp(key);document.getElementById(id).textContent=x==null?'—':`Latest ${mfmt(x,n)}${suffix}${y==null?'':` • Prev ${mfmt(y,n)}${suffix}`}`;};
+ const colorReg=(id,text)=>{const e=document.getElementById(id);e.textContent=text||'—';e.className='big '+(String(text||'').toLowerCase().includes('stress')||String(text||'').toLowerCase().includes('hot')||String(text||'').toLowerCase().includes('contract')?'down':'up');};
+ const money=x=>x==null?'—':(Math.abs(x)>=1000?mfmt(x/1000,2)+'B':mfmt(x,2));
+ macroVal('m-fed','fed_funds',2,'%'); macroVal('m-sofr','sofr',2,'%'); document.getElementById('m-fed-date').textContent=ms.fed_funds?.date||'—'; document.getElementById('m-sofr-date').textContent=ms.sofr?.date||'—';
+ macroVal('m-real10','real_10y',2,'%'); macroVal('m-be10','breakeven_10y',2,'%');
+ const curveRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
+ document.getElementById('macro-rates').innerHTML=curveRows.map(([k,v])=>`<tr><td>${k}</td><td>${v==null?'—':fmt(v,2)+'%'}</td><td>${v==null?'—':'DAILY'}</td></tr>`).join('');
+ document.getElementById('s-2s10s').textContent=m['2s10s']==null?'—':fmt(m['2s10s'],2)+' pp'; document.getElementById('s-5s30s').textContent=m['5s30s']==null?'—':fmt(m['5s30s'],2)+' pp'; document.getElementById('s-3m10y').textContent=m['3m10y']==null?'—':fmt(m['3m10y'],2)+' pp';
+ const cs=m.curve_signal||{}; const cdir=cs.direction||'AWAITING HISTORY'; const cimp=cs.nq_implication||'—'; document.getElementById('curve-direction').textContent=`Curve: ${cdir} • NQ implication: ${cimp}`; document.getElementById('curve-interpretation').textContent=cs.interpretation||'Direction is calculated from the previous saved snapshot; this is a descriptive macro signal, not a forecast.'; const cchanges=cs.changes_pp||{}; const chparts=Object.entries(cchanges).filter(([,v])=>v!=null).map(([k,v])=>`${k} ${v>0?'+':''}${fmt(v,3)} pp`); document.getElementById('curve-implication').textContent=(chparts.length?`Change vs prior: ${chparts.join(' • ')}`:`Confidence: ${cs.confidence||'LOW'}`);
+ const next=m.fomc?.next_meeting||'No upcoming meeting in configured calendar'; document.getElementById('fomc-next').textContent=next; document.getElementById('fomc-note').textContent=m.fomc?.is_sep?'September meeting • Summary of Economic Projections':'Official Federal Reserve FOMC calendar';
+ macroVal('m-walcl','fed_balance_sheet',0); macroVal('m-liq','fed_balance_sheet',0); macroVal('m-rrp','rrp',0); macroVal('m-tga','tga',0);
+ macroPair('m-cpi','cpi',2,''); macroPair('m-corecpi','core_cpi',2,''); macroPair('m-pce','pce',2,''); macroPair('m-corepce','core_pce',2,''); macroVal('m-ppi','ppi',2,''); macroVal('m-be10b','breakeven_10y',2,'%'); macroVal('m-real10b','real_10y',2,'%');
+ macroPair('m-unrate','unemployment',1,'%'); macroPair('m-payrolls','payrolls',0); macroVal('m-ahe','avg_hourly_earnings',2,''); macroVal('m-part','labor_participation',1,'%'); macroVal('m-icsa','initial_claims',0); macroVal('m-ccsa','continuing_claims',0); macroVal('m-jolts','jolts',0);
+ macroVal('m-gdp','gdp',0); macroVal('m-gdpg','gdp_growth',2,'%'); macroVal('m-indpro','industrial_production',2); macroVal('m-retail','retail_sales',2); macroVal('m-houst','housing_starts',0); macroVal('m-permit','building_permits',0); macroVal('m-sent','consumer_sentiment',1);
+ macroVal('m-balance','fed_balance_sheet',0); macroVal('m-m2','m2',0); macroVal('m-hy','hy_spread',2,'%'); macroVal('m-ig','ig_spread',2,'%'); macroVal('m-nfci','financial_conditions',2); document.getElementById('m-baltrend').textContent=mv('fed_balance_sheet')==null?'—':(mp('fed_balance_sheet')==null?'—':(mv('fed_balance_sheet')>mp('fed_balance_sheet')?'UP':'DOWN'));
+ document.getElementById('m-dxy').textContent=fmt(p.dxy,2); document.getElementById('m-usdjpy').textContent=fmt(p.usdjpy,2); document.getElementById('m-gbp').textContent=fmt(p.gbpusd,4); document.getElementById('m-usdcn').textContent=fmt(p.usdcn,4); document.getElementById('m-wti').textContent=fmt(p.wti,2); document.getElementById('m-gold').textContent=fmt(p.gold,2); document.getElementById('m-copper').textContent=fmt(p.copper,2); document.getElementById('m-natgas').textContent=fmt(p.natgas,2); document.getElementById('m-vix').textContent=fmt(p.vix,2);
+ const rg=m.regime||{}; ['inflation','labor','growth','liquidity','credit','overall'].forEach(k=>{const ids={inflation:['reg-inflation','rr-inflation'],labor:['reg-labor','rr-labor'],growth:['reg-growth','rr-growth'],liquidity:['reg-liq','rr-liq'],credit:['reg-credit'],overall:['reg-overall']}[k]||[]; ids.forEach(id=>colorReg(id,rg[k]));});
+ const usdCh=Number(p.dxy_change); document.getElementById('m-usdreg').textContent=Number.isFinite(usdCh)?(usdCh>0.15?'Strong USD':usdCh<-0.15?'Weak USD':'Neutral USD'):'—';
+ const eventKeys=[['CPI','cpi','Monthly','Inflation / rates'],['Core CPI','core_cpi','Monthly','Inflation / rates'],['PCE','pce','Monthly','Fed inflation gauge'],['Unemployment','unemployment','Monthly','Labor / growth'],['Payrolls','payrolls','Monthly','Labor / NQ'],['GDP growth','gdp_growth','Quarterly','Growth / risk'],['HY spread','hy_spread','Daily','Credit stress'],['Fed balance sheet','fed_balance_sheet','Weekly','Liquidity']];
+ document.getElementById('macro-events').innerHTML=eventKeys.map(([name,key,freq,use])=>`<tr><td>${name}</td><td>${mv(key)==null?'—':mfmt(mv(key),2)}</td><td>${mp(key)==null?'—':mfmt(mp(key),2)}</td><td>${freq}</td><td>${use}</td></tr>`).join('');
+ const macroStatus=m.status==='live'?'LIVE FRED + TREASURY':'PARTIAL — FRED API KEY NOT CONFIGURED'; document.getElementById('macro-banner').innerHTML=m.status==='live'?`<b class="up">${macroStatus}</b><br><span class="small">Economic series are pulled from FRED; official Treasury yields are pulled from Treasury. Values retain their native release frequency.</span>`:`<b class="amber">${macroStatus}</b><br><span class="small">Treasury rates and market snapshots can still update, but the full economic dashboard requires a GitHub Actions secret named <b>FRED_API_KEY</b>.</span>`;
+
+ const dxyChange=Number(p.dxy_change);
+ document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
+
+ // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
+ const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
+ const emPct=Number(opt.expected_move_pct);
+ const vixCh=Number(p.vix_change);
+ const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
+ const macroReg=m.regime||{};
+ let score=0, optRead='No usable options location', optImpact='NEUTRAL';
+ if(Number.isFinite(spot)&&Number.isFinite(flip)){
+   if(spot>flip){score+=1; optRead='Above gamma flip'; optImpact='BULLISH';}
+   else if(spot<flip){score-=1; optRead='Below gamma flip'; optImpact='BEARISH';}
+   else {optRead='At gamma flip'; optImpact='NEUTRAL';}
+ }
+ if(gammaReg.includes('negative')){
+   optRead += ' • negative gamma = wider moves';
+   score += Number.isFinite(spot)&&Number.isFinite(flip)?(spot>flip?0.5:-0.5):0;
+ }
+ let dollarRead='Neutral USD', dollarImpact='NEUTRAL';
+ if(Number.isFinite(dxyChange)){
+   if(dxyChange>0.15){score-=1; dollarRead='DXY rising'; dollarImpact='BEARISH';}
+   else if(dxyChange<-0.15){score+=1; dollarRead='DXY falling'; dollarImpact='BULLISH';}
+ }
+ let vixRead='VIX stable', vixImpact='NEUTRAL';
+ if(Number.isFinite(vixCh)){
+   if(vixCh>5){score-=1; vixRead='VIX rising'; vixImpact='BEARISH';}
+   else if(vixCh<-5){score+=1; vixRead='VIX falling'; vixImpact='BULLISH';}
+ }
+ let macroScore=0;
+ if(String(macroReg.growth||'').toLowerCase().includes('expand')) macroScore+=1;
+ if(String(macroReg.liquidity||'').toLowerCase().includes('expand')) macroScore+=1;
+ if(String(macroReg.inflation||'').toLowerCase().includes('hot')) macroScore-=1;
+ if(String(macroReg.credit||'').toLowerCase().includes('stress')) macroScore-=1;
+ score += macroScore*0.75;
+ const macroRead=macroScore>0.5?'Supportive growth/liquidity':macroScore<-0.5?'Inflation/credit headwind':'Mixed macro';
+ const macroImpact=macroScore>0.5?'BULLISH':macroScore<-0.5?'BEARISH':'NEUTRAL';
+ let bias='NEUTRAL';
+ if(score>=2) bias='BULLISH'; else if(score>=0.5) bias='CONSTRUCTIVE'; else if(score<=-2) bias='BEARISH'; else if(score<=-0.5) bias='CAUTIOUS';
+ const biasEl=document.getElementById('nq-bias'); biasEl.textContent=bias; biasEl.className='up'; if(['BEARISH','CAUTIOUS'].includes(bias)) biasEl.className='down'; if(bias==='NEUTRAL') biasEl.className='amber';
+ const rangeLow=Number.isFinite(spot)&&Number.isFinite(emPct)?spot*(1-emPct/100):null;
+ const rangeHigh=Number.isFinite(spot)&&Number.isFinite(emPct)?spot*(1+emPct/100):null;
+ document.getElementById('nq-range').textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
+ document.getElementById('nq-vol').textContent=gammaReg.includes('negative')?'EXPANSION RISK':gammaReg.includes('positive')?'MEAN-REVERSION':'MIXED';
+ document.getElementById('nq-macro').textContent=macroImpact;
+ document.getElementById('nq-read').innerHTML=`<b>${bias}</b> • ${optRead}. ${macroRead}. ${vixRead}. ${dollarRead}.`;
+ document.getElementById('nq-opt-read').textContent=Number.isFinite(flip)?`${fmt(spot,0)} vs flip ${fmt(flip,0)}`:'—';
+ document.getElementById('nq-opt-impact').textContent=optImpact;
+ document.getElementById('nq-dollar-read').textContent=dollarRead;
+ document.getElementById('nq-dollar-impact').textContent=dollarImpact;
+ document.getElementById('nq-vix-read').textContent=vixRead;
+ document.getElementById('nq-vix-impact').textContent=vixImpact;
+ document.getElementById('nq-macro-read').textContent=macroRead;
+ document.getElementById('nq-macro-impact').textContent=macroImpact;
+
+ // V5 visual layer: compact market pulse and option-structure graphic.
+ const pulseReg=document.getElementById('pulse-regime');
+ const pulseNote=document.getElementById('pulse-note');
+ const pulseNdx=document.getElementById('pulse-ndx');
+ const pulseNdxChg=document.getElementById('pulse-ndxchg');
+ const pulseRange=document.getElementById('pulse-range');
+ const pulseRisk=document.getElementById('pulse-risk');
+ const pulseRiskSub=document.getElementById('pulse-risk-sub');
+ if(pulseReg){
+   pulseReg.textContent=bias;
+   pulseReg.className='pulse-regime '+(['BEARISH','CAUTIOUS'].includes(bias)?'down':bias==='NEUTRAL'?'amber':'up');
+   pulseNote.textContent=`${optImpact} options • ${vixImpact} volatility • ${macroImpact} macro • ${dollarImpact} dollar`;
+   pulseNdx.textContent=Number.isFinite(spot)?fmt(spot,0):'—';
+   pulseNdxChg.textContent=Number.isFinite(Number(p.ndx_change))?fmt(Number(p.ndx_change),2)+'%':'—';
+   pulseRange.textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
+   const risk=gammaReg.includes('negative')?'EXPANSION RISK':gammaReg.includes('positive')?'MEAN-REVERSION':'MIXED';
+   pulseRisk.textContent=risk; pulseRisk.className='pulse-value '+(risk==='EXPANSION RISK'?'amber':'');
+   pulseRiskSub.textContent=gammaReg.includes('negative')?'Negative gamma can amplify moves':'Gamma regime from modeled option chain';
+   const drivers=[['OPT',optImpact],['VIX',vixImpact],['MACRO',macroImpact],['USD',dollarImpact]];
+   document.getElementById('pulse-drivers').innerHTML=drivers.map(x=>`<span class="driver-chip"><b>${x[0]}</b> ${x[1]}</span>`).join('');
+   const pulseScore=Math.max(0,Math.min(100,50+score*16));
+   document.getElementById('pulse-ring').style.background=`conic-gradient(${score>=0.5?'var(--green)':score<=-0.5?'var(--red)':'var(--amber)'} 0 ${pulseScore}%,#1a2a39 ${pulseScore}% 100%)`;
+   if(Number.isFinite(spot)&&Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)&&rangeHigh>rangeLow){
+     const pct=Math.max(0,Math.min(100,(spot-rangeLow)/(rangeHigh-rangeLow)*100));
+     document.getElementById('pulse-range-dot').style.left=pct+'%';
+   }
+ }
+ const marker=document.getElementById('nq-spot-marker');
+ if(marker&&Number.isFinite(spot)&&Number.isFinite(putWall)&&Number.isFinite(callWall)){
+   const lo=Math.min(putWall,flip,callWall), hi=Math.max(putWall,flip,callWall);
+   const pct=hi>lo?Math.max(0,Math.min(100,(spot-lo)/(hi-lo)*100)):50; marker.style.left=pct+'%';
+   document.getElementById('nq-put-label').textContent='Put wall '+fmt(putWall,0);
+   document.getElementById('nq-flip-label').textContent='Gamma flip '+fmt(flip,0);
+   document.getElementById('nq-call-label').textContent='Call wall '+fmt(callWall,0);
+ }
+
+ // HOME COMMAND CENTER: compact cross-market dashboard using the same snapshot.
+ const homeMap={ndx:document.getElementById('home-map-ndx'),ndxChg:document.getElementById('home-map-ndx-chg'),dxy:document.getElementById('home-map-dxy'),dxyChg:document.getElementById('home-map-dxy-chg'),vix:document.getElementById('home-map-vix'),vixChg:document.getElementById('home-map-vix-chg'),y10:document.getElementById('home-map-10y'),wti:document.getElementById('home-map-wti'),gold:document.getElementById('home-map-gold')};
+ if(homeMap.ndx){
+  homeMap.ndx.textContent=Number.isFinite(spot)?fmt(spot,0):'—'; homeMap.ndxChg.textContent=pct(p.ndx_change); homeMap.dxy.textContent=fmt(p.dxy,2); homeMap.dxyChg.textContent=pct(p.dxy_change); homeMap.vix.textContent=fmt(p.vix,2); homeMap.vixChg.textContent=pct(p.vix_change); homeMap.y10.textContent=r.y10==null?'—':fmt(r.y10,2)+'%'; homeMap.wti.textContent=p.wti==null?'—':fmt(p.wti,2); homeMap.gold.textContent=p.gold==null?'—':fmt(p.gold,2);
+  document.getElementById('home-putwall').textContent=Number.isFinite(putWall)?fmt(putWall,0):'—'; document.getElementById('home-flip').textContent=Number.isFinite(flip)?fmt(flip,0):'—'; document.getElementById('home-spot').textContent=Number.isFinite(spot)?fmt(spot,0):'—'; document.getElementById('home-callwall').textContent=Number.isFinite(callWall)?fmt(callWall,0):'—'; document.getElementById('home-emrange').textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
+  document.getElementById('home-watch-inflation').textContent=macroReg.inflation||'—'; document.getElementById('home-watch-growth').textContent=macroReg.growth||'—'; document.getElementById('home-watch-liquidity').textContent=macroReg.liquidity||'—'; document.getElementById('home-watch-credit').textContent=macroReg.credit||'—'; document.getElementById('home-watch-fomc').textContent=m.fomc?.next_meeting||'—';
+  document.getElementById('home-why-options').textContent=optRead; document.getElementById('home-why-vol').textContent=vixRead; document.getElementById('home-why-dollar').textContent=dollarRead; document.getElementById('home-why-macro').textContent=macroRead;
+  const hn=Array.isArray(news.items)?news.items.slice(0,4):[]; const safeHome=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  document.getElementById('home-news').innerHTML=hn.length?hn.map(x=>{const impact=String(x.impact||'LOW').toUpperCase();const cls=impact==='HIGH'?'down':impact==='MEDIUM'?'amber':'up';return `<div class="news-mini"><span class="${cls}" style="font-size:9px;font-weight:800">${impact}</span><div class="headline">${safeHome(x.title)}</div></div>`}).join(''):'<div class="small">No current market headlines available.</div>';
+ }
+
+ // WHY NQ IS MOVING: concise rules-based synthesis of the two main gamma regimes and cross-market drivers.
+ const p0=o.profiles?.['0DTE']||{}; const pa=o.profiles?.['ALL']||o;
+ const gammaText=pr=>{const n=Number(pr?.net_gex);if(!Number.isFinite(n))return {read:'Unavailable',impact:'NEUTRAL'};return n>0?{read:`Positive gamma • net ${sensFmt(n)}`,impact:'STABILIZING'}:n<0?{read:`Negative gamma • net ${sensFmt(n)}`,impact:'AMPLIFYING'}:{read:'Neutral gamma',impact:'NEUTRAL'};};
+ const g0=gammaText(p0),ga=gammaText(pa);
+ const ratesRead=(Number(r.y10)!=null&&Number.isFinite(Number(r.y10)))?`10Y ${fmt(r.y10,2)}% • DXY ${fmt(p.dxy,2)}`:`DXY ${fmt(p.dxy,2)}`;
+ const ratesImpact=(Number(p.dxy_change)>0.15)?'HEADWIND':(Number(p.dxy_change)<-0.15)?'SUPPORTIVE':'NEUTRAL';
+ const volRead=Number.isFinite(Number(p.vix_change))?`VIX ${fmt(p.vix,2)} (${pct(p.vix_change)})`:'VIX unavailable';
+ const volImpact=Number(p.vix_change)>5?'HEADWIND':Number(p.vix_change)<-5?'SUPPORTIVE':'NEUTRAL';
+ const whyScores=[g0.impact==='STABILIZING'?1:g0.impact==='AMPLIFYING'?-1:0,ga.impact==='STABILIZING'?1:ga.impact==='AMPLIFYING'?-1:0,ratesImpact==='SUPPORTIVE'?1:ratesImpact==='HEADWIND'?-1:0,volImpact==='SUPPORTIVE'?1:volImpact==='HEADWIND'?-1:0];
+ const whyScore=whyScores.reduce((a,b)=>a+b,0);
+ const whyBias=whyScore>=2?'Supportive setup':whyScore<=-2?'Defensive setup':'Mixed setup';
+ const whyHeadline=document.getElementById('nq-why-headline');if(whyHeadline)whyHeadline.innerHTML=`<b>${whyBias}</b> • 0DTE is ${g0.impact.toLowerCase()}, all-expiry gamma is ${ga.impact.toLowerCase()}, while rates/dollar and volatility provide the remaining pressure.`;
+ [['nq-why-0dte',g0.read],['nq-why-all',ga.read],['nq-why-rates',ratesRead],['nq-why-vol2',volRead]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+ [['nq-why-0dte-impact',g0.impact],['nq-why-all-impact',ga.impact],['nq-why-rates-impact',ratesImpact],['nq-why-vol2-impact',volImpact]].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+
+ // Dynamic state-change conditions: every threshold is recalculated from the latest snapshot.
+ const upgradeParts=[];
+ const downgradeParts=[];
+ const upgradeReady=[];
+ const downgradeRisk=[];
+ if(Number.isFinite(flip)){
+   const aboveFlip=spot>flip;
+   upgradeParts.push(`NDX > gamma flip ${fmt(flip,0)}`);
+   if(aboveFlip) upgradeReady.push('NDX above gamma flip');
+ }
+ if(Number.isFinite(vixCh)){
+   const vixOk=vixCh<=5;
+   upgradeParts.push('VIX not rising >5%');
+   if(vixOk) upgradeReady.push('VIX not rising >5%');
+   if(vixCh>5) downgradeRisk.push('VIX > +5%');
+ }
+ if(Number.isFinite(dxyChange)){
+   const dxyOk=dxyChange<=0.15;
+   upgradeParts.push('DXY not accelerating >0.15%');
+   if(dxyOk) upgradeReady.push('DXY not accelerating >0.15%');
+   if(dxyChange>0.15) downgradeRisk.push('DXY > +0.15%');
+ }
+ if(Number.isFinite(putWall)){
+   const abovePut=spot>=putWall;
+   downgradeParts.push(`NDX < put wall ${fmt(putWall,0)}`);
+   if(!abovePut) downgradeRisk.push('NDX below put wall');
+ }
+ const upgradeState=(Number.isFinite(flip)&&spot>flip&&Number.isFinite(vixCh)&&vixCh<=5&&Number.isFinite(dxyChange)&&dxyChange<=0.15);
+ const downgradeState=(Number.isFinite(putWall)&&spot<putWall)||(Number.isFinite(vixCh)&&vixCh>5)||(Number.isFinite(dxyChange)&&dxyChange>0.15);
+ document.getElementById('nq-upgrade').textContent=upgradeState?'READY • '+upgradeReady.join(' + '):(upgradeParts.length?upgradeParts.join(' • '):'Key inputs unavailable');
+ document.getElementById('nq-downgrade').textContent=downgradeState?'ACTIVE • '+downgradeRisk.join(' / '):(downgradeParts.length?downgradeParts.join(' • '):'Key inputs unavailable');
+
+ const cotStatus=cot.status||'unavailable';
+ const cotMarkets=cot.markets||{};
+ document.getElementById('cot-status').textContent=cotStatus==='live' ? `LIVE • ${cot.source||'CFTC'} • latest report dates shown per market` : 'CFTC data unavailable — no positioning numbers fabricated.';
+ const cotFmt=(x)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
+ document.getElementById('cot-grid').innerHTML=Object.keys(cotMarkets).map(name=>{
+   const x=cotMarkets[name]||{};
+   const dn=Number(x.dealer_net)||0, an=Number(x.asset_manager_net)||0, ln=Number(x.leveraged_money_net)||0;
+   const cls=v=>v>0?'up':v<0?'down':'';
+   return `<div class="card"><div class="label">${name}</div><div class="small">Report ${x.report_date||'—'}</div><table><tr><td>Dealer net</td><td class="${cls(dn)}">${cotFmt(dn)}</td></tr><tr><td>Asset manager net</td><td class="${cls(an)}">${cotFmt(an)}</td></tr><tr><td>Leveraged money net</td><td class="${cls(ln)}">${cotFmt(ln)}</td></tr></table></div>`;
+ }).join('') || '<div class="callout">CFTC data unavailable — no positioning numbers fabricated.</div>';
+
+ const newsItems=Array.isArray(news.items)?news.items:[];
+ const newsStatus=news.status||'unavailable';
+ document.getElementById('news-status').textContent=
+   newsStatus==='live'
+   ? `LIVE • ${news.source||'News RSS'} • ${newsItems.length} market-relevant headlines`
+   : 'Market news unavailable — no headlines fabricated.';
+ const safeText=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ const newsFmtTime=s=>{
+   if(!s)return 'Time unavailable';
+   const dt=new Date(s);
+   return Number.isNaN(dt.getTime())?safeText(s):dt.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+ };
+ document.getElementById('news-grid').innerHTML=newsItems.map(x=>{
+   const impact=String(x.impact||'LOW').toUpperCase();
+   const impactClass=impact==='HIGH'?'down':impact==='MEDIUM'?'amber':'up';
+   return `<div class="card">
+     <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+       <div class="label">${safeText(x.source||'Unknown source')}</div>
+       <span class="${impactClass}" style="font-size:11px;font-weight:700;letter-spacing:.08em">${impact} IMPACT</span>
+     </div>
+     <div style="font-size:17px;font-weight:600;line-height:1.35;margin:8px 0">
+       <a href="${safeText(x.url||'#')}" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none">${safeText(x.title)}</a>
+     </div>
+     <div class="small">${newsFmtTime(x.published_at)} • Market relevance ${fmt(x.relevance_score,0)}/10+</div>
+   </div>`;
+ }).join('') || '<div class="callout">No current market headlines available.</div>';
+}
+load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e.message+'</div>'));
+const showSection=id=>{document.querySelectorAll('main>section').forEach(s=>s.style.display=s.id===id?'block':'none');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.target===id));history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:'smooth'});};document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showSection(b.dataset.target));const initial=(location.hash||'#home').slice(1);showSection(document.getElementById(initial)?initial:'home');
+
+function initGexModeSwitch(){
+ document.querySelectorAll('.gex-mode-btn').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+     const mode=btn.dataset.gexMode;
+     const latest=(window.__MI_DATA__||{}).options||{};
+     const available=latest.profiles?.[mode];
+     if(mode!=='ALL' && (!available || available.status==='unavailable' || !available.heatmap?.length)) return;
+     setGexMode(mode);
+     if(window.__MI_RENDER_OPTIONS__) window.__MI_RENDER_OPTIONS__();
+   });
+ });
+}
+initGexModeSwitch();
+</script>
+</body>
+</html>
