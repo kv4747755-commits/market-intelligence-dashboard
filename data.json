@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-13T13:15:33.090715+00:00",
+  "generated_at": "2026-09-13T13:30:14.488374+00:00",
   "prices": {
     "ndx": 29368.439453125,
     "ndx_change": 0.9103015053288033,
@@ -25,9 +25,9 @@
     "natgas_change": -0.10585818150063986
   },
   "rates": {
-    "y3m": 3.9130001068115234,
-    "y10": 4.974999904632568,
-    "y30": 5.354000091552734,
+    "y3m": 4.07,
+    "y10": 4.96,
+    "y30": 5.35,
     "source": "U.S. Treasury Daily Treasury Par Yield Curve Rates",
     "date": "2026-09-11T00:00:00",
     "y1m": 3.93,
@@ -1044,7 +1044,7 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-13T13:15:33.090526+00:00",
+    "updated_at": "2026-09-13T13:30:14.488194+00:00",
     "items": [
       {
         "title": "Dow Jones Futures: Fed Rate Hike Seen As Oil, Yields Pressure Stocks; Apple, Moderna Are New Buys - Investor's Business Daily",
@@ -1060,6 +1060,14 @@
         "published_at": "2026-09-11T20:29:19+00:00",
         "url": "https://news.google.com/rss/articles/CBMisgFBVV95cUxQeWlMZGtUTzRWWVpPMGVET0dKdGZIN2NvNWZrNE1acjJrWnVleGVlMmk5WFVoNGV2NGhKZFM0WENiTWtiU3A1UTdpZGVQVUQ4dTNzQmxsczM0cERDMk5IWmNTdDNmNFh1c0szOG05R25jNXdUR3hORTU0RGpySDdSbm1oMHNHSkNtY0F6ZHlKZ3BkbmJhQUxGM1NzNWczLW8yclhQZlZzRDlSMjRBV08xOTl3?oc=5",
         "relevance_score": 22,
+        "impact": "HIGH"
+      },
+      {
+        "title": "Hot CPI Inflation Seals Fed Rate Hike, But Stocks Rise - Investor's Business Daily",
+        "source": "Investor's Business Daily",
+        "published_at": "2026-09-11T13:18:00+00:00",
+        "url": "https://news.google.com/rss/articles/CBMimAFBVV95cUxOV01fUFdFOC1EcHVvU2VlNVVzSERudGlIcDFvZnRVbTVwOW9iZFV1TTdnVk40MmtWVDBYbDlOT2pBZVB1M3YwempNajNkQ2JBRGNjUjdaaGZqbnlIOVVnWEprazFnQ3ZjZnh5MFc5d1BDc0hzQ3hPTHBaRUN5eHJCWHU4V2VJRmRfOGVPNlRFX3BZSTNVX3ppcw?oc=5",
+        "relevance_score": 25,
         "impact": "HIGH"
       },
       {
@@ -1119,14 +1127,6 @@
         "impact": "HIGH"
       },
       {
-        "title": "ECB to Hike Interest Rates Again as Iran War Fans Inflation - Bloomberg.com",
-        "source": "Bloomberg.com",
-        "published_at": "2026-09-10T07:29:13+00:00",
-        "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxNd0drbFY3X0hwUE8tSy1IaVI4SDV3S2NoY1NLM2ZScnpFVkxGNEdTOU16b1ozR2hWYmp2dDZvSmc5a2lranA5SXYycVhVZlJXTlJrOFB1Q3hvaUZPSVZYX1Q4ZlktcEc1UVhEby1tb2hGRERXT3RNVjNoMllLVlRLbXVVMkRXZmJzVmttc2FnMGppTW5XaUNJV0lvQzZCald4Y3QwMHJzZlNPSGtWVFln?oc=5",
-        "relevance_score": 22,
-        "impact": "HIGH"
-      },
-      {
         "title": "Treasury yields fall after Fed's Waller signals support for no rate hike - CNBC",
         "source": "CNBC",
         "published_at": "2026-09-03T07:00:00+00:00",
@@ -1146,10 +1146,22 @@
   },
   "macro": {
     "status": "live",
-    "source": "FRED + U.S. Treasury official feeds",
-    "updated_at": "2026-09-13T12:46:51.543877+00:00",
-    "frequency_note": "Frequency varies by series: daily, weekly, monthly or quarterly.",
+    "updated_at": "2026-09-13T13:30:11.196893+00:00",
     "series": {
+      "core_pce": {
+        "series_id": "PCEPILFE",
+        "value": 130.658,
+        "date": "2026-07-01",
+        "previous": 130.338,
+        "previous_date": "2026-06-01"
+      },
+      "ppi": {
+        "series_id": "PPIACO",
+        "value": 287.928,
+        "date": "2026-08-01",
+        "previous": 285.181,
+        "previous_date": "2026-07-01"
+      },
       "fed_funds": {
         "series_id": "DFF",
         "value": 3.63,
@@ -1157,26 +1169,12 @@
         "previous": 3.63,
         "previous_date": "2026-09-09"
       },
-      "sofr": {
-        "series_id": "SOFR",
-        "value": 3.62,
-        "date": "2026-09-10",
-        "previous": 3.64,
-        "previous_date": "2026-09-09"
-      },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.55,
-        "date": "2026-09-10",
-        "previous": 2.46,
-        "previous_date": "2026-09-09"
-      },
-      "breakeven_10y": {
-        "series_id": "T10YIE",
-        "value": 2.36,
-        "date": "2026-09-11",
-        "previous": 2.4,
-        "previous_date": "2026-09-10"
+      "pce": {
+        "series_id": "PCEPI",
+        "value": 131.659,
+        "date": "2026-07-01",
+        "previous": 131.454,
+        "previous_date": "2026-06-01"
       },
       "cpi": {
         "series_id": "CPIAUCSL",
@@ -1192,46 +1190,32 @@
         "previous": 336.789,
         "previous_date": "2026-07-01"
       },
-      "pce": {
-        "series_id": "PCEPI",
-        "value": 131.659,
-        "date": "2026-07-01",
-        "previous": 131.454,
-        "previous_date": "2026-06-01"
+      "sofr": {
+        "series_id": "SOFR",
+        "value": 3.62,
+        "date": "2026-09-10",
+        "previous": 3.64,
+        "previous_date": "2026-09-09"
       },
-      "core_pce": {
-        "series_id": "PCEPILFE",
-        "value": 130.658,
-        "date": "2026-07-01",
-        "previous": 130.338,
-        "previous_date": "2026-06-01"
+      "breakeven_10y": {
+        "series_id": "T10YIE",
+        "value": 2.36,
+        "date": "2026-09-11",
+        "previous": 2.4,
+        "previous_date": "2026-09-10"
       },
-      "ppi": {
-        "series_id": "PPIACO",
-        "value": 287.928,
-        "date": "2026-08-01",
-        "previous": 285.181,
-        "previous_date": "2026-07-01"
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.55,
+        "date": "2026-09-10",
+        "previous": 2.46,
+        "previous_date": "2026-09-09"
       },
       "unemployment": {
         "series_id": "UNRATE",
         "value": 4.1,
         "date": "2026-08-01",
         "previous": 4.1,
-        "previous_date": "2026-07-01"
-      },
-      "payrolls": {
-        "series_id": "PAYEMS",
-        "value": 159075.0,
-        "date": "2026-08-01",
-        "previous": 158913.0,
-        "previous_date": "2026-07-01"
-      },
-      "avg_hourly_earnings": {
-        "series_id": "CES0500000003",
-        "value": 37.75,
-        "date": "2026-08-01",
-        "previous": 37.65,
         "previous_date": "2026-07-01"
       },
       "initial_claims": {
@@ -1241,13 +1225,6 @@
         "previous": 207000.0,
         "previous_date": "2026-08-29"
       },
-      "continuing_claims": {
-        "series_id": "CCSA",
-        "value": 1774000.0,
-        "date": "2026-08-29",
-        "previous": 1775000.0,
-        "previous_date": "2026-08-22"
-      },
       "jolts": {
         "series_id": "JTSJOL",
         "value": 7271.0,
@@ -1255,12 +1232,26 @@
         "previous": 7182.0,
         "previous_date": "2026-06-01"
       },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.6,
+      "continuing_claims": {
+        "series_id": "CCSA",
+        "value": 1774000.0,
+        "date": "2026-08-29",
+        "previous": 1775000.0,
+        "previous_date": "2026-08-22"
+      },
+      "payrolls": {
+        "series_id": "PAYEMS",
+        "value": 159075.0,
         "date": "2026-08-01",
-        "previous": 61.4,
+        "previous": 158913.0,
         "previous_date": "2026-07-01"
+      },
+      "industrial_production": {
+        "series_id": "INDPRO",
+        "value": 102.9939,
+        "date": "2026-07-01",
+        "previous": 102.7868,
+        "previous_date": "2026-06-01"
       },
       "gdp": {
         "series_id": "GDPC1",
@@ -1276,13 +1267,6 @@
         "previous": 2.1,
         "previous_date": "2026-01-01"
       },
-      "industrial_production": {
-        "series_id": "INDPRO",
-        "value": 102.9939,
-        "date": "2026-07-01",
-        "previous": 102.7868,
-        "previous_date": "2026-06-01"
-      },
       "retail_sales": {
         "series_id": "RSAFS",
         "value": 763602.0,
@@ -1290,26 +1274,12 @@
         "previous": 768072.0,
         "previous_date": "2026-06-01"
       },
-      "housing_starts": {
-        "series_id": "HOUST",
-        "value": 1239.0,
-        "date": "2026-07-01",
-        "previous": 1415.0,
-        "previous_date": "2026-06-01"
-      },
-      "building_permits": {
-        "series_id": "PERMIT",
-        "value": 1433.0,
-        "date": "2026-07-01",
-        "previous": 1374.0,
-        "previous_date": "2026-06-01"
-      },
-      "consumer_sentiment": {
-        "series_id": "UMCSENT",
-        "value": 55.2,
-        "date": "2026-07-01",
-        "previous": 49.5,
-        "previous_date": "2026-06-01"
+      "avg_hourly_earnings": {
+        "series_id": "CES0500000003",
+        "value": 37.75,
+        "date": "2026-08-01",
+        "previous": 37.65,
+        "previous_date": "2026-07-01"
       },
       "fed_balance_sheet": {
         "series_id": "WALCL",
@@ -1318,6 +1288,27 @@
         "previous": 6737204.0,
         "previous_date": "2026-09-02"
       },
+      "housing_starts": {
+        "series_id": "HOUST",
+        "value": 1239.0,
+        "date": "2026-07-01",
+        "previous": 1415.0,
+        "previous_date": "2026-06-01"
+      },
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.6,
+        "date": "2026-08-01",
+        "previous": 61.4,
+        "previous_date": "2026-07-01"
+      },
+      "consumer_sentiment": {
+        "series_id": "UMCSENT",
+        "value": 55.2,
+        "date": "2026-07-01",
+        "previous": 49.5,
+        "previous_date": "2026-06-01"
+      },
       "m2": {
         "series_id": "M2SL",
         "value": 23218.0,
@@ -1325,26 +1316,12 @@
         "previous": 23115.2,
         "previous_date": "2026-06-01"
       },
-      "rrp": {
-        "series_id": "RRPONTSYD",
-        "value": 5.255,
-        "date": "2026-09-11",
-        "previous": 4.736,
-        "previous_date": "2026-09-10"
-      },
       "tga": {
         "series_id": "WTREGEN",
         "value": 883335.0,
         "date": "2026-09-09",
         "previous": 967935.0,
         "previous_date": "2026-09-02"
-      },
-      "financial_conditions": {
-        "series_id": "NFCI",
-        "value": -0.564,
-        "date": "2026-09-04",
-        "previous": -0.56,
-        "previous_date": "2026-08-28"
       },
       "ig_spread": {
         "series_id": "BAMLC0A0CM",
@@ -1360,57 +1337,49 @@
         "previous": 2.71,
         "previous_date": "2026-09-09"
       },
-      "dollar_broad": {
-        "series_id": "DTWEXBGS",
-        "value": 118.0732,
-        "date": "2026-09-04",
-        "previous": 118.127,
-        "previous_date": "2026-09-03"
-      },
-      "wti": {
-        "series_id": "DCOILWTICO",
-        "value": 97.26,
-        "date": "2026-09-09",
-        "previous": 94.21,
-        "previous_date": "2026-09-08"
-      },
-      "copper": {
-        "series_id": "PCOPPUSDM",
-        "value": 13542.82086956522,
+      "building_permits": {
+        "series_id": "PERMIT",
+        "value": 1433.0,
         "date": "2026-07-01",
-        "previous": 13552.04090909091,
+        "previous": 1374.0,
         "previous_date": "2026-06-01"
       },
-      "natgas": {
-        "series_id": "DHHNGSP",
-        "value": 2.81,
-        "date": "2026-09-09",
-        "previous": 2.9,
-        "previous_date": "2026-09-08"
-      },
-      "vix": {
-        "series_id": "VIXCLS",
-        "value": 17.84,
-        "date": "2026-09-10",
-        "previous": 16.46,
-        "previous_date": "2026-09-09"
-      },
-      "curve_2s10s": {
-        "series_id": "T10Y2Y",
-        "value": 0.33,
+      "rrp": {
+        "series_id": "RRPONTSYD",
+        "value": 5.255,
         "date": "2026-09-11",
-        "previous": 0.39,
+        "previous": 4.736,
         "previous_date": "2026-09-10"
       },
-      "curve_3m10y": {
-        "series_id": "T10Y3M",
-        "value": 0.89,
-        "date": "2026-09-11",
-        "previous": 0.95,
-        "previous_date": "2026-09-10"
+      "financial_conditions": {
+        "series_id": "NFCI",
+        "value": -0.564,
+        "date": "2026-09-04",
+        "previous": -0.56,
+        "previous_date": "2026-08-28"
       }
     },
-    "rates": {
+    "regime": {
+      "inflation": "HOT",
+      "labor": "TIGHT",
+      "growth": "SLOWING",
+      "liquidity": "EXPANDING",
+      "credit": "BENIGN",
+      "overall": "MIXED"
+    },
+    "fomc": {
+      "next_meeting": "2026-09-15 \u2192 2026-09-16",
+      "is_sep": true
+    },
+    "derived": {
+      "cpi_yoy": 3.7129581058388483,
+      "core_cpi_yoy": 2.7634613395318253,
+      "pce_yoy": 3.7011657214870874,
+      "core_pce_yoy": 3.3441430040338282,
+      "m2_yoy": 5.414179019772547
+    },
+    "treasury_curve": {
+      "date": "2026-09-11T00:00:00",
       "y1m": 3.93,
       "y3m": 4.07,
       "y6m": 4.12,
@@ -1420,24 +1389,6 @@
       "y10": 4.96,
       "y20": 5.38,
       "y30": 5.35
-    },
-    "rates_date": "2026-09-11T00:00:00",
-    "2s10s": 0.33000000000000007,
-    "5s30s": 0.5699999999999994,
-    "3m10y": 0.8899999999999997,
-    "access": "Authenticated FRED API",
-    "fomc": {
-      "next_meeting": "2026-09-15 to 2026-09-16",
-      "is_sep": true,
-      "source": "Federal Reserve FOMC calendar"
-    },
-    "regime": {
-      "inflation": "Hot / sticky",
-      "labor": "Tight",
-      "growth": "Expanding",
-      "liquidity": "Expanding",
-      "credit": "Contained",
-      "overall": "Mixed / risk-sensitive"
     }
   }
 }
