@@ -806,7 +806,7 @@ function renderGexProfile(o,p){
  if(Number.isFinite(putWall))ins.push(`<strong>Put wall ${f(putWall,0)}</strong>Near-term modeled support.`);
  if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled net exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
  document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No valid GEX interpretation available.</div>';
- document.getElementById('dealer-box').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Gamma Flip: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span></div>`;
+ document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Gamma Flip: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span></div>`;
  render();
 }
 
