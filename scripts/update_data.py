@@ -310,7 +310,7 @@ def yoy(obs, months=12):
     return (a / b - 1.0) * 100.0
 
 
-def build_macro():
+def build_macro(previous_macro=None):
     series, fred_live = fetch_fred_macro()
     curve = fetch_treasury_curve()
     if not series and not curve:
@@ -412,6 +412,59 @@ def build_macro():
         macro['2s10s'] = spread('y10', 'y2')
         macro['5s30s'] = spread('y30', 'y5')
         macro['3m10y'] = spread('y10', 'y3m')
+
+        # Curve direction is based on the change from the previous saved
+        # dashboard snapshot. This is a descriptive regime signal, not a
+        # trading prediction.
+        prev = previous_macro or {}
+        pairs = [('2s10s', macro['2s10s']), ('5s30s', macro['5s30s']), ('3m10y', macro['3m10y'])]
+        changes = {}
+        for key, cur in pairs:
+            old = prev.get(key)
+            changes[key] = round(cur - old, 4) if cur is not None and old is not None else None
+
+        valid_changes = [v for v in changes.values() if v is not None]
+        eps = 0.005
+        up = sum(v > eps for v in valid_changes)
+        down = sum(v < -eps for v in valid_changes)
+        if not valid_changes:
+            direction = 'AWAITING HISTORY'
+        elif up >= 2 and down == 0:
+            direction = 'STEEPENING'
+        elif down >= 2 and up == 0:
+            direction = 'FLATTENING'
+        elif up == 0 and down == 0:
+            direction = 'STABLE'
+        else:
+            direction = 'MIXED'
+
+        spreads_now = [macro.get(k) for k in ('2s10s','5s30s','3m10y')]
+        positive_count = sum(v is not None and v > 0 for v in spreads_now)
+        inverted = any(v is not None and v < 0 for v in spreads_now)
+        if inverted:
+            nq_implication = 'CAUTION'
+            interpretation = 'At least one tracked curve segment is inverted; treat this as a macro caution signal, not a timing signal.'
+        elif direction == 'STEEPENING' and positive_count == 3:
+            nq_implication = 'MODERATELY SUPPORTIVE'
+            interpretation = 'All three tracked spreads are positive and the curve is broadly steepening versus the prior snapshot; this is generally more supportive for risk appetite, all else equal.'
+        elif direction == 'FLATTENING':
+            nq_implication = 'CAUTIOUS'
+            interpretation = 'The curve is broadly flattening versus the prior snapshot; watch growth and policy expectations alongside real yields and credit.'
+        elif direction == 'STABLE':
+            nq_implication = 'NEUTRAL'
+            interpretation = 'The curve is broadly stable; use inflation, real yields, liquidity and credit for the stronger macro signal.'
+        else:
+            nq_implication = 'MIXED'
+            interpretation = 'Curve segments are sending mixed signals; avoid treating the curve alone as a directional NQ or FX trigger.'
+
+        macro['curve_signal'] = {
+            'direction': direction,
+            'changes_pp': changes,
+            'nq_implication': nq_implication,
+            'interpretation': interpretation,
+            'confidence': 'HIGH' if len(valid_changes) == 3 and (up >= 2 and down == 0 or down >= 2 and up == 0) else 'MEDIUM' if valid_changes else 'LOW',
+            'method': 'Direction compares current spreads with the previous saved dashboard snapshot; interpretation is heuristic and not a forecast.'
+        }
     return macro
 
 
@@ -627,7 +680,7 @@ def main():
 
     # Refresh the macro layer without deleting an older good snapshot if a source is temporarily unavailable.
     try:
-        macro = build_macro()
+        macro = build_macro(d.get("macro") or {})
         if macro:
             d["macro"] = macro
             curve = macro.get("treasury_curve") or {}
