@@ -10,7 +10,9 @@
 main{max-width:1100px;margin:auto;padding:0 16px 40px}header{position:sticky;top:0;z-index:10;background:rgba(7,11,16,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding:18px 0 10px}
 .head{max-width:1100px;margin:auto;padding:0 16px}.brand{font-size:27px;font-weight:800}.sub{color:var(--muted);margin-top:3px}.badge{float:right;border:1px solid #6b5924;color:var(--amber);padding:9px 14px;border-radius:22px;font-size:13px}
 .nav{display:flex;gap:8px;overflow-x:auto;padding-top:16px}.nav button{white-space:nowrap;background:#0d151f;border:1px solid #233141;color:#dce5ef;border-radius:12px;padding:11px 16px;font-size:15px}.nav button.active{border-color:#6d9bd0;background:#152130}
-section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}
+.gex-mode-switch{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 8px}.gex-mode-btn{background:#0d1822;border:1px solid #263847;color:#aebdcb;border-radius:10px;padding:8px 12px;font-size:12px;cursor:pointer}.gex-mode-btn.active{border-color:#69a9ff;background:#15283a;color:#eef6ff}.gex-mode-btn:disabled{opacity:.35;cursor:not-allowed}.gex-selected-note{margin:4px 0 10px;color:#8794a3;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .card{background:linear-gradient(180deg,#0e161f,#0b121a);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
 .label{text-transform:uppercase;color:#84909e;font-size:12px;letter-spacing:1.3px}.big{font-size:34px;font-weight:800;margin-top:7px}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}
 .callout{border-left:4px solid var(--blue);background:#0d1a29;padding:15px;border-radius:12px;line-height:1.45}.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi{padding:12px;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;font-size:20px;margin-top:5px}
@@ -569,19 +571,33 @@ section:not(#home)>.title{padding-top:4px}
 </main>
 
 <script>
+let selectedGexMode='ALL';
+function setGexMode(mode){
+ selectedGexMode=mode;
+ document.querySelectorAll('.gex-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.gexMode===mode));
+}
 function renderGexProfile(o,p){
  const svg=document.getElementById('options-gex-svg'); if(!svg) return;
+ const profiles=o.profiles||{};
+ let profile=profiles[selectedGexMode];
+ if(!profile || profile.status==='unavailable' || !Array.isArray(profile.heatmap) || !profile.heatmap.length){
+   if(selectedGexMode!=='ALL' && profiles.ALL?.heatmap?.length) profile=profiles.ALL;
+ }
+ const usingFallback=selectedGexMode!=='ALL' && (!profile || profile.label!==(selectedGexMode));
+ const active=profile&&profile.heatmap?.length?profile:o;
  const f=(v,n=2)=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
- const rows=Array.isArray(o.oi_heatmap)?o.oi_heatmap.map(x=>({
+ const rows=Array.isArray(active.heatmap||active.oi_heatmap)?(active.heatmap||active.oi_heatmap).map(x=>({
    strike:Number(x.strike),net:Number(x.net_gex)||0,call:Number(x.call_oi)||0,put:Number(x.put_oi)||0,
    callGex:Number(x.call_gex)||0,putGex:Number(x.put_gex)||0
  })).filter(x=>Number.isFinite(x.strike)&&Number.isFinite(x.net)).sort((a,b)=>a.strike-b.strike):[];
- const spot=Number(p.ndx), putWall=Number(o.put_wall), callWall=Number(o.call_wall), flip=Number(o.gamma_flip);
- const expiryMode=o.expiry_mode||'NEAREST';
- const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
- document.getElementById('gex-expiry').textContent=(Number(o.expiry_count)||0)>1?`ALL EXP • ${o.expiry_count}`:expiryText;
- const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=(Number(o.expiry_count)||0)>1?`ALL EXPIRATIONS • MODELED`:`${expiryMode} • MODELED CHAIN`;
- document.getElementById('gex-chart-status').textContent=rows.length?((Number(o.expiry_count)||0)>1?`ALL EXPIRATIONS • ${o.expiry_count} expiries • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:`${expiryMode} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`):'No usable strike-level chain data';
+ const spot=Number(p.ndx), putWall=Number(active.put_wall), callWall=Number(active.call_wall), flip=Number(active.gamma_flip);
+ const expiryMode=selectedGexMode==='ALL'?(o.expiry_mode||'MULTI-EXPIRY'):(active.expiry_mode||selectedGexMode);
+ const expiryText=active.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
+ const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
+ const note=document.getElementById('gex-selected-note'); if(note) note.textContent=usingFallback?`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`:`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`;
+ document.getElementById('gex-expiry').textContent=selectedGexMode==='ALL'?`ALL EXP • ${o.expiry_count||0}`:expiryText;
+ const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${selectedLabel} • MODELED`;
+ document.getElementById('gex-chart-status').textContent=rows.length?`${selectedLabel} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
  document.getElementById('gex-put-level').textContent=Number.isFinite(putWall)?f(putWall,0):'—';
  document.getElementById('gex-call-level').textContent=Number.isFinite(callWall)?f(callWall,0):'—';
  document.getElementById('gex-flip-level').textContent=Number.isFinite(flip)?f(flip,2):'—';
@@ -819,11 +835,11 @@ function renderGexProfile(o,p){
      btn.classList.add('active');renderTable(btn.dataset.strikeFilter);
    };
  });
- const total=Number(o.net_gex),ins=[];
- if(Number.isFinite(spot)&&Number.isFinite(flip))ins.push(`<strong>${spot<flip?'Below':'Above'} gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`);
- if(Number.isFinite(spot)&&Number.isFinite(callWall))ins.push(`<strong>Call wall ${f(callWall,0)}</strong>Spot is ${spot>=callWall?'at/above':'below'} the modeled call wall.`);
- if(Number.isFinite(putWall))ins.push(`<strong>Put wall ${f(putWall,0)}</strong>Near-term modeled support.`);
- if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled net exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
+ const total=Number(active.net_gex),ins=[];
+ if(Number.isFinite(spot)&&Number.isFinite(flip)){ if(spot>flip)ins.push(`<strong>Above gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else if(spot<flip)ins.push(`<strong>Below gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else ins.push(`<strong>At gamma flip</strong>Spot is near the modeled gamma flip.`); }
+ const levelInsight=(name,level)=>{ if(!Number.isFinite(level))return; const dist=Math.abs(spot-level)/spot; const where=dist<=0.003?'near spot':level>spot?'above spot':'below spot'; ins.push(`<strong>${name} ${f(level,0)}</strong>${where==='near spot'?'Spot is near this modeled concentration level.':where==='above spot'?'Overhead modeled level above spot.':'Downside modeled level below spot.'}`); };
+ levelInsight('Call wall',callWall); levelInsight('Put wall',putWall);
+ if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled ${selectedLabel.toLowerCase()} exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
  document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No valid GEX interpretation available.</div>';
  document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Gamma Flip: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span></div>`;
  render();
@@ -900,27 +916,30 @@ async function load(){
  document.getElementById('gex-method-note').innerHTML=`<b>Method:</b> ${method} <span class="small">Dealer inventory is not directly observable from listed OI.</span>`;
 
  const dp=o.dealer_positioning||{};
- const regime=dp.regime||'—';
+ const activeGex=Number(active.net_gex);
+ const regime=Number.isFinite(activeGex)?(activeGex>0?'Positive gamma':activeGex<0?'Negative gamma':'Neutral gamma'):(dp.regime||'—');
  const modelStatus=dp.status||'unavailable';
  const qualityStatus=dqStatus;
  document.getElementById('gamma1').textContent=regime;
  document.getElementById('gamma2').textContent=modelStatus==='modeled'?(qualityStatus==='LIMITED'?'MODELED • LIMITED DATA':'MODELED FROM CHAIN'):'WAITING FOR VALID CHAIN';
 
  document.getElementById('pcr').textContent=o.pcr_oi==null?'—':fmt(o.pcr_oi,2);
- document.getElementById('gex').textContent=o.net_gex==null?'—':fmt(o.net_gex,2);
- document.getElementById('putwall').textContent=o.put_wall==null?'—':fmt(o.put_wall);
- document.getElementById('flip').textContent=o.gamma_flip==null?'—':fmt(o.gamma_flip);
- document.getElementById('callwall').textContent=o.call_wall==null?'—':fmt(o.call_wall);
+ document.getElementById('gex').textContent=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
+ document.getElementById('putwall').textContent=active.put_wall==null?'—':fmt(active.put_wall);
+ document.getElementById('flip').textContent=active.gamma_flip==null?'—':fmt(active.gamma_flip);
+ document.getElementById('callwall').textContent=active.call_wall==null?'—':fmt(active.call_wall);
 
  if(modelStatus==='modeled'){
-   const gexText=o.net_gex==null?'—':fmt(o.net_gex,2);
-   const flipText=o.gamma_flip==null?'—':fmt(o.gamma_flip);
+   const gexText=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
+   const flipText=active.gamma_flip==null?'—':fmt(active.gamma_flip);
    document.getElementById('dealer').innerHTML=
      `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Gamma Flip: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span>`;
  }else{
    document.getElementById('dealer').textContent='Waiting for a valid option chain. No dealer-positioning number is fabricated.';
  }
 
+ window.__MI_DATA__=d; window.__MI_RENDER_OPTIONS__=()=>renderGexProfile((window.__MI_DATA__||{}).options||{},(window.__MI_DATA__||{}).prices||{});
+ document.querySelectorAll('.gex-mode-btn').forEach(btn=>{const pr=o.profiles?.[btn.dataset.gexMode];btn.disabled=btn.dataset.gexMode!=='ALL' && (!pr || pr.status==='unavailable' || !pr.heatmap?.length);});
  renderGexProfile(o,p);
 
  const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
@@ -1126,6 +1145,20 @@ async function load(){
 }
 load().catch(e=>document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#ff607b">Data layer error: '+e.message+'</div>'));
 const showSection=id=>{document.querySelectorAll('main>section').forEach(s=>s.style.display=s.id===id?'block':'none');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.target===id));history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:'smooth'});};document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showSection(b.dataset.target));const initial=(location.hash||'#home').slice(1);showSection(document.getElementById(initial)?initial:'home');
+
+function initGexModeSwitch(){
+ document.querySelectorAll('.gex-mode-btn').forEach(btn=>{
+   btn.addEventListener('click',()=>{
+     const mode=btn.dataset.gexMode;
+     const latest=(window.__MI_DATA__||{}).options||{};
+     const available=latest.profiles?.[mode];
+     if(mode!=='ALL' && (!available || available.status==='unavailable' || !available.heatmap?.length)) return;
+     setGexMode(mode);
+     if(window.__MI_RENDER_OPTIONS__) window.__MI_RENDER_OPTIONS__();
+   });
+ });
+}
+initGexModeSwitch();
 </script>
 </body>
 </html>
