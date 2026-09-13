@@ -561,59 +561,96 @@ function renderGexProfile(o,p){
  const rows=Array.isArray(o.oi_heatmap)?o.oi_heatmap.map(x=>({strike:Number(x.strike),net:Number(x.net_gex)||0,call:Number(x.call_oi)||0,put:Number(x.put_oi)||0,callGex:Number(x.call_gex)||0,putGex:Number(x.put_gex)||0})).filter(x=>Number.isFinite(x.strike)&&Number.isFinite(x.net)).sort((a,b)=>a.strike-b.strike):[];
  const spot=Number(p.ndx), putWall=Number(o.put_wall), callWall=Number(o.call_wall), flip=Number(o.gamma_flip);
  document.getElementById('gex-expiry').textContent=o.expiry||'Latest available expiry';
- document.getElementById('gex-chart-status').textContent=rows.length?`${rows.length} modeled strikes • hover chart for strike detail`:'No usable strike-level chain data';
+ document.getElementById('gex-chart-status').textContent=rows.length?`${rows.length} modeled strikes • drag to move strike window • wheel to zoom`:'No usable strike-level chain data';
  document.getElementById('gex-put-level').textContent=Number.isFinite(putWall)?f(putWall,0):'—';
  document.getElementById('gex-call-level').textContent=Number.isFinite(callWall)?f(callWall,0):'—';
  document.getElementById('gex-flip-level').textContent=Number.isFinite(flip)?f(flip,2):'—';
  document.getElementById('gex-spot-level').textContent=Number.isFinite(spot)?f(spot,0):'—';
  ['put','call','flip','spot'].forEach(k=>{const v={put:putWall,call:callWall,flip,spot}[k];const el=document.getElementById('ladder-'+k);const ev=document.getElementById('ladder-'+k+'-v');if(ev)ev.textContent=Number.isFinite(v)?f(v,0):'—';if(el)el.style.opacity=Number.isFinite(v)?'1':'.35';});
  if(!rows.length){svg.innerHTML='<text x="490" y="270" text-anchor="middle" fill="#718295" font-size="14">OPTION CHAIN UNAVAILABLE — PROFILE NOT FABRICATED</text>';return;}
- const W=1080,H=540,L=82,R=118,T=24,B=46,PW=W-L-R,PH=H-T-B,mid=L+PW/2;
- const minS=Math.min(...rows.map(x=>x.strike)), maxS=Math.max(...rows.map(x=>x.strike));
+ const W=1080,H=540,L=82,R=126,T=24,B=46,PW=W-L-R,PH=H-T-B,mid=L+PW/2;
+ const dataMin=Math.min(...rows.map(x=>x.strike)), dataMax=Math.max(...rows.map(x=>x.strike));
+ const fullSpan=Math.max(1,dataMax-dataMin);
+ const keyVals=[putWall,callWall,flip,spot].filter(Number.isFinite);
+ let center=Number.isFinite(spot)?spot:(dataMin+dataMax)/2;
+ let zoom=1;
+ let dragging=false,lastY=0;
  const abs=rows.map(x=>Math.abs(x.net)).sort((a,b)=>a-b); const q=abs[Math.max(0,Math.floor(abs.length*.95)-1)]||1; const scale=Math.max(1,q);
- const y=v=>T+(maxS-v)/(maxS-minS||1)*PH;
- const x=v=>mid+(Math.max(-scale,Math.min(scale,v))/scale)*(PW/2-22);
- const barH=Math.max(3,Math.min(12,PH/rows.length*.82));
- let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="#040b12"/>`;
- for(let i=0;i<=6;i++){const yy=T+i*PH/6;const sv=maxS-(maxS-minS)*i/6;out+=`<line class="opt-grid" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/>`;out+=`<text class="opt-axis" x="${L-10}" y="${yy+3}" text-anchor="end">${f(sv,0)}</text>`;}
- [-1,-.5,0,.5,1].forEach(t=>{const xx=mid+t*(PW/2-22);out+=`<line class="${t===0?'opt-zero':'opt-grid'}" x1="${xx}" y1="${T}" x2="${xx}" y2="${T+PH}"/>`;out+=`<text class="opt-axis" x="${xx}" y="${H-14}" text-anchor="middle">${Math.round(t*scale/1000)}K</text>`;});
- const maxCall=Math.max(1,...rows.map(r=>Math.abs(r.callGex))); const maxPut=Math.max(1,...rows.map(r=>Math.abs(r.putGex)));
- const callPts=[],putPts=[];
- rows.forEach(r=>{const yy=y(r.strike),xx=x(r.net),left=Math.min(mid,xx),ww=Math.max(1,Math.abs(xx-mid));out+=`<rect class="${r.net>=0?'opt-bar-pos':'opt-bar-neg'}" data-strike="${r.strike}" data-net="${r.net}" data-call="${r.call}" data-put="${r.put}" data-callg="${r.callGex}" data-putg="${r.putGex}" x="${left}" y="${yy-barH/2}" width="${ww}" height="${barH}" rx="2"/>`;callPts.push(`${L+PW*.18+(Math.abs(r.callGex)/maxCall)*PW*.30},${yy}`);putPts.push(`${L+PW*.18+(Math.abs(r.putGex)/maxPut)*PW*.30},${yy}`);});
- out+=`<polyline class="opt-profile-call" points="${callPts.join(' ')}"/>`;
- out+=`<polyline class="opt-profile-put" points="${putPts.join(' ')}"/>`;
- out+=`<line id="gex-cross-v" class="opt-crosshair" x1="${mid}" y1="${T}" x2="${mid}" y2="${T+PH}"/><line id="gex-cross-h" class="opt-crosshair" x1="${L}" y1="${T+PH/2}" x2="${W-R}" y2="${T+PH/2}"/><circle id="gex-hover-dot" class="opt-hover-dot" cx="${mid}" cy="${T+PH/2}" r="4" opacity="0"/>`;
- const levels=[['putWall',putWall,'opt-level-put','PUT WALL','#ff617b'],['callWall',callWall,'opt-level-call','CALL WALL','#31e0a2'],['flip',flip,'opt-level-flip','GAMMA FLIP','#f4c95d'],['spot',spot,'opt-level-spot','SPOT','#edf3f8']];
- levels.forEach(([key,val,cls,label,color])=>{if(!Number.isFinite(val)||val<minS||val>maxS)return;const yy=y(val);out+=`<line class="${cls}" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/><text class="opt-level-label" x="${W-R+5}" y="${yy-5}" fill="${color}">${label} ${f(val,key==='flip'?2:0)}</text>`;});
- out+=`<text class="opt-axis-strong" x="22" y="${T+PH/2}" transform="rotate(-90 22 ${T+PH/2})" text-anchor="middle">STRIKE PRICE</text><text class="opt-axis-strong" x="${mid}" y="${H-14}" text-anchor="middle">NET GEX (NOTIONAL) • 95TH-PERCENTILE SCALE</text>`;
- out+=`<g id="gex-tip" opacity="0"><rect class="opt-tooltip" x="0" y="0" width="190" height="94" rx="7"/><text id="gex-tip-title" class="opt-tooltip-text" x="12" y="20"></text><text id="gex-tip-net" class="opt-tooltip-sub" x="12" y="40"></text><text id="gex-tip-oi" class="opt-tooltip-sub" x="12" y="57"></text><text id="gex-tip-gex" class="opt-tooltip-sub" x="12" y="74"></text></g>`;
- svg.innerHTML=out;
- // Keep the level ladder numerically honest: put wall → call wall → spot → flip when that is the actual order.
- const vals=[putWall,callWall,flip,spot].filter(Number.isFinite); if(vals.length>=2){const lo=Math.min(...vals),hi=Math.max(...vals);const place=v=>Math.max(7,Math.min(93,7+(v-lo)/(hi-lo||1)*86));[['put',putWall],['call',callWall],['spot',spot],['flip',flip]].forEach(([k,v])=>{if(Number.isFinite(v)){const el=document.getElementById('ladder-'+k);if(el)el.style.left=place(v)+'%';}});}
- const near=rows.slice().sort((a,b)=>Math.abs(a.strike-spot)-Math.abs(b.strike-spot));
- const renderTable=(mode='near')=>{
-   const list=(mode==='all'?rows:near.slice(0,14)).slice().sort((a,b)=>a.strike-b.strike);
-   const max=Math.max(1,...list.map(r=>Math.abs(r.net)));
-   document.getElementById('heat-status').textContent=`${rows.length} modeled strikes • ${o.expiry||'latest available expiry'} • ${mode==='all'?'all loaded':'nearest '+list.length+' shown'}`;
-   document.getElementById('gex-detail-body').innerHTML=list.map(r=>{
-     const cls=(Number.isFinite(putWall)&&Math.abs(r.strike-putWall)<1)?'level-put':(Number.isFinite(callWall)&&Math.abs(r.strike-callWall)<1)?'level-call':(Number.isFinite(flip)&&Math.abs(r.strike-flip)<2)?'level-flip':(Number.isFinite(spot)&&Math.abs(r.strike-spot)<2)?'level-spot':'';
-     const tag=cls==='level-put'?'PUT WALL':cls==='level-call'?'CALL WALL':cls==='level-flip'?'GAMMA FLIP':cls==='level-spot'?'SPOT':'';
-     const bar=Math.min(100,Math.abs(r.net)/max*100); const dist=Number.isFinite(spot)?((r.strike-spot)/spot*100):NaN;
-     return `<tr class="${cls}"><td><b>${f(r.strike,0)}</b>${tag?`<span class="small" style="margin-left:6px">${tag}</span>`:''}</td><td>${Number.isFinite(dist)?`${dist>=0?'+':''}${dist.toFixed(2)}%`:'—'}</td><td>${f(r.call,0)}</td><td>${f(r.put,0)}</td><td class="gex-number ${r.net<0?'down':'up'}">${f(r.net,0)}<span class="gex-mini"><i style="width:${bar}%;background:${r.net<0?'#ff617b':'#31e0a2'}"></i></span></td><td>${r.net<0?'Negative GEX':'Positive GEX'}</td></tr>`;
-   }).join('');
+ const x=v=>mid+(Math.max(-scale,Math.min(scale,v))/scale)*(PW/2-24);
+ const clampCenter=(c,span)=>Math.max(dataMin+span/2,Math.min(dataMax-span/2,c));
+ const getWindow=()=>{const span=Math.max(1,fullSpan/zoom);const c=clampCenter(center,Math.min(fullSpan,span));return {lo:c-Math.min(fullSpan,span)/2,hi:c+Math.min(fullSpan,span)/2,span:Math.min(fullSpan,span)};};
+ const setControls=()=>{
+   document.getElementById('gex-zoom-level')?.replaceChildren(document.createTextNode(`${Math.round(zoom*100)}%`));
  };
+ const render=()=>{
+   const win=getWindow(), minS=win.lo, maxS=win.hi;
+   const y=v=>T+(maxS-v)/(maxS-minS||1)*PH;
+   const barH=Math.max(3,Math.min(13,PH/Math.max(8,rows.length*(zoom<2?1:Math.min(1.8,zoom*.55)))*.9));
+   let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="#040b12"/>`;
+   const ticks=8;
+   for(let i=0;i<=ticks;i++){const yy=T+i*PH/ticks;const sv=maxS-(maxS-minS)*i/ticks;out+=`<line class="opt-grid" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/>`;out+=`<text class="opt-axis" x="${L-10}" y="${yy+3}" text-anchor="end">${f(sv,0)}</text>`;}
+   [-1,-.5,0,.5,1].forEach(t=>{const xx=mid+t*(PW/2-24);out+=`<line class="${t===0?'opt-zero':'opt-grid'}" x1="${xx}" y1="${T}" x2="${xx}" y2="${T+PH}"/>`;out+=`<text class="opt-axis" x="${xx}" y="${H-14}" text-anchor="middle">${Math.round(t*scale/1000)}K</text>`;});
+   const maxCall=Math.max(1,...rows.map(r=>Math.abs(r.callGex))), maxPut=Math.max(1,...rows.map(r=>Math.abs(r.putGex)));
+   const callPts=[],putPts=[];
+   rows.forEach(r=>{
+     if(r.strike<minS||r.strike>maxS)return;
+     const yy=y(r.strike),xx=x(r.net),left=Math.min(mid,xx),ww=Math.max(1,Math.abs(xx-mid));
+     out+=`<rect class="${r.net>=0?'opt-bar-pos':'opt-bar-neg'}" data-strike="${r.strike}" data-net="${r.net}" data-call="${r.call}" data-put="${r.put}" data-callg="${r.callGex}" data-putg="${r.putGex}" x="${left}" y="${yy-barH/2}" width="${ww}" height="${barH}" rx="2"/>`;
+     callPts.push(`${L+PW*.18+(Math.abs(r.callGex)/maxCall)*PW*.30},${yy}`);putPts.push(`${L+PW*.18+(Math.abs(r.putGex)/maxPut)*PW*.30},${yy}`);
+   });
+   if(callPts.length)out+=`<polyline class="opt-profile-call" points="${callPts.join(' ')}"/>`;
+   if(putPts.length)out+=`<polyline class="opt-profile-put" points="${putPts.join(' ')}"/>`;
+   const levels=[['putWall',putWall,'opt-level-put','PUT WALL','#ff617b'],['callWall',callWall,'opt-level-call','CALL WALL','#31e0a2'],['flip',flip,'opt-level-flip','GAMMA FLIP','#f4c95d'],['spot',spot,'opt-level-spot','SPOT','#edf3f8']];
+   levels.forEach(([key,val,cls,label,color])=>{if(!Number.isFinite(val)||val<minS||val>maxS)return;const yy=y(val);out+=`<line class="${cls}" x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}"/><text class="opt-level-label" x="${W-R+7}" y="${yy-5}" fill="${color}">${label} ${f(val,key==='flip'?2:0)}</text>`;});
+   out+=`<line id="gex-cross-v" class="opt-crosshair" x1="${mid}" y1="${T}" x2="${mid}" y2="${T+PH}"/><line id="gex-cross-h" class="opt-crosshair" x1="${L}" y1="${T+PH/2}" x2="${W-R}" y2="${T+PH/2}"/><circle id="gex-hover-dot" class="opt-hover-dot" cx="${mid}" cy="${T+PH/2}" r="4" opacity="0"/>`;
+   out+=`<text class="opt-axis-strong" x="22" y="${T+PH/2}" transform="rotate(-90 22 ${T+PH/2})" text-anchor="middle">STRIKE PRICE</text><text class="opt-axis-strong" x="${mid}" y="${H-14}" text-anchor="middle">NET GEX (NOTIONAL) • ${Math.round(zoom*100)}% VIEW</text>`;
+   out+=`<g id="gex-tip" opacity="0"><rect class="opt-tooltip" x="0" y="0" width="205" height="94" rx="7"/><text id="gex-tip-title" class="opt-tooltip-text" x="12" y="20"></text><text id="gex-tip-net" class="opt-tooltip-sub" x="12" y="40"></text><text id="gex-tip-oi" class="opt-tooltip-sub" x="12" y="57"></text><text id="gex-tip-gex" class="opt-tooltip-sub" x="12" y="74"></text></g>`;
+   svg.innerHTML=out;
+   setControls();
+   const tip=document.getElementById('gex-tip'),crossV=document.getElementById('gex-cross-v'),crossH=document.getElementById('gex-cross-h'),dot=document.getElementById('gex-hover-dot');
+   const tipTitle=document.getElementById('gex-tip-title'),tipNet=document.getElementById('gex-tip-net'),tipOi=document.getElementById('gex-tip-oi'),tipGex=document.getElementById('gex-tip-gex');
+   const visible=rows.filter(r=>r.strike>=minS&&r.strike<=maxS);
+   const barEls=[...svg.querySelectorAll('rect[data-strike]')];
+   const showTip=(e)=>{
+     if(!visible.length)return;
+     const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const ctm=svg.getScreenCTM();if(!ctm)return;const q=pt.matrixTransform(ctm.inverse());
+     const r=visible.reduce((best,x)=>Math.abs(y(x.strike)-q.y)<Math.abs(y(best.strike)-q.y)?x:best,visible[0]);
+     const yy=y(r.strike),xx=x(r.net);crossV.setAttribute('x1',q.x);crossV.setAttribute('x2',q.x);crossH.setAttribute('y1',yy);crossH.setAttribute('y2',yy);dot.setAttribute('cx',xx);dot.setAttribute('cy',yy);dot.setAttribute('opacity','1');
+     tipTitle.textContent=`STRIKE ${f(r.strike,0)}`;tipNet.textContent=`Net GEX  ${f(r.net,0)}`;tipOi.textContent=`Call OI ${f(r.call,0)}  •  Put OI ${f(r.put,0)}`;tipGex.textContent=`Call GEX ${f(r.callGex,0)}  •  Put GEX ${f(r.putGex,0)}`;
+     const tx=Math.min(W-213,Math.max(L+8,q.x+14)),ty=Math.min(H-104,Math.max(T+8,yy-48));tip.setAttribute('transform',`translate(${tx} ${ty})`);tip.setAttribute('opacity','1');barEls.forEach(el=>el.classList.toggle('opt-bar-hover',Number(el.dataset.strike)===r.strike));
+   };
+   svg.onmousemove=showTip;svg.onmouseleave=()=>{tip.setAttribute('opacity','0');dot.setAttribute('opacity','0');barEls.forEach(el=>el.classList.remove('opt-bar-hover'));};
+   svg.onpointerdown=e=>{dragging=true;lastY=e.clientY;svg.setPointerCapture?.(e.pointerId);svg.style.cursor='grabbing';};
+   svg.onpointermove=e=>{if(!dragging)return;const dy=e.clientY-lastY;lastY=e.clientY;const span=getWindow().span;center-=dy/(svg.clientHeight||H)*span;center=clampCenter(center,span);render();};
+   svg.onpointerup=e=>{dragging=false;svg.releasePointerCapture?.(e.pointerId);svg.style.cursor='grab';};
+   svg.onpointercancel=()=>{dragging=false;svg.style.cursor='grab';};
+   svg.onwheel=e=>{
+     e.preventDefault();
+     const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const ctm=svg.getScreenCTM();if(!ctm)return;const q=pt.matrixTransform(ctm.inverse());
+     const old=getWindow(), cursorStrike=old.hi-(q.y-T)/PH*old.span; const factor=e.deltaY<0?1.28:.78; const next=Math.max(1,Math.min(10,zoom*factor));
+     const nextSpan=Math.min(fullSpan,fullSpan/next); const ratio=(cursorStrike-old.lo)/(old.span||1); center=cursorStrike-(Math.max(0,Math.min(1,ratio))*nextSpan); center=clampCenter(center,nextSpan); zoom=next; render();
+   };
+ };
+ // Controls: real redraw zoom/pan, not merely hiding bars.
+ const tools=document.querySelector('.options-chart-tools');
+ if(tools){
+   ['gex-zoom-out','gex-zoom-in','gex-fit-walls','gex-reset-view','gex-zoom-level'].forEach(id=>document.getElementById(id)?.remove());
+   const mk=(id,text,title,fn)=>{const b=document.createElement('button');b.type='button';b.id=id;b.className='options-tool';b.textContent=text;b.title=title;b.onclick=fn;tools.appendChild(b);return b;};
+   mk('gex-zoom-out','−','Zoom out',()=>{zoom=Math.max(1,zoom/1.35);center=clampCenter(center,Math.min(fullSpan,fullSpan/zoom));render();});
+   mk('gex-zoom-in','+','Zoom in around spot',()=>{zoom=Math.min(10,zoom*1.35);center=clampCenter(center,Math.min(fullSpan,fullSpan/zoom));render();});
+   mk('gex-fit-walls','FIT WALLS','Focus on put/call/flip/spot',()=>{const vs=keyVals.length?keyVals:[spot];const lo=Math.min(...vs),hi=Math.max(...vs),span=Math.max(500,(hi-lo)*4);zoom=Math.min(10,fullSpan/span);center=(lo+hi)/2;center=clampCenter(center,Math.min(fullSpan,fullSpan/Math.max(1,zoom)));render();});
+   mk('gex-reset-view','RESET','Full loaded chain',()=>{zoom=1;center=Number.isFinite(spot)?spot:(dataMin+dataMax)/2;render();});
+   const z=document.createElement('span');z.id='gex-zoom-level';z.className='options-tool';z.textContent='100%';z.title='Current chart zoom';tools.appendChild(z);
+ }
+ // Keep level ladder numerically honest.
+ const vals=[putWall,callWall,flip,spot].filter(Number.isFinite);if(vals.length>=2){const lo=Math.min(...vals),hi=Math.max(...vals),place=v=>Math.max(7,Math.min(93,7+(v-lo)/(hi-lo||1)*86));[['put',putWall],['call',callWall],['spot',spot],['flip',flip]].forEach(([k,v])=>{if(Number.isFinite(v)){const el=document.getElementById('ladder-'+k);if(el)el.style.left=place(v)+'%';}});}
+ const near=rows.slice().sort((a,b)=>Math.abs(a.strike-spot)-Math.abs(b.strike-spot));
+ const renderTable=(mode='near')=>{const list=(mode==='all'?rows:near.slice(0,14)).slice().sort((a,b)=>a.strike-b.strike);document.getElementById('heat-status').textContent=`${rows.length} modeled strikes • ${o.expiry||'latest available expiry'} • ${mode==='all'?'all loaded':'nearest '+list.length+' shown'}`;document.getElementById('gex-detail-body').innerHTML=list.map(r=>{const cls=(Number.isFinite(putWall)&&Math.abs(r.strike-putWall)<1)?'level-put':(Number.isFinite(callWall)&&Math.abs(r.strike-callWall)<1)?'level-call':(Number.isFinite(flip)&&Math.abs(r.strike-flip)<2)?'level-flip':(Number.isFinite(spot)&&Math.abs(r.strike-spot)<2)?'level-spot':'';const tag=cls==='level-put'?'PUT WALL':cls==='level-call'?'CALL WALL':cls==='level-flip'?'GAMMA FLIP':cls==='level-spot'?'SPOT':'';const bar=Math.min(100,Math.abs(r.net)/(Math.max(1,...list.map(x=>Math.abs(x.net))))*100);const dist=Number.isFinite(spot)?((r.strike-spot)/spot*100):NaN;return `<tr class="${cls}"><td><b>${f(r.strike,0)}</b>${tag?`<span class="small" style="margin-left:6px">${tag}</span>`:''}</td><td>${Number.isFinite(dist)?`${dist>=0?'+':''}${dist.toFixed(2)}%`:'—'}</td><td>${f(r.call,0)}</td><td>${f(r.put,0)}</td><td class="gex-number ${r.net<0?'down':'up'}">${f(r.net,0)}<span class="gex-mini"><i style="width:${bar}%;background:${r.net<0?'#ff617b':'#31e0a2'}"></i></span></td><td>${r.net<0?'Negative GEX':'Positive GEX'}</td></tr>`;}).join('');};
  renderTable('near');
  document.querySelectorAll('[data-strike-filter]').forEach(btn=>{btn.onclick=()=>{document.querySelectorAll('[data-strike-filter]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTable(btn.dataset.strikeFilter);};});
- const tip=document.getElementById('gex-tip'), crossV=document.getElementById('gex-cross-v'), crossH=document.getElementById('gex-cross-h'), dot=document.getElementById('gex-hover-dot');
- const tipTitle=document.getElementById('gex-tip-title'),tipNet=document.getElementById('gex-tip-net'),tipOi=document.getElementById('gex-tip-oi'),tipGex=document.getElementById('gex-tip-gex');
- const barEls=[...svg.querySelectorAll('rect[data-strike]')];
- const showTip=(e)=>{const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const ctm=svg.getScreenCTM();if(!ctm)return;const q=pt.matrixTransform(ctm.inverse());const r=rows.reduce((best,x)=>Math.abs(y(x.strike)-q.y)<Math.abs(y(best.strike)-q.y)?x:best,rows[0]);const yy=y(r.strike),xx=x(r.net);crossV.setAttribute('x1',q.x);crossV.setAttribute('x2',q.x);crossH.setAttribute('y1',yy);crossH.setAttribute('y2',yy);dot.setAttribute('cx',xx);dot.setAttribute('cy',yy);dot.setAttribute('opacity','1');tipTitle.textContent=`STRIKE ${f(r.strike,0)}`;tipNet.textContent=`Net GEX  ${f(r.net,0)}`;tipOi.textContent=`Call OI ${f(r.call,0)}  •  Put OI ${f(r.put,0)}`;tipGex.textContent=`Call GEX ${f(r.callGex,0)}  •  Put GEX ${f(r.putGex,0)}`;const tx=Math.min(W-200,Math.max(L+8,q.x+14)),ty=Math.min(H-104,Math.max(T+8,yy-48));tip.setAttribute('transform',`translate(${tx} ${ty})`);tip.setAttribute('opacity','1');barEls.forEach(el=>el.classList.toggle('opt-bar-hover',Number(el.dataset.strike)===r.strike));};
- svg.onmousemove=showTip; svg.onmouseleave=()=>{tip.setAttribute('opacity','0');dot.setAttribute('opacity','0');barEls.forEach(el=>el.classList.remove('opt-bar-hover'));};
- // Wheel zooms the vertical strike window; Reset returns to the full loaded chain.
- let zoom=1; const setZoom=z=>{zoom=Math.max(1,Math.min(3,z));const span=(maxS-minS)/zoom;const center=Number.isFinite(spot)?spot:(minS+maxS)/2;const lo=Math.max(minS,center-span/2),hi=Math.min(maxS,center+span/2);barEls.forEach(el=>{const sv=Number(el.dataset.strike);el.style.display=sv>=lo&&sv<=hi?'':'none';});};
- svg.onwheel=e=>{e.preventDefault();setZoom(zoom+(e.deltaY<0?.25:-.25));};
- document.getElementById('gex-reset-view')?.remove(); const reset=document.createElement('span'); reset.id='gex-reset-view'; reset.className='options-tool'; reset.textContent='RESET VIEW'; reset.title='Reset chart focus'; reset.onclick=()=>setZoom(1); document.querySelector('.options-chart-tools')?.appendChild(reset);
- const total=Number(o.net_gex); const ins=[]; if(Number.isFinite(spot)&&Number.isFinite(flip))ins.push(`<strong>${spot<flip?'Below':'Above'} gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); if(Number.isFinite(spot)&&Number.isFinite(callWall))ins.push(`<strong>Call wall ${f(callWall,0)}</strong>${spot<callWall?'Potential overhead resistance.':'Spot is at/above the modeled call wall.'}`); if(Number.isFinite(spot)&&Number.isFinite(putWall))ins.push(`<strong>Put wall ${f(putWall,0)}</strong>${spot>putWall?'Near-term modeled support.':'Spot is at/below the modeled put wall.'}`); if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled net exposure is ${f(total,0)}; negative values can coincide with larger directional moves.`); document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No additional read available.</div>';
+ const total=Number(o.net_gex),ins=[];if(Number.isFinite(spot)&&Number.isFinite(flip))ins.push(`<strong>${spot<flip?'Below':'Above'} gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`);if(Number.isFinite(spot)&&Number.isFinite(callWall))ins.push(`<strong>Call wall ${f(callWall,0)}</strong>${spot<callWall?'Potential overhead resistance.':'Spot is at/above the modeled call wall.'}`);if(Number.isFinite(spot)&&Number.isFinite(putWall))ins.push(`<strong>Put wall ${f(putWall,0)}</strong>${spot>putWall?'Near-term modeled support.':'Spot is at/below the modeled put wall.'}`);if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled net exposure is ${f(total,0)}; negative values can coincide with larger directional moves.`);document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No additional read available.</div>';
+ svg.style.cursor='grab';
+ render();
 }
 
 async function load(){
