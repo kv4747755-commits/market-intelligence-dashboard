@@ -1,4 +1,4 @@
-import json, math, re
+import json, math, re, os
 from datetime import datetime, timezone, time as dt_time
 from zoneinfo import ZoneInfo
 from email.utils import parsedate_to_datetime
@@ -184,6 +184,227 @@ def fetch_news():
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "items": unique[:12],
     }
+
+
+
+# --- MACRO DATA LAYER -------------------------------------------------------
+# FRED supplies economic releases; Treasury supplies the official daily
+# par-yield curve. The workflow passes FRED_API_KEY from GitHub Actions.
+FRED_SERIES = {
+    'fed_funds':'DFF', 'sofr':'SOFR',
+    'real_10y':'DFII10', 'breakeven_10y':'T10YIE',
+    'cpi':'CPIAUCSL', 'core_cpi':'CPILFESL', 'pce':'PCEPI', 'core_pce':'PCEPILFE', 'ppi':'PPIACO',
+    'unemployment':'UNRATE', 'payrolls':'PAYEMS', 'avg_hourly_earnings':'CES0500000003',
+    'initial_claims':'ICSA', 'continuing_claims':'CCSA', 'jolts':'JTSJOL', 'labor_participation':'CIVPART',
+    'gdp':'GDPC1', 'gdp_growth':'A191RL1Q225SBEA', 'industrial_production':'INDPRO',
+    'retail_sales':'RSAFS', 'housing_starts':'HOUST', 'building_permits':'PERMIT',
+    'consumer_sentiment':'UMCSENT',
+    'fed_balance_sheet':'WALCL', 'm2':'M2SL', 'rrp':'RRPONTSYD', 'tga':'WTREGEN',
+    'financial_conditions':'NFCI', 'ig_spread':'BAMLC0A0CM', 'hy_spread':'BAMLH0A0HYM2',
+}
+
+
+def fred_fetch_series(series_id, api_key, limit=100):
+    """Return recent numeric FRED observations as [{date,value}]."""
+    if not api_key:
+        return []
+    q = urllib.parse.urlencode({
+        'series_id': series_id,
+        'api_key': api_key,
+        'file_type': 'json',
+        'sort_order': 'desc',
+        'limit': str(limit),
+    })
+    url = 'https://api.stlouisfed.org/fred/series/observations?' + q
+    try:
+        req = Request(url, headers={'User-Agent':'market-intelligence-dashboard/1.0'})
+        with urlopen(req, timeout=20) as r:
+            payload = json.loads(r.read().decode('utf-8'))
+        out = []
+        for row in payload.get('observations', []):
+            v = sf(row.get('value'))
+            if v is not None:
+                out.append({'date': row.get('date'), 'value': v})
+        return out
+    except Exception:
+        return []
+
+
+def fetch_fred_macro():
+    """Build the frontend-compatible macro.series structure."""
+    api_key = (os.environ.get('FRED_API_KEY') or '').strip()
+    if len(api_key) < 20:
+        return {}, False
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    result = {}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        jobs = {pool.submit(fred_fetch_series, sid, api_key, 100): key for key, sid in FRED_SERIES.items()}
+        for fut in as_completed(jobs):
+            key = jobs[fut]
+            try:
+                obs = fut.result()
+            except Exception:
+                obs = []
+            if not obs:
+                continue
+            latest = obs[0]
+            previous = obs[1] if len(obs) > 1 else None
+            result[key] = {
+                'series_id': FRED_SERIES[key],
+                'value': latest['value'],
+                'date': latest.get('date'),
+                'previous': previous['value'] if previous else None,
+                'previous_date': previous.get('date') if previous else None,
+            }
+
+    return result, bool(result)
+
+
+def fetch_treasury_curve():
+    """Fetch the current month's official Treasury par-yield curve."""
+    now = datetime.now(timezone.utc)
+    url = (
+        'https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml'
+        f'?data=daily_treasury_yield_curve&field_tdr_date_value_month={now.strftime("%Y%m")}'
+    )
+    try:
+        req = Request(url, headers={'User-Agent':'market-intelligence-dashboard/1.0'})
+        with urlopen(req, timeout=20) as r:
+            root = ET.fromstring(r.read())
+    except Exception:
+        return {}
+
+    wanted = {
+        'BC_1MONTH':'y1m', 'BC_3MONTH':'y3m', 'BC_6MONTH':'y6m',
+        'BC_1YEAR':'y1', 'BC_2YEAR':'y2', 'BC_5YEAR':'y5',
+        'BC_10YEAR':'y10', 'BC_20YEAR':'y20', 'BC_30YEAR':'y30',
+    }
+    rows = []
+    for entry in root.iter():
+        if entry.tag.split('}')[-1].lower() != 'entry':
+            continue
+        row = {}
+        for child in entry.iter():
+            tag = child.tag.split('}')[-1].upper()
+            if tag in wanted or tag == 'NEW_DATE':
+                row[tag] = child.text
+        if row.get('NEW_DATE'):
+            rows.append(row)
+    if not rows:
+        return {}
+    rows.sort(key=lambda x: x.get('NEW_DATE') or '', reverse=True)
+    latest = rows[0]
+    out = {'date': latest.get('NEW_DATE')}
+    for src_key, out_key in wanted.items():
+        out[out_key] = sf(latest.get(src_key))
+    return out
+
+
+def yoy(obs, months=12):
+    if len(obs) <= months:
+        return None
+    a, b = obs[0].get('value'), obs[months].get('value')
+    if a is None or b in (None, 0):
+        return None
+    return (a / b - 1.0) * 100.0
+
+
+def build_macro():
+    series, fred_live = fetch_fred_macro()
+    curve = fetch_treasury_curve()
+    if not series and not curve:
+        return None
+
+    # Re-query the few monthly series that need a 12-month comparison.
+    api_key = (os.environ.get('FRED_API_KEY') or '').strip()
+    yoy_map = {}
+    if api_key:
+        for key in ('cpi','core_cpi','pce','core_pce','m2','payrolls'):
+            sid = FRED_SERIES[key]
+            obs = fred_fetch_series(sid, api_key, 20)
+            yoy_map[key] = yoy(obs, 12)
+
+    cpi_yoy = yoy_map.get('cpi')
+    core_cpi_yoy = yoy_map.get('core_cpi')
+    pce_yoy = yoy_map.get('pce')
+    core_pce_yoy = yoy_map.get('core_pce')
+    gdp_growth = series.get('gdp_growth', {}).get('value')
+    unemployment = series.get('unemployment', {}).get('value')
+    hy = series.get('hy_spread', {}).get('value')
+    nfci = series.get('financial_conditions', {}).get('value')
+    walcl = series.get('fed_balance_sheet', {}).get('value')
+    walcl_prev = series.get('fed_balance_sheet', {}).get('previous')
+    m2_yoy = yoy_map.get('m2')
+
+    inflation_score = 0
+    if cpi_yoy is not None:
+        inflation_score += 1 if cpi_yoy > 3.0 else -1 if cpi_yoy < 2.0 else 0
+    if core_pce_yoy is not None:
+        inflation_score += 1 if core_pce_yoy > 3.0 else -1 if core_pce_yoy < 2.0 else 0
+    inflation = 'HOT' if inflation_score >= 1 else 'COOLING' if inflation_score <= -1 else 'STABLE'
+
+    labor = 'TIGHT' if unemployment is not None and unemployment < 4.5 else 'SOFTENING' if unemployment is not None and unemployment >= 5.0 else 'BALANCED'
+
+    if gdp_growth is not None:
+        growth = 'EXPANDING' if gdp_growth >= 2.0 else 'SLOWING' if gdp_growth >= 0 else 'CONTRACTING'
+    else:
+        growth = 'UNKNOWN'
+
+    liquidity_score = 0
+    if walcl is not None and walcl_prev is not None:
+        liquidity_score += 1 if walcl > walcl_prev else -1
+    if m2_yoy is not None:
+        liquidity_score += 1 if m2_yoy > 3 else -1 if m2_yoy < 0 else 0
+    if nfci is not None:
+        liquidity_score += 1 if nfci < 0 else -1 if nfci > 0.5 else 0
+    liquidity = 'EXPANDING' if liquidity_score >= 1 else 'TIGHTENING' if liquidity_score <= -1 else 'NEUTRAL'
+
+    if hy is not None:
+        credit = 'STRESS' if hy >= 6.0 else 'ELEVATED' if hy >= 4.5 else 'BENIGN'
+    else:
+        credit = 'UNKNOWN'
+
+    overall_score = 0
+    overall_score += 1 if growth == 'EXPANDING' else -1 if growth == 'CONTRACTING' else 0
+    overall_score += 1 if liquidity == 'EXPANDING' else -1 if liquidity == 'TIGHTENING' else 0
+    overall_score -= 1 if inflation == 'HOT' else 0
+    overall_score -= 1 if credit == 'STRESS' else 0
+    overall = 'SUPPORTIVE' if overall_score >= 2 else 'CAUTIOUS' if overall_score <= -1 else 'MIXED'
+
+    # Official 2026 FOMC meeting windows used for the dashboard's event card.
+    fomc = [
+        ('2026-01-27','2026-01-28'), ('2026-03-17','2026-03-18'),
+        ('2026-04-28','2026-04-29'), ('2026-06-16','2026-06-17'),
+        ('2026-07-28','2026-07-29'), ('2026-09-15','2026-09-16'),
+        ('2026-10-27','2026-10-28'), ('2026-12-08','2026-12-09'),
+    ]
+    today = datetime.now(timezone.utc).date()
+    next_meeting = None
+    is_sep = False
+    for start, end in fomc:
+        if datetime.fromisoformat(end).date() >= today:
+            next_meeting = f'{start} → {end}'
+            is_sep = start.startswith('2026-09-')
+            break
+
+    macro = {
+        'status': 'live' if fred_live and curve else ('partial' if fred_live or curve else 'unavailable'),
+        'updated_at': datetime.now(timezone.utc).isoformat(),
+        'series': series,
+        'regime': {
+            'inflation': inflation, 'labor': labor, 'growth': growth,
+            'liquidity': liquidity, 'credit': credit, 'overall': overall,
+        },
+        'fomc': {'next_meeting': next_meeting, 'is_sep': is_sep},
+        'derived': {
+            'cpi_yoy': cpi_yoy, 'core_cpi_yoy': core_cpi_yoy,
+            'pce_yoy': pce_yoy, 'core_pce_yoy': core_pce_yoy, 'm2_yoy': m2_yoy,
+        },
+    }
+    if curve:
+        macro['treasury_curve'] = curve
+    return macro
 
 
 def main():
@@ -393,6 +614,18 @@ def main():
                     "model": "Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory."
                 }
 
+    except Exception:
+        pass
+
+    # Refresh the macro layer without deleting an older good snapshot if a source is temporarily unavailable.
+    try:
+        macro = build_macro()
+        if macro:
+            d["macro"] = macro
+            curve = macro.get("treasury_curve") or {}
+            for k in ("y1m","y3m","y6m","y1","y2","y5","y10","y20","y30"):
+                if curve.get(k) is not None:
+                    d.setdefault("rates", {})[k] = curve[k]
     except Exception:
         pass
 
