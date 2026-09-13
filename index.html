@@ -308,7 +308,46 @@ async function load(){
  document.getElementById('macro-events').innerHTML=eventKeys.map(([name,key,freq,use])=>`<tr><td>${name}</td><td>${mv(key)==null?'—':mfmt(mv(key),2)}</td><td>${mp(key)==null?'—':mfmt(mp(key),2)}</td><td>${freq}</td><td>${use}</td></tr>`).join('');
  const macroStatus=m.status==='live'?'LIVE FRED + TREASURY':'PARTIAL — FRED API KEY NOT CONFIGURED'; document.getElementById('macro-banner').innerHTML=m.status==='live'?`<b class="up">${macroStatus}</b><br><span class="small">Economic series are pulled from FRED; official Treasury yields are pulled from Treasury. Values retain their native release frequency.</span>`:`<b class="amber">${macroStatus}</b><br><span class="small">Treasury rates and market snapshots can still update, but the full economic dashboard requires a GitHub Actions secret named <b>FRED_API_KEY</b>.</span>`;
 
- // HOME MARKET PULSE
+ // Shared snapshot values used by Home, Forex and Nasdaq read
+ const dxyChange=Number(p.dxy_change);
+ const vixCh=Number(p.vix_change);
+ const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
+ const emPct=Number(opt.expected_move_pct), emPts=Number(opt.expected_move_points);
+ const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
+ const macroReg=m.regime||{};
+
+ // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
+ let score=0, optRead='No usable options location', optImpact='NEUTRAL';
+ if(Number.isFinite(spot)&&Number.isFinite(flip)){
+   if(spot>flip){score+=1; optRead='Above gamma flip'; optImpact='BULLISH';}
+   else if(spot<flip){score-=1; optRead='Below gamma flip'; optImpact='BEARISH';}
+   else {optRead='At gamma flip'; optImpact='NEUTRAL';}
+ }
+ if(gammaReg.includes('negative')){
+   optRead += ' • negative gamma = wider moves';
+   score += Number.isFinite(spot)&&Number.isFinite(flip)?(spot>flip?0.5:-0.5):0;
+ }
+ let dollarRead='Neutral USD', dollarImpact='NEUTRAL';
+ if(Number.isFinite(dxyChange)){
+   if(dxyChange>0.15){score-=1; dollarRead='DXY rising'; dollarImpact='BEARISH';}
+   else if(dxyChange<-0.15){score+=1; dollarRead='DXY falling'; dollarImpact='BULLISH';}
+ }
+ let vixRead='VIX stable', vixImpact='NEUTRAL';
+ if(Number.isFinite(vixCh)){
+   if(vixCh>5){score-=1; vixRead='VIX rising'; vixImpact='BEARISH';}
+   else if(vixCh<-5){score+=1; vixRead='VIX falling'; vixImpact='BULLISH';}
+ }
+ let macroScore=0;
+ if(String(macroReg.growth||'').toLowerCase().includes('expand')) macroScore+=1;
+ if(String(macroReg.liquidity||'').toLowerCase().includes('expand')) macroScore+=1;
+ if(String(macroReg.inflation||'').toLowerCase().includes('hot')) macroScore-=1;
+ if(String(macroReg.credit||'').toLowerCase().includes('stress')) macroScore-=1;
+ score += macroScore*0.75;
+ const macroRead=macroScore>0.5?'Supportive growth/liquidity':macroScore<-0.5?'Inflation/credit headwind':'Mixed macro';
+ const macroImpact=macroScore>0.5?'BULLISH':macroScore<-0.5?'BEARISH':'NEUTRAL';
+ let bias='NEUTRAL';
+ if(score>=2) bias='BULLISH'; else if(score>=0.5) bias='CONSTRUCTIVE'; else if(score<=-2) bias='BEARISH'; else if(score<=-0.5) bias='CAUTIOUS';
+
  const homeBias=document.getElementById('nq-bias')?.textContent||'—';
  const riskTone=Number.isFinite(vixCh)?(vixCh<-5?'RISK-ON':vixCh>5?'RISK-OFF':'MIXED'):'—';
  const usdTone=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
@@ -348,45 +387,8 @@ async function load(){
  const fxRisk=(Number.isFinite(vixCh)&&vixCh<-5)?'Falling VIX adds a calmer risk backdrop.':(Number.isFinite(vixCh)&&vixCh>5)?'Rising VIX adds a risk-off backdrop.':'Volatility is not giving a strong directional signal.';
  document.getElementById('fx-context').innerHTML=`<b>${fxBias}</b><br>${fxRisk}<br><span class="small">EURUSD is ${pct(p.eurusd_change)} on the current snapshot. This is contextual analysis, not a forecast.</span>`;
 
- const dxyChange=Number(p.dxy_change);
  document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
 
- // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
- const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
- const emPct=Number(opt.expected_move_pct), emPts=Number(opt.expected_move_points);
- const vixCh=Number(p.vix_change);
- const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
- const macroReg=m.regime||{};
- let score=0, optRead='No usable options location', optImpact='NEUTRAL';
- if(Number.isFinite(spot)&&Number.isFinite(flip)){
-   if(spot>flip){score+=1; optRead='Above gamma flip'; optImpact='BULLISH';}
-   else if(spot<flip){score-=1; optRead='Below gamma flip'; optImpact='BEARISH';}
-   else {optRead='At gamma flip'; optImpact='NEUTRAL';}
- }
- if(gammaReg.includes('negative')){
-   optRead += ' • negative gamma = wider moves';
-   score += Number.isFinite(spot)&&Number.isFinite(flip)?(spot>flip?0.5:-0.5):0;
- }
- let dollarRead='Neutral USD', dollarImpact='NEUTRAL';
- if(Number.isFinite(dxyChange)){
-   if(dxyChange>0.15){score-=1; dollarRead='DXY rising'; dollarImpact='BEARISH';}
-   else if(dxyChange<-0.15){score+=1; dollarRead='DXY falling'; dollarImpact='BULLISH';}
- }
- let vixRead='VIX stable', vixImpact='NEUTRAL';
- if(Number.isFinite(vixCh)){
-   if(vixCh>5){score-=1; vixRead='VIX rising'; vixImpact='BEARISH';}
-   else if(vixCh<-5){score+=1; vixRead='VIX falling'; vixImpact='BULLISH';}
- }
- let macroScore=0;
- if(String(macroReg.growth||'').toLowerCase().includes('expand')) macroScore+=1;
- if(String(macroReg.liquidity||'').toLowerCase().includes('expand')) macroScore+=1;
- if(String(macroReg.inflation||'').toLowerCase().includes('hot')) macroScore-=1;
- if(String(macroReg.credit||'').toLowerCase().includes('stress')) macroScore-=1;
- score += macroScore*0.75;
- const macroRead=macroScore>0.5?'Supportive growth/liquidity':macroScore<-0.5?'Inflation/credit headwind':'Mixed macro';
- const macroImpact=macroScore>0.5?'BULLISH':macroScore<-0.5?'BEARISH':'NEUTRAL';
- let bias='NEUTRAL';
- if(score>=2) bias='BULLISH'; else if(score>=0.5) bias='CONSTRUCTIVE'; else if(score<=-2) bias='BEARISH'; else if(score<=-0.5) bias='CAUTIOUS';
  const biasEl=document.getElementById('nq-bias'); biasEl.textContent=bias; biasEl.className='up'; if(['BEARISH','CAUTIOUS'].includes(bias)) biasEl.className='down'; if(bias==='NEUTRAL') biasEl.className='amber';
  const rangeLow=Number.isFinite(spot)&&Number.isFinite(emPct)?spot*(1-emPct/100):null;
  const rangeHigh=Number.isFinite(spot)&&Number.isFinite(emPct)?spot*(1+emPct/100):null;
