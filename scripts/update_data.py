@@ -1,5 +1,6 @@
 import json, math, re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time as dt_time
+from zoneinfo import ZoneInfo
 from email.utils import parsedate_to_datetime
 from urllib.request import Request, urlopen
 import urllib.parse
@@ -239,13 +240,35 @@ def main():
     options.setdefault("model", "Estimated GEX; dealer-sign assumption, not direct dealer book.")
 
     try:
+        # Select the correct expiry for the current session:
+        # 0DTE when an NDX expiry exists today and it is still before the
+        # regular 4:00 p.m. ET expiry; otherwise use the nearest future expiry.
         t = yf.Ticker("^NDX")
         expiries = list(t.options or [])
         spot = sf(d["prices"].get("ndx"))
         if expiries and spot is not None:
-            today = datetime.now(timezone.utc).date()
-            future = [e for e in expiries if datetime.fromisoformat(e).date() >= today]
-            expiry = future[0] if future else expiries[0]
+            ny = ZoneInfo("America/New_York")
+            now_ny = datetime.now(ny)
+            today_ny = now_ny.date()
+            parsed = sorted((e, datetime.fromisoformat(e).date()) for e in expiries)
+            same_day = [e for e, ed in parsed if ed == today_ny]
+            future = [(e, ed) for e, ed in parsed if ed > today_ny]
+
+            if same_day and now_ny.time() < dt_time(16, 0):
+                expiry = same_day[0]
+                expiry_mode = "0DTE"
+                expiry_label = "0DTE"
+                expiry_time = datetime.combine(today_ny, dt_time(16, 0), tzinfo=ny)
+                seconds_to_expiry = max((expiry_time - now_ny).total_seconds(), 15 * 60)
+                T = seconds_to_expiry / (365 * 24 * 3600)
+            elif future:
+                expiry, expiry_date = future[0]
+                days_to_expiry = (expiry_date - today_ny).days
+                expiry_mode = "1DTE" if days_to_expiry == 1 else "NEAREST"
+                expiry_label = expiry_mode
+                T = max(days_to_expiry, 1) / 365
+            else:
+                raise ValueError("No valid future NDX expiry")
 
             ch = t.option_chain(expiry)
             c, p = ch.calls.copy(), ch.puts.copy()
@@ -257,19 +280,19 @@ def main():
                 piv = sf(p.sort_values("dist").iloc[0].get("impliedVolatility"))
                 ivs = [x for x in (civ, piv) if x is not None and x > 0]
                 iv = sum(ivs) / len(ivs) if ivs else None
-                days = max(
-                    (datetime.fromisoformat(expiry).date() - datetime.now(timezone.utc).date()).days,
-                    1,
-                )
+
                 if iv is not None:
-                    move = spot * iv * math.sqrt(days / 365)
+                    move = spot * iv * math.sqrt(T)
                     options.update({
                         "status": "live",
                         "expiry": expiry,
+                        "expiry_mode": expiry_mode,
+                        "expiry_label": expiry_label,
                         "spot": spot,
                         "atm_iv": iv * 100,
                         "expected_move_pct": (move / spot) * 100,
-                        "expected_move_points": move
+                        "expected_move_points": move,
+                        "time_to_expiry_hours": T * 365 * 24,
                     })
 
                 call_oi = sf(c["openInterest"].fillna(0).sum())
@@ -277,26 +300,99 @@ def main():
                 if call_oi is not None and put_oi is not None and call_oi > 0:
                     options["pcr_oi"] = put_oi / call_oi
 
-                c_oi = c.dropna(subset=["openInterest"])
-                p_oi = p.dropna(subset=["openInterest"])
-                # Preserve modeled wall levels if the canonical data layer already has them.
-                if options.get("call_wall") is None and not c_oi.empty:
-                    options["call_wall"] = sf(c_oi.loc[c_oi["openInterest"].idxmax(), "strike"])
-                if options.get("put_wall") is None and not p_oi.empty:
-                    options["put_wall"] = sf(p_oi.loc[p_oi["openInterest"].idxmax(), "strike"])
+                # Rebuild the strike-level modeled GEX profile for the SAME
+                # expiry selected above, so 0DTE never displays stale 1DTE data.
+                def clean_iv(v):
+                    v = sf(v)
+                    return v if v is not None and v > 0 else None
 
-                if "gamma" in c.columns and "gamma" in p.columns:
-                    cg = c[["openInterest", "gamma"]].copy()
-                    pg = p[["openInterest", "gamma"]].copy()
-                    cg["openInterest"] = cg["openInterest"].fillna(0)
-                    pg["openInterest"] = pg["openInterest"].fillna(0)
-                    cg["gamma"] = cg["gamma"].fillna(0)
-                    pg["gamma"] = pg["gamma"].fillna(0)
-                    c_gex = (cg["gamma"] * cg["openInterest"] * 100 * spot * spot * 0.01).sum()
-                    p_gex = (pg["gamma"] * pg["openInterest"] * 100 * spot * spot * 0.01).sum()
-                    net_gex = float(c_gex - p_gex)
-                    if math.isfinite(net_gex) and options.get("net_gex") is None:
-                        options["net_gex"] = net_gex
+                rows = []
+                for K in sorted(set(c["strike"].dropna()) | set(p["strike"].dropna())):
+                    cr = c[c["strike"] == K]
+                    pr = p[p["strike"] == K]
+                    coi = float(cr.iloc[0].get("openInterest") or 0) if not cr.empty else 0.0
+                    poi = float(pr.iloc[0].get("openInterest") or 0) if not pr.empty else 0.0
+                    civ_k = clean_iv(cr.iloc[0].get("impliedVolatility")) if not cr.empty else None
+                    piv_k = clean_iv(pr.iloc[0].get("impliedVolatility")) if not pr.empty else None
+                    rows.append((float(K), coi, poi, civ_k, piv_k))
+
+                # Black-Scholes gamma approximation from IV when the chain
+                # does not provide a reliable gamma field.
+                def bs_gamma(S, K, vol):
+                    if not vol or vol <= 0 or S <= 0 or K <= 0 or T <= 0:
+                        return 0.0
+                    try:
+                        d1 = (math.log(S / K) + (r * T) + 0.5 * vol * vol * T) / (vol * math.sqrt(T))
+                        return math.exp(-0.5 * d1 * d1) / (S * vol * math.sqrt(T) * math.sqrt(2 * math.pi))
+                    except Exception:
+                        return 0.0
+
+                r = sf(d["rates"].get("y10"))
+                r = (r / 100.0 if r is not None and abs(r) > 1.5 else (r or 0.0))
+                MULT = 100.0
+                heat = []
+                for K, coi, poi, civ_k, piv_k in rows:
+                    cg = bs_gamma(spot, K, civ_k)
+                    pg = bs_gamma(spot, K, piv_k)
+                    cge = cg * coi * MULT * spot * spot * 0.01
+                    pge = -pg * poi * MULT * spot * spot * 0.01
+                    if abs(K - spot) <= spot * 0.15:
+                        heat.append({
+                            "strike": K, "call_oi": coi, "put_oi": poi,
+                            "call_gex": cge, "put_gex": pge, "net_gex": cge + pge
+                        })
+
+                options["oi_heatmap"] = heat
+                total = sum(x["net_gex"] for x in heat)
+                options["net_gex"] = total
+                total_call_oi = sum(x["call_oi"] for x in heat)
+                total_put_oi = sum(x["put_oi"] for x in heat)
+                nonzero = sum(1 for x in heat if x["call_oi"] > 0 or x["put_oi"] > 0)
+                near_atm_nonzero = sum(1 for x in heat if abs(x["strike"] - spot) <= spot * 0.05 and (x["call_oi"] > 0 or x["put_oi"] > 0))
+                nonzero_ratio = nonzero / len(heat) if heat else 0
+                reasons = []
+                if len(heat) < 50: reasons.append("fewer than 50 strikes in the modeled window")
+                if nonzero < 20: reasons.append("too few strikes with non-zero open interest")
+                if near_atm_nonzero < 6: reasons.append("thin open interest near spot")
+                if total_call_oi + total_put_oi < 500: reasons.append("low total open interest")
+                if nonzero_ratio < 0.20: reasons.append("sparse open-interest coverage")
+                options["data_quality"] = {
+                    "status": "LIMITED" if reasons else "GOOD",
+                    "reason": "; ".join(reasons) if reasons else "Sufficient strike and open-interest coverage for this modeled snapshot",
+                    "strikes": len(heat), "nonzero_oi_strikes": nonzero,
+                    "nonzero_oi_ratio": nonzero_ratio,
+                    "near_atm_nonzero_strikes": near_atm_nonzero,
+                    "total_call_oi": total_call_oi, "total_put_oi": total_put_oi,
+                }
+
+                if heat:
+                    options["call_wall"] = max(heat, key=lambda x: x["call_gex"])["strike"]
+                    options["put_wall"] = min(heat, key=lambda x: x["put_gex"])["strike"]
+
+                def total_at(s):
+                    total_g = 0.0
+                    for K, coi, poi, civ_k, piv_k in rows:
+                        if abs(K - s) <= spot * 0.15:
+                            total_g += (bs_gamma(s, K, civ_k) * coi - bs_gamma(s, K, piv_k) * poi) * MULT * s * s * 0.01
+                    return total_g
+
+                xs = [spot * 0.85 + (spot * 0.30) * i / 120 for i in range(121)]
+                ys = [total_at(x) for x in xs]
+                flips = []
+                for i in range(120):
+                    if ys[i] == 0:
+                        flips.append(xs[i])
+                    elif ys[i] * ys[i + 1] < 0:
+                        flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
+                options["gamma_flip"] = min(flips, key=lambda x: abs(x - spot)) if flips else None
+                options["dealer_positioning"] = {
+                    "status": "modeled",
+                    "regime": "Positive gamma" if total > 0 else "Negative gamma" if total < 0 else "Neutral gamma",
+                    "net_gex": total,
+                    "gamma_flip": options["gamma_flip"],
+                    "model": "Modeled from listed OI, IV and Black-Scholes gamma; not direct dealer inventory."
+                }
+
     except Exception:
         pass
 
