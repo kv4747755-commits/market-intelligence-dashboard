@@ -372,7 +372,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="grid">
 <div class="card"><div class="label">NASDAQ-100 INDEX (NDX)</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
 <div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div>
-<div class="card"><div class="label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
+<div class="card"><div class="label" id="home-em-label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
 <div class="card"><div class="label">Gamma Regime</div><div class="big amber" id="gamma1">—</div><div class="small" id="gamma2">—</div></div>
 </div>
 <div class="card" style="margin-top:12px">
@@ -427,8 +427,8 @@ section:not(#home)>.title{padding-top:4px}
 <section id="options">
 <div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
 <div class="grid">
-<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small">Nearest valid expiry</div></div>
-<div class="card"><div class="label">Expected Move</div><div class="big" id="em2">—</div><div class="small" id="opt-em-points">—</div></div>
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small" id="opt-expiry-mode">Expiry mode —</div></div>
+<div class="card"><div class="label" id="em-label">Expected Move</div><div class="big" id="em2">—</div><div class="small" id="opt-em-points">—</div></div>
 <div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div><div class="small">Put OI / Call OI</div></div>
 <div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div><div class="small">Modeled notional exposure</div></div>
 </div>
@@ -436,7 +436,7 @@ section:not(#home)>.title{padding-top:4px}
   <div class="card options-chart-card">
     <div class="options-chart-head">
       <div><div class="options-chart-title">NET GEX PROFILE — NDX</div><div class="small" id="gex-chart-status">Strike-level modeled gamma exposure</div></div>
-      <div class="options-chart-tools"><span class="options-tool" id="gex-expiry">—</span><span class="options-tool">MODELED CHAIN</span></div>
+      <div class="options-chart-tools"><span class="options-tool" id="gex-expiry">—</span><span class="options-tool" id="gex-chain-mode">— • MODELED CHAIN</span></div>
     </div>
     <div class="options-legend">
       <span><i class="legend-swatch" style="background:#31e0a2"></i>Positive GEX</span>
@@ -561,8 +561,11 @@ function renderGexProfile(o,p){
    callGex:Number(x.call_gex)||0,putGex:Number(x.put_gex)||0
  })).filter(x=>Number.isFinite(x.strike)&&Number.isFinite(x.net)).sort((a,b)=>a.strike-b.strike):[];
  const spot=Number(p.ndx), putWall=Number(o.put_wall), callWall=Number(o.call_wall), flip=Number(o.gamma_flip);
- document.getElementById('gex-expiry').textContent=o.expiry||'Latest available expiry';
- document.getElementById('gex-chart-status').textContent=rows.length?`${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
+ const expiryMode=o.expiry_mode||'NEAREST';
+ const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
+ document.getElementById('gex-expiry').textContent=expiryText;
+ const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${expiryMode} • MODELED CHAIN`;
+ document.getElementById('gex-chart-status').textContent=rows.length?`${expiryMode} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
  document.getElementById('gex-put-level').textContent=Number.isFinite(putWall)?f(putWall,0):'—';
  document.getElementById('gex-call-level').textContent=Number.isFinite(callWall)?f(callWall,0):'—';
  document.getElementById('gex-flip-level').textContent=Number.isFinite(flip)?f(flip,2):'—';
@@ -781,7 +784,7 @@ function renderGexProfile(o,p){
  const near=rows.slice().sort((a,b)=>Math.abs(a.strike-spot)-Math.abs(b.strike-spot));
  const renderTable=(mode='near')=>{
    const list=(mode==='all'?rows:near.slice(0,14)).slice().sort((a,b)=>a.strike-b.strike);
-   document.getElementById('heat-status').textContent=`${rows.length} modeled strikes • ${o.expiry||'latest available expiry'} • ${mode==='all'?'all loaded':'nearest '+list.length+' shown'}`;
+   document.getElementById('heat-status').textContent=`${rows.length} modeled strikes • ${expiryText} • ${mode==='all'?'all loaded':'nearest '+list.length+' shown'}`;
    document.getElementById('gex-detail-body').innerHTML=list.map(r=>{
      const cls=(Number.isFinite(putWall)&&Math.abs(r.strike-putWall)<1)?'level-put':
        (Number.isFinite(callWall)&&Math.abs(r.strike-callWall)<1)?'level-call':
@@ -837,9 +840,14 @@ async function load(){
  document.getElementById('fxvix').textContent=pct(p.vix_change);
 
  const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
+ const expiryMode=o.expiry_mode||'NEAREST';
+ const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
+ document.getElementById('opt-expiry-mode').textContent=expiryText;
+ document.getElementById('em-label').textContent=`Expected Move • ${expiryMode}`;
+ const homeEmLabel=document.getElementById('home-em-label'); if(homeEmLabel) homeEmLabel.textContent=`Expected Move • ${expiryMode}`;
  const iv=live?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
  const em=live?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
- document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${live?'up':'amber'}">${live?'LIVE':'WAITING'}</b></div></div>`;
+ document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE • ${expiryMode}</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${live?'up':'amber'}">${live?'LIVE':'WAITING'}</b></div></div>`;
 
  ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
