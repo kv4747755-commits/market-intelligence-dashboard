@@ -51,30 +51,30 @@ header{
   background:rgba(5,8,13,.90);
   border-bottom:1px solid #142332;
 }
-.head{max-width:none;margin:0 0 0 317px;padding:0 24px}
+.head{max-width:none;margin:0 0 0 240px;padding:0 24px}
 .brand{font-size:20px;letter-spacing:.5px}
 .sub{font-size:11px;margin-top:2px;letter-spacing:.2px}
 .badge{font-size:10px;padding:6px 10px;border-radius:16px;letter-spacing:.5px}
 .nav{
-  position:fixed;left:0;top:0;bottom:0;width:300px;
+  position:fixed;left:0;top:0;bottom:0;width:220px;
   z-index:30;display:flex;flex-direction:column;gap:4px;
-  padding:24px 16px 20px;
+  padding:22px 16px 18px;
   overflow-y:auto;overflow-x:hidden;
   background:linear-gradient(180deg,#070c12,#09111a);
   border-right:1px solid #182735;
 }
 .nav:before{
   content:"MARKET INTELLIGENCE";
-  display:block;color:#8ea1b4;font-size:13px;font-weight:800;
-  letter-spacing:1.6px;padding:6px 12px 18px;
+  display:block;color:#8ea1b4;font-size:11px;font-weight:800;
+  letter-spacing:1.6px;padding:6px 12px 16px;font-size:12px;
 }
 .nav button{
   width:100%;text-align:left;border:1px solid transparent;
   background:transparent;color:#8fa0b1;border-radius:9px;
-  padding:13px 14px;font-size:14px;font-weight:650;
+  padding:12px 14px;font-size:14px;font-weight:650;
   transition:.15s ease;
 }
-.nav button:before{content:"◦";display:inline-block;width:22px;color:#4f6a82;font-size:17px}
+.nav button:before{content:"◦";display:inline-block;width:18px;color:#4f6a82;font-size:15px}
 .nav button:hover{background:#0d1823;border-color:#1b3042;color:#dbe7f2;transform:none}
 .nav button.active{
   background:linear-gradient(90deg,#102237,#0d1925);
@@ -82,7 +82,7 @@ header{
   box-shadow:inset 3px 0 0 var(--blue);
 }
 .nav button.active:before{content:"●";color:var(--blue)}
-main{max-width:none;margin:0 0 0 317px;padding:8px 24px 42px}
+main{max-width:none;margin:0 0 0 240px;padding:8px 24px 42px}
 section{padding-top:20px;scroll-margin-top:78px}
 .title{
   font-size:17px;font-weight:800;letter-spacing:.4px;
@@ -135,12 +135,6 @@ section:not(#home)>.title{padding-top:4px}
 #nasdaq .card:first-child:before,#forex .card:first-child:before,#options .card:first-child:before,#macro .card:first-child:before{
   content:"LIVE";
   position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7
-}
-
-/* desktop sidebar sizing: larger and easier to read on laptops/desktops */
-@media(min-width:901px){
-  .nav button{min-height:44px}
-  .nav button.active{box-shadow:inset 4px 0 0 var(--blue)}
 }
 
 /* responsive: turn sidebar back into compact top navigation */
