@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-13T13:43:01.416512+00:00",
+  "generated_at": "2026-09-13T13:44:54.363675+00:00",
   "prices": {
     "ndx": 29368.439453125,
     "ndx_change": 0.9103015053288033,
@@ -1044,7 +1044,7 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-13T13:43:01.416317+00:00",
+    "updated_at": "2026-09-13T13:44:54.363465+00:00",
     "items": [
       {
         "title": "Dow Jones Futures: Fed Rate Hike Seen As Oil, Yields Pressure Stocks; Apple, Moderna Are New Buys - Investor's Business Daily",
@@ -1146,13 +1146,41 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-09-13T13:42:58.141357+00:00",
+    "updated_at": "2026-09-13T13:44:51.181362+00:00",
     "series": {
+      "sofr": {
+        "series_id": "SOFR",
+        "value": 3.62,
+        "date": "2026-09-10",
+        "previous": 3.64,
+        "previous_date": "2026-09-09"
+      },
+      "breakeven_10y": {
+        "series_id": "T10YIE",
+        "value": 2.36,
+        "date": "2026-09-11",
+        "previous": 2.4,
+        "previous_date": "2026-09-10"
+      },
       "pce": {
         "series_id": "PCEPI",
         "value": 131.659,
         "date": "2026-07-01",
         "previous": 131.454,
+        "previous_date": "2026-06-01"
+      },
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.55,
+        "date": "2026-09-10",
+        "previous": 2.46,
+        "previous_date": "2026-09-09"
+      },
+      "core_pce": {
+        "series_id": "PCEPILFE",
+        "value": 130.658,
+        "date": "2026-07-01",
+        "previous": 130.338,
         "previous_date": "2026-06-01"
       },
       "core_cpi": {
@@ -1162,26 +1190,12 @@
         "previous": 336.789,
         "previous_date": "2026-07-01"
       },
-      "core_pce": {
-        "series_id": "PCEPILFE",
-        "value": 130.658,
-        "date": "2026-07-01",
-        "previous": 130.338,
-        "previous_date": "2026-06-01"
-      },
-      "sofr": {
-        "series_id": "SOFR",
-        "value": 3.62,
-        "date": "2026-09-10",
-        "previous": 3.64,
-        "previous_date": "2026-09-09"
-      },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.55,
-        "date": "2026-09-10",
-        "previous": 2.46,
-        "previous_date": "2026-09-09"
+      "cpi": {
+        "series_id": "CPIAUCSL",
+        "value": 334.131,
+        "date": "2026-08-01",
+        "previous": 332.813,
+        "previous_date": "2026-07-01"
       },
       "fed_funds": {
         "series_id": "DFF",
@@ -1190,53 +1204,11 @@
         "previous": 3.63,
         "previous_date": "2026-09-09"
       },
-      "cpi": {
-        "series_id": "CPIAUCSL",
-        "value": 334.131,
-        "date": "2026-08-01",
-        "previous": 332.813,
-        "previous_date": "2026-07-01"
-      },
-      "breakeven_10y": {
-        "series_id": "T10YIE",
-        "value": 2.36,
-        "date": "2026-09-11",
-        "previous": 2.4,
-        "previous_date": "2026-09-10"
-      },
       "ppi": {
         "series_id": "PPIACO",
         "value": 287.928,
         "date": "2026-08-01",
         "previous": 285.181,
-        "previous_date": "2026-07-01"
-      },
-      "payrolls": {
-        "series_id": "PAYEMS",
-        "value": 159075.0,
-        "date": "2026-08-01",
-        "previous": 158913.0,
-        "previous_date": "2026-07-01"
-      },
-      "unemployment": {
-        "series_id": "UNRATE",
-        "value": 4.1,
-        "date": "2026-08-01",
-        "previous": 4.1,
-        "previous_date": "2026-07-01"
-      },
-      "continuing_claims": {
-        "series_id": "CCSA",
-        "value": 1774000.0,
-        "date": "2026-08-29",
-        "previous": 1775000.0,
-        "previous_date": "2026-08-22"
-      },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.6,
-        "date": "2026-08-01",
-        "previous": 61.4,
         "previous_date": "2026-07-01"
       },
       "jolts": {
@@ -1246,12 +1218,19 @@
         "previous": 7182.0,
         "previous_date": "2026-06-01"
       },
-      "initial_claims": {
-        "series_id": "ICSA",
-        "value": 206000.0,
-        "date": "2026-09-05",
-        "previous": 207000.0,
-        "previous_date": "2026-08-29"
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.6,
+        "date": "2026-08-01",
+        "previous": 61.4,
+        "previous_date": "2026-07-01"
+      },
+      "unemployment": {
+        "series_id": "UNRATE",
+        "value": 4.1,
+        "date": "2026-08-01",
+        "previous": 4.1,
+        "previous_date": "2026-07-01"
       },
       "avg_hourly_earnings": {
         "series_id": "CES0500000003",
@@ -1259,6 +1238,27 @@
         "date": "2026-08-01",
         "previous": 37.65,
         "previous_date": "2026-07-01"
+      },
+      "payrolls": {
+        "series_id": "PAYEMS",
+        "value": 159075.0,
+        "date": "2026-08-01",
+        "previous": 158913.0,
+        "previous_date": "2026-07-01"
+      },
+      "continuing_claims": {
+        "series_id": "CCSA",
+        "value": 1774000.0,
+        "date": "2026-08-29",
+        "previous": 1775000.0,
+        "previous_date": "2026-08-22"
+      },
+      "initial_claims": {
+        "series_id": "ICSA",
+        "value": 206000.0,
+        "date": "2026-09-05",
+        "previous": 207000.0,
+        "previous_date": "2026-08-29"
       },
       "gdp": {
         "series_id": "GDPC1",
@@ -1288,25 +1288,11 @@
         "previous": 768072.0,
         "previous_date": "2026-06-01"
       },
-      "fed_balance_sheet": {
-        "series_id": "WALCL",
-        "value": 6740619.0,
-        "date": "2026-09-09",
-        "previous": 6737204.0,
-        "previous_date": "2026-09-02"
-      },
       "consumer_sentiment": {
         "series_id": "UMCSENT",
         "value": 55.2,
         "date": "2026-07-01",
         "previous": 49.5,
-        "previous_date": "2026-06-01"
-      },
-      "building_permits": {
-        "series_id": "PERMIT",
-        "value": 1433.0,
-        "date": "2026-07-01",
-        "previous": 1374.0,
         "previous_date": "2026-06-01"
       },
       "housing_starts": {
@@ -1323,19 +1309,26 @@
         "previous": 23115.2,
         "previous_date": "2026-06-01"
       },
+      "building_permits": {
+        "series_id": "PERMIT",
+        "value": 1433.0,
+        "date": "2026-07-01",
+        "previous": 1374.0,
+        "previous_date": "2026-06-01"
+      },
+      "fed_balance_sheet": {
+        "series_id": "WALCL",
+        "value": 6740619.0,
+        "date": "2026-09-09",
+        "previous": 6737204.0,
+        "previous_date": "2026-09-02"
+      },
       "rrp": {
         "series_id": "RRPONTSYD",
         "value": 5.255,
         "date": "2026-09-11",
         "previous": 4.736,
         "previous_date": "2026-09-10"
-      },
-      "tga": {
-        "series_id": "WTREGEN",
-        "value": 883335.0,
-        "date": "2026-09-09",
-        "previous": 967935.0,
-        "previous_date": "2026-09-02"
       },
       "financial_conditions": {
         "series_id": "NFCI",
@@ -1350,6 +1343,13 @@
         "date": "2026-09-10",
         "previous": 0.81,
         "previous_date": "2026-09-09"
+      },
+      "tga": {
+        "series_id": "WTREGEN",
+        "value": 883335.0,
+        "date": "2026-09-09",
+        "previous": 967935.0,
+        "previous_date": "2026-09-02"
       },
       "hy_spread": {
         "series_id": "BAMLH0A0HYM2",
