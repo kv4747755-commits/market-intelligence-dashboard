@@ -302,6 +302,9 @@ section:not(#home)>.title{padding-top:4px}
 @media(max-width:600px){#options-gex-svg{height:420px}.options-interactive-note{display:block;line-height:1.6}}
 
 @media(max-width:600px){#options-gex-svg{height:380px}.options-chart-card,.options-side-card{padding:10px}.options-legend{gap:7px;font-size:9px}.option-level b{font-size:14px}}
+/* V9 MODELED GEX QUALITY + SENSITIVITIES */
+.gex-model-card{margin-top:10px}.gex-model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}.gex-model-stat{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-model-stat .k{font-size:9px;color:#718295;letter-spacing:.8px;text-transform:uppercase}.gex-model-stat .v{font-size:14px;font-weight:800;margin-top:3px}.gex-model-stat .s{font-size:9px;color:#718295;margin-top:2px;line-height:1.35}.gex-expiry-wrap{margin-top:10px;overflow:auto}.gex-expiry-table{width:100%;border-collapse:collapse;font-size:9px}.gex-expiry-table th,.gex-expiry-table td{padding:6px 5px;border-bottom:1px solid #172634;text-align:right;white-space:nowrap}.gex-expiry-table th:first-child,.gex-expiry-table td:first-child{text-align:left}.gex-method-note{margin-top:9px;font-size:9px;line-height:1.45;color:#718295}.gex-method-note b{color:#a9b8c6}
+@media(max-width:600px){.gex-model-grid{grid-template-columns:repeat(2,1fr)}}
 
 </style>
 </head>
@@ -473,6 +476,19 @@ section:not(#home)>.title{padding-top:4px}
       <div class="callout" id="dealer" style="margin-top:8px">Waiting for a valid option chain. No dealer-positioning number is fabricated.</div>
       <div class="options-disclaimer">Modeled from listed OI, IV and Black-Scholes gamma. Not direct dealer inventory.</div>
     </div>
+    <div class="card options-side-card gex-model-card">
+      <div class="gex-panel-title">GEX MODEL QUALITY & SENSITIVITIES</div>
+      <div class="gex-model-grid">
+        <div class="gex-model-stat"><div class="k">Confidence</div><div class="v" id="gex-confidence">—</div><div class="s" id="gex-quality">—</div></div>
+        <div class="gex-model-stat"><div class="k">Expirations</div><div class="v" id="gex-expiry-count">—</div><div class="s" id="gex-expiry-list">—</div></div>
+        <div class="gex-model-stat"><div class="k">Vanna</div><div class="v" id="gex-vanna">—</div><div class="s">Modeled aggregate sensitivity</div></div>
+        <div class="gex-model-stat"><div class="k">Charm</div><div class="v" id="gex-charm">—</div><div class="s">Modeled aggregate sensitivity</div></div>
+        <div class="gex-model-stat"><div class="k">Strike coverage</div><div class="v" id="gex-strike-coverage">—</div><div class="s" id="gex-oi-coverage">—</div></div>
+        <div class="gex-model-stat"><div class="k">Near-ATM OI</div><div class="v" id="gex-atm-coverage">—</div><div class="s">Non-zero strikes within ±5% spot</div></div>
+      </div>
+      <div class="gex-expiry-wrap"><table class="gex-expiry-table"><thead><tr><th>Expiry</th><th>Mode</th><th>Net GEX</th><th>Call OI</th><th>Put OI</th></tr></thead><tbody id="gex-expiry-body"><tr><td colspan="5">Waiting for multi-expiry data.</td></tr></tbody></table></div>
+      <div class="gex-method-note" id="gex-method-note"><b>Method:</b> Multi-expiry Black-Scholes gamma model from listed OI/IV. Dealer side is inferred by a conventional sign assumption.</div>
+    </div>
   </div>
 </div>
 <div class="card options-detail"><h3>STRIKE DETAILS <span class="small">NEAR SPOT • OI + MODELED GEX</span></h3>
@@ -563,9 +579,9 @@ function renderGexProfile(o,p){
  const spot=Number(p.ndx), putWall=Number(o.put_wall), callWall=Number(o.call_wall), flip=Number(o.gamma_flip);
  const expiryMode=o.expiry_mode||'NEAREST';
  const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
- document.getElementById('gex-expiry').textContent=expiryText;
- const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${expiryMode} • MODELED CHAIN`;
- document.getElementById('gex-chart-status').textContent=rows.length?`${expiryMode} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
+ document.getElementById('gex-expiry').textContent=(Number(o.expiry_count)||0)>1?`ALL EXP • ${o.expiry_count}`:expiryText;
+ const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=(Number(o.expiry_count)||0)>1?`ALL EXPIRATIONS • MODELED`:`${expiryMode} • MODELED CHAIN`;
+ document.getElementById('gex-chart-status').textContent=rows.length?((Number(o.expiry_count)||0)>1?`ALL EXPIRATIONS • ${o.expiry_count} expiries • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:`${expiryMode} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`):'No usable strike-level chain data';
  document.getElementById('gex-put-level').textContent=Number.isFinite(putWall)?f(putWall,0):'—';
  document.getElementById('gex-call-level').textContent=Number.isFinite(callWall)?f(callWall,0):'—';
  document.getElementById('gex-flip-level').textContent=Number.isFinite(flip)?f(flip,2):'—';
@@ -842,6 +858,8 @@ async function load(){
  const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
  const expiryMode=o.expiry_mode||'NEAREST';
  const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
+ const expiryCount=Number(o.expiry_count)||0;
+ const gexExpiryText=expiryCount>1?`ALL EXPIRATIONS • ${expiryCount} EXPIRIES`:expiryText;
  document.getElementById('opt-expiry-mode').textContent=expiryText;
  document.getElementById('em-label').textContent=`Expected Move • ${expiryMode}`;
  const homeEmLabel=document.getElementById('home-em-label'); if(homeEmLabel) homeEmLabel.textContent=`Expected Move • ${expiryMode}`;
@@ -860,6 +878,26 @@ async function load(){
  const dqText=dqStatus==='GOOD'?'GOOD CHAIN COVERAGE':dqStatus==='LIMITED'?'LIMITED CHAIN DATA':'OPTION CHAIN UNAVAILABLE';
  const dqReason=dq.reason||'No quality assessment available.';
  document.getElementById('data-quality').innerHTML=`<b class="${dqClass}">${dqText}</b><br><span class="small">${dqReason}</span>${dq.strikes?`<br><span class="small">${dq.strikes} modeled strikes • ${dq.nonzero_oi_strikes||0} with non-zero OI • ${dq.near_atm_nonzero_strikes||0} non-zero strikes within ±5% of spot</span>`:''}`;
+
+ const cov=o.coverage||{};
+ const confidence=String(o.gex_confidence||o.dealer_positioning?.confidence||'—').toUpperCase();
+ const confidenceClass=confidence==='HIGH'?'up':confidence==='MEDIUM'?'amber':'down';
+ const confEl=document.getElementById('gex-confidence'); if(confEl){confEl.textContent=confidence;confEl.className='v '+confidenceClass;}
+ const qualityEl=document.getElementById('gex-quality'); if(qualityEl) qualityEl.textContent=dq.status?`${dq.status} • ${dqReason}`:'—';
+ const expList=Array.isArray(o.expiry_dates)?o.expiry_dates:[];
+ const expCount=Number(o.expiry_count)||expList.length||0;
+ document.getElementById('gex-expiry-count').textContent=expCount?String(expCount):'—';
+ document.getElementById('gex-expiry-list').textContent=expList.length?expList.slice(0,4).join(' • ')+(expList.length>4?' • …':''):'—';
+ const sensFmt=x=>{const n=Number(x);if(!Number.isFinite(n))return '—';const a=Math.abs(n),u=a>=1e9?'B':a>=1e6?'M':a>=1e3?'K':'';const v=u?(n/(u==='B'?1e9:u==='M'?1e6:1e3)):n;return `${v>=0?'+':''}${v.toFixed(2)}${u}`};
+ document.getElementById('gex-vanna').textContent=sensFmt(o.vanna);
+ document.getElementById('gex-charm').textContent=sensFmt(o.charm);
+ document.getElementById('gex-strike-coverage').textContent=cov.strikes?`${cov.strikes}`:'—';
+ document.getElementById('gex-oi-coverage').textContent=cov.nonzero_oi_strikes!=null?`${cov.nonzero_oi_strikes} with non-zero OI`:'—';
+ document.getElementById('gex-atm-coverage').textContent=cov.near_atm_nonzero_strikes!=null?`${cov.near_atm_nonzero_strikes}`:'—';
+ const expRows=Array.isArray(o.expiry_breakdown)?o.expiry_breakdown:[];
+ document.getElementById('gex-expiry-body').innerHTML=expRows.length?expRows.map(x=>`<tr><td>${x.expiry||'—'}</td><td>${x.mode||'—'}</td><td class="${Number(x.net_gex)<0?'down':'up'}">${sensFmt(x.net_gex)}</td><td>${fmt(x.call_oi,0)}</td><td>${fmt(x.put_oi,0)}</td></tr>`).join(''):'<tr><td colspan="5">No multi-expiry breakdown available.</td></tr>';
+ const method=o.gex_methodology||'Multi-expiry Black-Scholes gamma model from listed OI/IV.';
+ document.getElementById('gex-method-note').innerHTML=`<b>Method:</b> ${method} <span class="small">Dealer inventory is not directly observable from listed OI.</span>`;
 
  const dp=o.dealer_positioning||{};
  const regime=dp.regime||'—';
