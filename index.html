@@ -430,14 +430,19 @@ section:not(#home)>.title{padding-top:4px}
 </section>
 
 <section id="forex">
-<div class="title">FOREX INTELLIGENCE</div>
+<div class="title">FOREX COMMAND CENTER <span class="small">FX pairs • relative strength • cross-market drivers • currency news</span></div>
 <div class="grid">
 <div class="card"><div class="label">EURUSD</div><div class="big" id="eur">—</div><div id="eurchg" class="small">—</div></div>
+<div class="card"><div class="label">USDJPY</div><div class="big" id="fx-usdjpy">—</div><div id="fx-usdjpy-chg" class="small">—</div></div>
 <div class="card"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div></div>
 <div class="card"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div></div>
-<div class="card"><div class="label">USD Regime</div><div class="big up" id="usdregime">—</div><div class="small">Derived from canonical DXY snapshot</div></div>
 </div>
-<div class="card" style="margin-top:12px"><h3>FX Cross-Market</h3><table><tr><th>Factor</th><th>Move</th><th>Interpretation</th></tr><tr><td>DXY</td><td id="fxdxy">—</td><td>USD context</td></tr><tr><td>EURUSD</td><td id="fxeur">—</td><td>EUR/USD spot</td></tr><tr><td>VIX</td><td id="fxvix">—</td><td>Risk appetite context</td></tr></table></div>
+<div class="grid2" style="margin-top:12px">
+<div class="card"><h3>Currency Strength</h3><div class="small">Model-derived from daily moves across tracked FX pairs; not a forecast or trade signal.</div><table><thead><tr><th>Rank</th><th>Currency</th><th>Strength</th></tr></thead><tbody id="fx-strength-body"><tr><td colspan="3">Waiting for FX data…</td></tr></tbody></table></div>
+<div class="card"><h3>Cross-Market Drivers</h3><table><thead><tr><th>Factor</th><th>Move</th><th>Context</th></tr></thead><tbody id="fx-drivers-body"><tr><td colspan="3">Waiting for driver data…</td></tr></tbody></table></div>
+</div>
+<div class="card" style="margin-top:12px"><h3>Major FX Pairs</h3><div class="grid2" id="fx-pairs-grid"><div class="small">Waiting for FX snapshot…</div></div></div>
+<div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
 </section>
 
 <section id="options">
@@ -877,9 +882,30 @@ function renderGexProfile(o,p){
  render();
 }
 
+function renderForex(fx,p,fxNews){
+ const fmt=(x,n=4)=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
+ const pct=x=>x==null||!Number.isFinite(Number(x))?'—':(Number(x)>=0?'+':'')+fmt(Number(x),2)+'%';
+ const pairs=fx?.pairs||{};
+ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+ const eur=pairs.EURUSD; const jpy=pairs.USDJPY;
+ if(eur){set('eur',fmt(eur.value,5));set('eurchg',pct(eur.change_pct));}
+ if(jpy){set('fx-usdjpy',fmt(jpy.value,3));set('fx-usdjpy-chg',pct(jpy.change_pct));}
+ set('dxy',fmt(p.dxy,2));set('dxychg',pct(p.dxy_change));set('vix',fmt(p.vix,2));set('vixchg',pct(p.vix_change));
+ const sb=fx?.currency_strength||{};
+ const body=document.getElementById('fx-strength-body');
+ const entries=Object.entries(sb).filter(([k,v])=>Number.isFinite(Number(v))).sort((a,b)=>Number(b[1])-Number(a[1]));
+ if(body) body.innerHTML=entries.length?entries.map(([c,v],i)=>`<tr><td>${i+1}</td><td><b>${c}</b></td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td></tr>`).join(''):'<tr><td colspan="3">No strength data available.</td></tr>';
+ const driverRows=[['DXY',p.dxy_change,'USD broad context'],['EURUSD',pairs.EURUSD?.change_pct,'EUR/USD'],['USDJPY',pairs.USDJPY?.change_pct,'JPY / yield sensitivity'],['WTI',fx?.drivers?.WTI?.change_pct,'Oil / CAD / inflation'],['GOLD',fx?.drivers?.GOLD?.change_pct,'Safe-haven / USD context'],['VIX',p.vix_change,'Risk appetite']];
+ const db=document.getElementById('fx-drivers-body'); if(db) db.innerHTML=driverRows.map(([n,v,c])=>`<tr><td>${n}</td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td><td>${c}</td></tr>`).join('');
+ const pg=document.getElementById('fx-pairs-grid'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
+ if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="kpi"><span class="small">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="small ${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
+ const ng=document.getElementById('fx-news-grid'); const news=Array.isArray(fxNews)?fxNews.slice(0,20):[];
+ if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:15px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
+}
+
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
- const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{};
+ const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
  const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
  const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
  const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
@@ -902,6 +928,7 @@ async function load(){
  document.getElementById('fxdxy').textContent=pct(p.dxy_change);
  document.getElementById('fxeur').textContent=pct(p.eurusd_change);
  document.getElementById('fxvix').textContent=pct(p.vix_change);
+ renderForex(fx,p,fxNews);
 
  const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
  const expiryMode=o.expiry_mode||'NEAREST';
