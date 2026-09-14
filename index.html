@@ -613,7 +613,7 @@ function renderGexProfile(o,p){
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const sessionBadge=document.getElementById('gex-session-badge');
  if(sessionBadge){
-   const sess=String(o.market_session||'').toUpperCase();
+   const sess=String(o.market_session||window.__MI_DATA__?.market_session||'').toUpperCase();
    const is0dte=selectedGexMode==='0DTE';
    let label='SESSION —', cls='';
    if(sess==='PRE_MARKET'){ label=is0dte?'PRE-MARKET • PREVIOUS SESSION':'PRE-MARKET'; cls='premarket'; }
