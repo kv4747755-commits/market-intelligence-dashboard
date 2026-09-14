@@ -123,7 +123,9 @@ table{font-size:12px}th,td{padding:8px 6px}th{font-size:9px;letter-spacing:.8px}
 .footer{font-size:10px;padding:24px 0}
 body:after{
   content:"LIVE • CANONICAL DATA SNAPSHOT";
-  position:fixed;right:14px;bottom:10px;z-index:40;
+  position:static;display:block;
+  margin:8px 14px 10px;
+  text-align:right;
   color:#587087;font-size:9px;letter-spacing:1px;
   pointer-events:none
 }
@@ -373,6 +375,16 @@ section:not(#home)>.title{padding-top:4px}
   .fx-pair-change{font-size:8px!important;min-width:38px!important}
 }
 
+
+/* FINAL FX UI CLEANUP */
+.fx-intel-grid>.fx-intel-card:first-child .fx-live-badge{display:none!important}
+.fx-news-card{overflow:hidden!important}
+.fx-news-card>h3{margin-bottom:6px!important}
+.fx-news-card>.small{display:block!important;position:static!important;float:none!important;line-height:1.45!important;margin:0!important;max-width:100%!important}
+.fx-news-grid{display:grid!important;position:relative!important;clear:both!important;margin-top:10px!important}
+.fx-news-grid .kpi{min-width:0!important;overflow:hidden!important}
+.fx-news-grid .kpi b{display:block!important;white-space:normal!important;overflow-wrap:anywhere!important}
+
 </style>
 </head>
 <body>
@@ -505,7 +517,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="card fx-intel-card">
   <div class="fx-card-head">
     <div><h3>Currency Strength</h3><div class="small">Relative daily strength across the tracked FX matrix.</div></div>
-    <span class="fx-live-badge">LIVE MODEL</span>
+    
   </div>
   <div class="fx-strength-summary">
     <div><span>LEADER</span><b id="fx-strength-leader">—</b></div>
@@ -536,7 +548,7 @@ section:not(#home)>.title{padding-top:4px}
   </div>
 </div>
 <div class="card" style="margin-top:12px"><h3>Major FX Pairs</h3><div class="grid2" id="fx-pairs-grid"><div class="small">Waiting for FX snapshot…</div></div></div>
-<div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
+<div class="card fx-news-card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2 fx-news-grid" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
 </section>
 
 <section id="options">
