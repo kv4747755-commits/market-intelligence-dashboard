@@ -309,6 +309,55 @@ section:not(#home)>.title{padding-top:4px}
 .gex-model-card{margin-top:10px}.gex-model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}.gex-model-stat{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-model-stat .k{font-size:9px;color:#718295;letter-spacing:.8px;text-transform:uppercase}.gex-model-stat .v{font-size:14px;font-weight:800;margin-top:3px}.gex-model-stat .s{font-size:9px;color:#718295;margin-top:2px;line-height:1.35}.gex-expiry-wrap{margin-top:10px;overflow:auto}.gex-expiry-table{width:100%;border-collapse:collapse;font-size:9px}.gex-expiry-table th,.gex-expiry-table td{padding:6px 5px;border-bottom:1px solid #172634;text-align:right;white-space:nowrap}.gex-expiry-table th:first-child,.gex-expiry-table td:first-child{text-align:left}.gex-method-note{margin-top:9px;font-size:9px;line-height:1.45;color:#718295}.gex-method-note b{color:#a9b8c6}
 @media(max-width:600px){.gex-model-grid{grid-template-columns:repeat(2,1fr)}}
 
+
+/* COMPACT MAJOR FX PAIRS */
+#fx-pairs-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+.fx-pair-compact{
+  display:grid;
+  grid-template-columns:62px 1fr auto;
+  align-items:center;
+  gap:7px;
+  min-height:40px;
+  padding:6px 9px;
+  border:1px solid #1b2a39;
+  border-radius:8px;
+  background:#0a141e;
+}
+.fx-pair-name{
+  color:#8798a8;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.3px;
+}
+.fx-pair-compact b{
+  font-size:13px;
+  font-weight:800;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.fx-pair-compact > span:last-child{
+  min-width:42px;
+  font-size:9px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+@media(max-width:760px){
+  #fx-pairs-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+  .fx-pair-compact{
+    min-height:37px;
+    padding:6px 8px;
+    grid-template-columns:56px 1fr auto;
+    gap:5px;
+  }
+  .fx-pair-name{font-size:9px}
+  .fx-pair-compact b{font-size:12px}
+  .fx-pair-compact > span:last-child{font-size:8px;min-width:38px}
+}
+
 </style>
 </head>
 <body>
@@ -898,7 +947,7 @@ function renderForex(fx,p,fxNews){
  const driverRows=[['DXY',p.dxy_change,'USD broad context'],['EURUSD',pairs.EURUSD?.change_pct,'EUR/USD'],['USDJPY',pairs.USDJPY?.change_pct,'JPY / yield sensitivity'],['WTI',fx?.drivers?.WTI?.change_pct,'Oil / CAD / inflation'],['GOLD',fx?.drivers?.GOLD?.change_pct,'Safe-haven / USD context'],['VIX',p.vix_change,'Risk appetite']];
  const db=document.getElementById('fx-drivers-body'); if(db) db.innerHTML=driverRows.map(([n,v,c])=>`<tr><td>${n}</td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td><td>${c}</td></tr>`).join('');
  const pg=document.getElementById('fx-pairs-grid'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
- if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="kpi"><span class="small">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="small ${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
+ if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="fx-pair-compact"><span class="fx-pair-name">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
  const ng=document.getElementById('fx-news-grid'); const news=Array.isArray(fxNews)?fxNews.slice(0,20):(Array.isArray(fxNews?.items)?fxNews.items.slice(0,20):[]);
  if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:15px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
 }
