@@ -274,6 +274,39 @@ def fetch_fx_news():
         published_at = story.get("published_at")
         add_item(title, link, source, published_at, story.get("currency"))
 
+    # 1) GDELT DOC API: independent global-news fallback.
+    # This avoids relying on Google/Yahoo/Investing access from GitHub Actions.
+    try:
+        gdelt_query = '(forex OR currency OR dollar OR euro OR yen OR pound OR rupee OR yuan OR franc)'
+        params = urllib.parse.urlencode({
+            "query": gdelt_query,
+            "mode": "artlist",
+            "format": "json",
+            "timespan": "2d",
+            "maxrecords": "50",
+            "sort": "datedesc",
+        })
+        url = "https://api.gdeltproject.org/api/v2/doc/doc?" + params
+        req = Request(url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
+        })
+        with urlopen(req, timeout=20) as r:
+            payload = json.loads(r.read().decode("utf-8", errors="replace"))
+        for story in (payload.get("articles") or [])[:50]:
+            title = story.get("title") or ""
+            link = story.get("url") or story.get("url_mobile") or ""
+            source = story.get("domain") or "GDELT News"
+            seen = story.get("seendate") or ""
+            published_at = None
+            if seen:
+                try:
+                    published_at = datetime.strptime(str(seen), "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc).isoformat()
+                except Exception:
+                    published_at = str(seen)
+            add_item(title, link, source, published_at)
+    except Exception:
+        pass
+
     # 1) Google News RSS: broad currency-specific searches.
     google_queries = [
         'dollar DXY Federal Reserve forex',
@@ -391,7 +424,7 @@ def fetch_fx_news():
     items.sort(key=sort_key, reverse=True)
     return {
         "status": "live" if items else "unavailable",
-        "source": "yfinance Yahoo Finance news/search + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
+        "source": "GDELT DOC + yfinance Yahoo Finance news/search + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "items": items[:20],
     }
@@ -1517,19 +1550,7 @@ def main():
         out = []
         seen = set()
         for item in items or []:
-            # General-news feeds can return either dictionaries or plain
-            # headline strings. Normalize both forms before reading fields.
-            if isinstance(item, dict):
-                title = str(item.get("title") or "").strip()
-                link = item.get("link") or ""
-                source = item.get("source") or "Market News"
-                published_at = item.get("published_at")
-            else:
-                title = str(item or "").strip()
-                link = ""
-                source = "Market News"
-                published_at = None
-
+            title = str(item.get("title") or "").strip()
             text = title.lower()
             if not title:
                 continue
@@ -1546,18 +1567,16 @@ def main():
             seen.add(key)
             out.append({
                 "title": title,
-                "link": link,
-                "source": source,
-                "published_at": published_at,
+                "link": item.get("link") or "",
+                "source": item.get("source") or "Market News",
+                "published_at": item.get("published_at"),
                 "currency": code,
             })
             if len(out) >= 20:
                 break
         return out
 
-    # fetch_news() returns a structured object; classify its headline items, not the wrapper keys.
-    general_items = general_news.get("items", []) if isinstance(general_news, dict) else general_news
-    fx_fallback = classify_general_fx_news(general_items)
+    fx_fallback = classify_general_fx_news(general_news)
     if not fx_news.get("items"):
         fx_news = {
             "status": "fallback",
