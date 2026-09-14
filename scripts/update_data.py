@@ -890,11 +890,86 @@ def main():
 
         modes = [x["mode"] for x in expiry_stats]
         expiry_mode = "0DTE" if "0DTE" in modes else ("1DTE" if "1DTE" in modes else "MULTI-EXPIRY")
+        # Build switchable profiles from the SAME refined rows used by the
+        # headline GEX calculation. This prevents the frontend selector from
+        # accidentally retaining an older/stale profile snapshot.
+        stat_by_expiry = {x["expiry"]: x for x in expiry_stats}
+
+        def profile_gex_at(profile_rows, test_spot):
+            total_g = 0.0
+            for row in profile_rows:
+                K = row["strike"]
+                iv = row.get("iv")
+                oi = row.get("call_oi", 0.0) + row.get("put_oi", 0.0)
+                if iv is None or oi <= 0 or K <= 0:
+                    continue
+                stat = stat_by_expiry.get(row["expiry"])
+                if not stat:
+                    continue
+                exp_date = datetime.fromisoformat(row["expiry"]).date()
+                T, _ = expiry_time(exp_date)
+                F0 = stat.get("forward") or spot
+                carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
+                F_test = test_spot * math.exp(carry * T)
+                root = math.sqrt(T)
+                d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
+                pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+                disc = math.exp(-r * T)
+                gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
+                total_g += gamma * (row.get("call_oi", 0.0) - row.get("put_oi", 0.0)) * MULT * test_spot * test_spot * 0.01
+            return total_g
+
+        def make_profile(profile_rows, label):
+            if not profile_rows:
+                return {"status": "unavailable", "label": label, "heatmap": [], "expiry": None, "net_gex": None, "call_wall": None, "put_wall": None, "gamma_flip": None}
+            by_k = {}
+            for row in profile_rows:
+                K = row["strike"]
+                a = by_k.setdefault(K, {"strike": K, "call_oi": 0.0, "put_oi": 0.0, "call_gex": 0.0, "put_gex": 0.0, "net_gex": 0.0})
+                for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex"):
+                    a[key] += row.get(key, 0.0)
+            ph = [by_k[k] for k in sorted(by_k) if abs(k - spot) <= spot * 0.15]
+            if not ph:
+                return {"status": "unavailable", "label": label, "heatmap": []}
+            ptotal = sum(x["net_gex"] for x in ph)
+            call_rows = [x for x in ph if x["call_gex"] > 0]
+            put_rows = [x for x in ph if x["put_gex"] < 0]
+            call_wall = max(call_rows, key=lambda x: x["call_gex"])["strike"] if call_rows else None
+            put_wall = min(put_rows, key=lambda x: x["put_gex"])["strike"] if put_rows else None
+            px = [spot * 0.90 + spot * 0.20 * i / 120 for i in range(121)]
+            py = [profile_gex_at(profile_rows, x) for x in px]
+            flips = []
+            for j in range(len(px) - 1):
+                if py[j] == 0:
+                    flips.append(px[j])
+                elif py[j] * py[j + 1] < 0:
+                    flips.append(px[j] - py[j] * (px[j + 1] - px[j]) / (py[j + 1] - py[j]))
+            pflip = min(flips, key=lambda x: abs(x - spot)) if flips else None
+            modes_here = sorted({x.get("expiry_mode") for x in profile_rows if x.get("expiry_mode")})
+            return {
+                "status": "live", "label": label,
+                "expiry": profile_rows[0].get("expiry"),
+                "expiry_mode": profile_rows[0].get("expiry_mode"),
+                "expiry_count": len({x.get("expiry") for x in profile_rows}),
+                "heatmap": ph, "net_gex": ptotal,
+                "call_wall": call_wall, "put_wall": put_wall, "gamma_flip": pflip,
+                "call_oi": sum(x["call_oi"] for x in ph),
+                "put_oi": sum(x["put_oi"] for x in ph),
+            }
+
+        profiles = {}
+        for mode in ("0DTE", "1DTE"):
+            matching = [x for x in all_rows if x.get("expiry_mode") == mode]
+            profiles[mode] = make_profile(matching, mode)
+        profiles["ALL"] = make_profile(all_rows, "ALL EXPIRATIONS")
+
         options.update({
             "status": "live",
             "expiry": nearest_expiry,
             "expiry_mode": expiry_mode,
             "expiry_label": expiry_mode,
+            "profile_mode": "ALL",
+            "profiles": profiles,
             "spot": spot,
             "oi_heatmap": heat,
             "net_gex": total,
