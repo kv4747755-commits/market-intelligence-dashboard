@@ -593,29 +593,41 @@ section:not(#home)>.title{padding-top:4px}
 </main>
 
 <script>
-let selectedGexMode=localStorage.getItem('mi_gex_mode')||'ALL';
+const __gexModes=['0DTE','1DTE','ALL'];
+function __readGexMode(){
+ let mode='';
+ try{mode=new URLSearchParams(location.search).get('gex')||'';}catch(e){}
+ if(!__gexModes.includes(mode)){try{mode=localStorage.getItem('mi_gex_mode')||'';}catch(e){}}
+ return __gexModes.includes(mode)?mode:'ALL';
+}
+let selectedGexMode=__readGexMode();
 function setGexMode(mode){
+ if(!__gexModes.includes(mode)) mode='ALL';
  selectedGexMode=mode;
  try{localStorage.setItem('mi_gex_mode',mode);}catch(e){}
+ try{
+   const u=new URL(location.href);
+   u.searchParams.set('gex',mode);
+   history.replaceState(null,'',u.pathname+u.search+u.hash);
+ }catch(e){}
  document.querySelectorAll('.gex-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.gexMode===mode));
 }
 function renderGexProfile(o,p){
  const svg=document.getElementById('options-gex-svg'); if(!svg) return;
  const profiles=o.profiles||{};
- let profile=profiles[selectedGexMode];
- if(!profile || profile.status==='unavailable' || !Array.isArray(profile.heatmap) || !profile.heatmap.length){
-   if(selectedGexMode!=='ALL' && profiles.ALL?.heatmap?.length) profile=profiles.ALL;
- }
- const usingFallback=selectedGexMode!=='ALL' && (!profile || profile.label!==(selectedGexMode));
- const active=profile&&profile.heatmap?.length?profile:o;
+ const requestedProfile=profiles[selectedGexMode];
+ const profileUsable=requestedProfile && requestedProfile.status!=='unavailable' && Array.isArray(requestedProfile.heatmap) && requestedProfile.heatmap.length;
+ let profile=profileUsable?requestedProfile:null;
+ const usingFallback=false;
+ const active=profileUsable?requestedProfile:(selectedGexMode==='ALL'&&Array.isArray(o.heatmap)&&o.heatmap.length?o:null);
  const f=(v,n=2)=>v==null||!Number.isFinite(Number(v))?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
- const rows=Array.isArray(active.heatmap||active.oi_heatmap)?(active.heatmap||active.oi_heatmap).map(x=>({
+ const rows=active&&Array.isArray(active.heatmap||active.oi_heatmap)?(active.heatmap||active.oi_heatmap).map(x=>({
    strike:Number(x.strike),net:Number(x.net_gex)||0,call:Number(x.call_oi)||0,put:Number(x.put_oi)||0,
    callGex:Number(x.call_gex)||0,putGex:Number(x.put_gex)||0
  })).filter(x=>Number.isFinite(x.strike)&&Number.isFinite(x.net)).sort((a,b)=>a.strike-b.strike):[];
- const spot=Number(p.ndx), putWall=Number(active.put_wall), callWall=Number(active.call_wall), flip=Number(active.gamma_flip);
- const expiryMode=selectedGexMode==='ALL'?(o.expiry_mode||'MULTI-EXPIRY'):(active.expiry_mode||selectedGexMode);
- const expiryText=active.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
+ const spot=Number(p.ndx), putWall=Number(active?.put_wall), callWall=Number(active?.call_wall), flip=Number(active?.gamma_flip);
+ const expiryMode=selectedGexMode==='ALL'?(o.expiry_mode||'MULTI-EXPIRY'):(active?.expiry_mode||selectedGexMode);
+ const expiryText=active?.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const sessionBadge=document.getElementById('gex-session-badge');
  if(sessionBadge){
@@ -630,9 +642,9 @@ function renderGexProfile(o,p){
    else if(sess==='CLOSED'){ label=is0dte?'0DTE • CLOSED':'MARKET CLOSED'; cls='closed'; }
    sessionBadge.textContent=label; sessionBadge.className='gex-session-badge '+cls;
  }
- const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
- const topPcr=document.getElementById('pcr'); if(topPcr){const c=Number(active.call_oi),q=Number(active.put_oi);topPcr.textContent=(c>0&&Number.isFinite(q))?f(q/c,2):(o.pcr_oi==null?'—':f(o.pcr_oi,2));}
- const note=document.getElementById('gex-selected-note'); if(note){ if(usingFallback) note.textContent=`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`; else if(selectedGexMode==='ALL') note.textContent='Showing ALL EXPIRATIONS modeled GEX.'; else note.textContent=`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`; }
+ const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=active&&Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
+ const topPcr=document.getElementById('pcr'); if(topPcr){const c=Number(active?.call_oi),q=Number(active?.put_oi);topPcr.textContent=(c>0&&Number.isFinite(q))?f(q/c,2):(o.pcr_oi==null?'—':f(o.pcr_oi,2));}
+ const note=document.getElementById('gex-selected-note'); if(note){ if(!profileUsable && selectedGexMode!=='ALL') note.textContent=`${selectedGexMode} data is unavailable in this snapshot — refresh the data layer; no ALL-EXP fallback is used.`; else if(selectedGexMode==='ALL') note.textContent='Showing ALL EXPIRATIONS modeled GEX.'; else note.textContent=`Showing ${selectedLabel}${active?.expiry?` • ${active.expiry}`:''} modeled GEX.`; }
  document.getElementById('gex-expiry').textContent=selectedGexMode==='ALL'?`ALL EXP • ${o.expiry_count||0}`:expiryText;
  const chainModeEl=document.getElementById('gex-chain-mode'); if(chainModeEl) chainModeEl.textContent=`${selectedLabel} • MODELED`;
  document.getElementById('gex-chart-status').textContent=rows.length?`${selectedLabel} • ${rows.length} modeled strikes • drag to move • wheel or +/- to zoom`:'No usable strike-level chain data';
@@ -1007,7 +1019,12 @@ async function load(){
  }
 
  window.__MI_DATA__=d; window.__MI_RENDER_OPTIONS__=()=>renderGexProfile((window.__MI_DATA__||{}).options||{},(window.__MI_DATA__||{}).prices||{});
- document.querySelectorAll('.gex-mode-btn').forEach(btn=>{const pr=o.profiles?.[btn.dataset.gexMode];btn.disabled=btn.dataset.gexMode!=='ALL' && (!pr || pr.status==='unavailable' || !pr.heatmap?.length);});
+ document.querySelectorAll('.gex-mode-btn').forEach(btn=>{
+   const mode=btn.dataset.gexMode;
+   btn.disabled=false;
+   btn.title=(mode!=='ALL' && (!o.profiles?.[mode] || o.profiles?.[mode]?.status==='unavailable' || !o.profiles?.[mode]?.heatmap?.length))?`${mode} profile unavailable in this snapshot`:'';
+ });
+ setGexMode(selectedGexMode);
  renderGexProfile(o,p);
  const gexRefresh=o.gex_refresh||{};
  const gexRefreshEl=document.getElementById('gex-chart-status');
@@ -1254,7 +1271,9 @@ function initGexModeSwitch(){
      const mode=btn.dataset.gexMode;
      const latest=(window.__MI_DATA__||{}).options||{};
      const available=latest.profiles?.[mode];
-     if(mode!=='ALL' && (!available || available.status==='unavailable' || !available.heatmap?.length)) return;
+     // Keep the tab selectable even when a profile is temporarily missing.
+     // The renderer will show an explicit unavailable message instead of silently
+     // substituting ALL EXPIRATIONS.
      setGexMode(mode);
      if(window.__MI_RENDER_OPTIONS__) window.__MI_RENDER_OPTIONS__();
    });
