@@ -593,9 +593,10 @@ section:not(#home)>.title{padding-top:4px}
 </main>
 
 <script>
-let selectedGexMode='ALL';
+let selectedGexMode=localStorage.getItem('mi_gex_mode')||'ALL';
 function setGexMode(mode){
  selectedGexMode=mode;
+ try{localStorage.setItem('mi_gex_mode',mode);}catch(e){}
  document.querySelectorAll('.gex-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.gexMode===mode));
 }
 function renderGexProfile(o,p){
@@ -1012,7 +1013,10 @@ async function load(){
  const gexRefreshEl=document.getElementById('gex-chart-status');
  if(gexRefreshEl){
    const stamp=d.generated_at?new Date(d.generated_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
-   const rs=String(gexRefresh.status||'UNKNOWN').toUpperCase();
+   const hasGexProfile=Object.values(o.profiles||{}).some(pr=>pr&&pr.status!=='unavailable'&&Array.isArray(pr.heatmap)&&pr.heatmap.length);
+   const hasLegacyGex=Array.isArray(o.heatmap)&&o.heatmap.length || Array.isArray(o.oi_heatmap)&&o.oi_heatmap.length;
+   const inferredGexStatus=gexRefresh.status || (o.status==='live' && (hasGexProfile || hasLegacyGex) ? 'CALCULATED' : (o.model_error ? 'FAILED' : 'UNKNOWN'));
+   const rs=String(inferredGexStatus).toUpperCase();
    const err=gexRefresh.error||o.model_error||'';
    gexRefreshEl.textContent=`${gexRefreshEl.textContent} • DATA ${stamp} • GEX ${rs}${rs==='FAILED'?' • '+err:''}`;
  }
