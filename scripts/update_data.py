@@ -521,6 +521,18 @@ def main():
     options.setdefault("net_gex", None)
     options.setdefault("model", "Estimated GEX; dealer-sign assumption, not direct dealer book.")
 
+    # Preserve the last completed live 0DTE snapshot so pre-market can display
+    # the previous session's final state without pretending stale quotes are live.
+    previous_live_0dte = None
+    try:
+        old_profile = (options.get("profiles") or {}).get("0DTE")
+        if old_profile and old_profile.get("status") == "live" and old_profile.get("heatmap"):
+            previous_live_0dte = json.loads(json.dumps(old_profile))
+        elif options.get("last_closed_0dte") and options["last_closed_0dte"].get("heatmap"):
+            previous_live_0dte = json.loads(json.dumps(options["last_closed_0dte"]))
+    except Exception:
+        previous_live_0dte = None
+
     try:
         # REFINED GEX ENGINE -------------------------------------------------
         # This is intentionally more than a single Black-Scholes calculation.
@@ -542,8 +554,29 @@ def main():
         ny = ZoneInfo("America/New_York")
         now_ny = datetime.now(ny)
         today_ny = now_ny.date()
-        parsed = sorted((e, datetime.fromisoformat(e).date()) for e in expiries)
-        future = [(e, ed) for e, ed in parsed if ed >= today_ny]
+        market_open = dt_time(9, 30)
+        market_close = dt_time(16, 0)
+        now_clock = now_ny.time()
+        is_weekday = today_ny.weekday() < 5
+        today_expiry_exists = any(ed == today_ny for _, ed in parsed)
+        if is_weekday and today_expiry_exists and now_clock < market_open:
+            session_state = "PRE_MARKET"
+        elif is_weekday and today_expiry_exists and market_open <= now_clock < market_close:
+            session_state = "LIVE"
+        elif is_weekday and today_expiry_exists and now_clock >= market_close:
+            session_state = "CLOSED"
+        else:
+            session_state = "CLOSED"
+
+        # A same-day expiry is a genuine 0DTE only while the regular U.S.
+        # session is open. After 4:00 p.m. ET it is expired and must disappear
+        # from the active curve. Before 9:30 a.m. ET we deliberately do not
+        # model a moving 0DTE from stale pre-market quotes; the dashboard uses
+        # the previous session's final 0DTE snapshot instead.
+        if session_state == "LIVE":
+            future = [(e, ed) for e, ed in parsed if ed >= today_ny]
+        else:
+            future = [(e, ed) for e, ed in parsed if ed > today_ny]
         selected = future[:12]
         if not selected:
             raise ValueError("No current/future NDX expiries")
@@ -642,11 +675,11 @@ def main():
             return lambda x: max(0.01, min(2.5, coef[0] + coef[1] * x + coef[2] * x * x))
 
         def expiry_time(ed):
-            if ed == today_ny:
-                exp_dt = datetime.combine(ed, dt_time(16, 0), tzinfo=ny)
+            if ed == today_ny and session_state == "LIVE":
+                exp_dt = datetime.combine(ed, market_close, tzinfo=ny)
                 seconds = max((exp_dt - now_ny).total_seconds(), 5 * 60)
                 return seconds / (365 * 24 * 3600), "0DTE"
-            exp_dt = datetime.combine(ed, dt_time(16, 0), tzinfo=ny)
+            exp_dt = datetime.combine(ed, market_close, tzinfo=ny)
             seconds = max((exp_dt - now_ny).total_seconds(), 3600)
             days = (ed - today_ny).days
             return seconds / (365 * 24 * 3600), ("1DTE" if days == 1 else "NEAREST")
@@ -963,11 +996,49 @@ def main():
             profiles[mode] = make_profile(matching, mode)
         profiles["ALL"] = make_profile(all_rows, "ALL EXPIRATIONS")
 
+        # Session-state rules for the 0DTE selector:
+        # PRE_MARKET: show the previous session's final 0DTE snapshot, frozen.
+        # LIVE: show today's calculated 0DTE.
+        # CLOSED: today's 0DTE is expired and is unavailable.
+        if session_state == "PRE_MARKET":
+            if previous_live_0dte:
+                pre = previous_live_0dte
+                pre["status"] = "premarket"
+                pre["label"] = "PRE-MARKET • PREVIOUS SESSION"
+                pre["display_expiry"] = pre.get("expiry")
+                pre["snapshot_note"] = "Frozen at the previous U.S. regular-session close; not live 0DTE data."
+                profiles["0DTE"] = pre
+            else:
+                profiles["0DTE"] = {
+                    "status": "unavailable", "label": "PRE-MARKET • NO PRIOR SNAPSHOT",
+                    "heatmap": [], "expiry": None, "net_gex": None,
+                    "call_wall": None, "put_wall": None, "gamma_flip": None,
+                    "snapshot_note": "No previous live 0DTE snapshot is available yet."
+                }
+        elif session_state == "CLOSED":
+            if previous_live_0dte:
+                closed_snapshot = json.loads(json.dumps(previous_live_0dte))
+                closed_snapshot["status"] = "closed_snapshot"
+                closed_snapshot["snapshot_note"] = "Final live 0DTE snapshot captured before the 4:00 p.m. ET close."
+                options["last_closed_0dte"] = closed_snapshot
+            profiles["0DTE"] = {
+                "status": "closed", "label": "0DTE • CLOSED",
+                "heatmap": [], "expiry": None, "net_gex": None,
+                "call_wall": None, "put_wall": None, "gamma_flip": None,
+                "snapshot_note": "Today's 0DTE has expired at 4:00 p.m. ET."
+            }
+
+        active_expiry_mode = "0DTE" if session_state == "LIVE" and profiles.get("0DTE", {}).get("status") == "live" else ("1DTE" if profiles.get("1DTE", {}).get("status") == "live" else "MULTI-EXPIRY")
+
         options.update({
             "status": "live",
+            "market_session": session_state,
+            "market_session_et": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z"),
+            "regular_session_open_et": market_open.strftime("%H:%M"),
+            "regular_session_close_et": market_close.strftime("%H:%M"),
             "expiry": nearest_expiry,
-            "expiry_mode": expiry_mode,
-            "expiry_label": expiry_mode,
+            "expiry_mode": active_expiry_mode,
+            "expiry_label": active_expiry_mode,
             "profile_mode": "ALL",
             "profiles": profiles,
             "spot": spot,
@@ -1009,7 +1080,10 @@ def main():
             },
             "model_notes": [
                 "Uses up to 12 nearest current/future NDX expirations.",
-                "0DTE uses actual time remaining to the 4 p.m. ET expiry.",
+                "0DTE is active only during the regular 9:30 a.m.–4:00 p.m. ET session.",
+                "Pre-market 0DTE is frozen to the previous session's final snapshot when available.",
+                "After 4:00 p.m. ET the expiring 0DTE is removed from the active curve.",
+                "0DTE uses actual time remaining to the 4 p.m. ET expiry while the regular session is open.",
                 "Forward is estimated from near-ATM put/call parity when quotes permit.",
                 "Vendor IV is used when sane; missing IV can be recovered from quoted option prices.",
                 "A weighted quadratic smile fills gaps in the per-expiry volatility surface.",
