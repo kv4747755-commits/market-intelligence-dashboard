@@ -347,6 +347,32 @@ section:not(#home)>.title{padding-top:4px}
  .fx-context{font-size:8px}
 }
 
+
+/* FX DECISION BOARD + PAIR SPACING */
+.fx-decision-board{overflow:hidden}
+.fx-decision-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}
+.fx-decision-item{min-width:0;padding:8px 9px;border:1px solid #172a39;border-radius:8px;background:#09131c}
+.fx-decision-item span{display:block;font-size:7px;color:#718295;letter-spacing:.8px}
+.fx-decision-item b{display:block;font-size:11px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-decision-item i{display:block;margin-top:2px;font-size:8px;color:#718295;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+#fx-pairs-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+.fx-pair-compact{display:grid!important;grid-template-columns:minmax(54px,.85fr) minmax(70px,1fr) minmax(42px,.7fr)!important;align-items:center!important;gap:8px!important;min-height:38px!important;padding:6px 9px!important;border:1px solid #1b2a39!important;border-radius:8px!important;background:#0a141e!important}
+.fx-pair-name{display:block!important;color:#8798a8!important;font-size:10px!important;font-weight:700!important;letter-spacing:.3px!important;white-space:nowrap!important}
+.fx-pair-compact b{display:block!important;font-size:12px!important;font-weight:800!important;text-align:right!important;font-variant-numeric:tabular-nums!important;white-space:nowrap!important}
+.fx-pair-change{display:block!important;min-width:42px!important;font-size:9px!important;text-align:right!important;font-variant-numeric:tabular-nums!important;white-space:nowrap!important}
+
+@media(max-width:760px){
+  .fx-decision-grid{grid-template-columns:repeat(2,1fr);gap:5px}
+  .fx-decision-item{padding:7px}
+  .fx-decision-item b{font-size:10px}
+  #fx-pairs-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important}
+  .fx-pair-compact{grid-template-columns:56px minmax(0,1fr) 40px!important;gap:5px!important;min-height:37px!important;padding:6px 8px!important}
+  .fx-pair-name{font-size:9px!important}
+  .fx-pair-compact b{font-size:12px!important}
+  .fx-pair-change{font-size:8px!important;min-width:38px!important}
+}
+
 </style>
 </head>
 <body>
@@ -496,6 +522,18 @@ section:not(#home)>.title{padding-top:4px}
   <div class="fx-regime-strip"><span>FX REGIME</span><b id="fx-regime">—</b><i id="fx-regime-note">—</i></div>
   <div class="fx-table-wrap"><table class="fx-advanced-table"><thead><tr><th>FACTOR</th><th>MOVE</th><th>FX BIAS</th><th>WHY IT MATTERS</th></tr></thead><tbody id="fx-drivers-body"><tr><td colspan="4">Waiting for driver data…</td></tr></tbody></table></div>
 </div>
+</div>
+<div class="card fx-decision-board" style="margin-top:12px">
+  <div class="fx-card-head">
+    <div><h3>FX DECISION BOARD</h3><div class="small">Compact read-through of the current FX setup. Analytics are modeled context, not trade signals.</div></div>
+    <span class="fx-live-badge">LIVE READ</span>
+  </div>
+  <div class="fx-decision-grid">
+    <div class="fx-decision-item"><span>STRONGEST PAIR</span><b id="fx-best-pair">—</b><i id="fx-best-pair-move">—</i></div>
+    <div class="fx-decision-item"><span>WEAKEST PAIR</span><b id="fx-worst-pair">—</b><i id="fx-worst-pair-move">—</i></div>
+    <div class="fx-decision-item"><span>USD TONE</span><b id="fx-usd-tone">—</b><i id="fx-usd-tone-note">—</i></div>
+    <div class="fx-decision-item"><span>RISK TONE</span><b id="fx-risk-tone">—</b><i id="fx-risk-tone-note">—</i></div>
+  </div>
 </div>
 <div class="card" style="margin-top:12px"><h3>Major FX Pairs</h3><div class="grid2" id="fx-pairs-grid"><div class="small">Waiting for FX snapshot…</div></div></div>
 <div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
@@ -971,9 +1009,29 @@ function renderForex(fx,p,fxNews){
  if((Number.isFinite(dxyN)&&dxyN>0.15)||(Number.isFinite(vixN)&&vixN>5)) {regime='DEFENSIVE';regimeNote='USD strength / volatility pressure';}
  else if((Number.isFinite(dxyN)&&dxyN<-0.15)&&(!Number.isFinite(vixN)||vixN<=5)) {regime='RISK-ON';regimeNote='Softer USD with contained volatility';}
  else if(Number.isFinite(wtiN)&&wtiN>1.0) {regime='INFLATIONARY';regimeNote='Oil adding CAD / inflation pressure';}
+ const wantedPairList=(obj)=>['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'].map(k=>[k,obj[k]]);
  set('fx-regime',regime);set('fx-regime-note',regimeNote);
+
+ // Compact decision board: rank the tracked pairs by daily percentage move.
+ const pairEntries=wantedPairList(pairs);
+ const validPairs=pairEntries.filter(([k,x])=>x && Number.isFinite(Number(x.change_pct)));
+ const best=validPairs.slice().sort((a,b)=>Number(b[1].change_pct)-Number(a[1].change_pct))[0];
+ const worst=validPairs.slice().sort((a,b)=>Number(a[1].change_pct)-Number(b[1].change_pct))[0];
+ set('fx-best-pair',best?best[0]:'—'); set('fx-best-pair-move',best?pct(best[1].change_pct):'—');
+ set('fx-worst-pair',worst?worst[0]:'—'); set('fx-worst-pair-move',worst?pct(worst[1].change_pct):'—');
+
+ const dxyTone=Number(p.dxy_change);
+ const usdTone=Number.isFinite(dxyTone)?(dxyTone>0.15?'STRONGER USD':dxyTone<-0.15?'SOFTER USD':'NEUTRAL USD'):'—';
+ const usdNote=Number.isFinite(dxyTone)?(dxyTone>0.15?'Broad USD bid':dxyTone<-0.15?'Broad USD offered':'No strong DXY impulse'):'—';
+ set('fx-usd-tone',usdTone); set('fx-usd-tone-note',usdNote);
+
+ const vixTone=Number(p.vix_change);
+ const riskTone=Number.isFinite(vixTone)?(vixTone>5?'RISK-OFF':vixTone<-5?'RISK-ON':'MIXED RISK'):'—';
+ const riskNote=Number.isFinite(vixTone)?(vixTone>5?'Volatility elevated':vixTone<-5?'Volatility easing':'Volatility contained'):'—';
+ set('fx-risk-tone',riskTone); set('fx-risk-tone-note',riskNote);
+
  const pg=document.getElementById('fx-pairs-grid'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
- if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="fx-pair-compact"><span class="fx-pair-name">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
+ if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="fx-pair-compact"><span class="fx-pair-name">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="fx-pair-change ${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
  const ng=document.getElementById('fx-news-grid'); const news=Array.isArray(fxNews)?fxNews.slice(0,20):(Array.isArray(fxNews?.items)?fxNews.items.slice(0,20):[]);
  if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:15px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
 }
