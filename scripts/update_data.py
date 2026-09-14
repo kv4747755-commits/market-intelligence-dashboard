@@ -275,7 +275,8 @@ def fetch_fx_news():
         add_item(title, link, source, published_at, story.get("currency"))
 
     # 1) GDELT DOC API: independent global-news fallback.
-    # This avoids relying on Google/Yahoo/Investing access from GitHub Actions.
+    # GitHub Actions can intermittently fail to reach Yahoo/Google/Investing,
+    # so FX news must not depend on those three providers all responding.
     try:
         gdelt_query = '(forex OR currency OR dollar OR euro OR yen OR pound OR rupee OR yuan OR franc)'
         params = urllib.parse.urlencode({
@@ -296,18 +297,20 @@ def fetch_fx_news():
             title = story.get("title") or ""
             link = story.get("url") or story.get("url_mobile") or ""
             source = story.get("domain") or "GDELT News"
-            seen = story.get("seendate") or ""
+            seen_at = story.get("seendate") or ""
             published_at = None
-            if seen:
+            if seen_at:
                 try:
-                    published_at = datetime.strptime(str(seen), "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc).isoformat()
+                    published_at = datetime.strptime(
+                        str(seen_at), "%Y%m%dT%H%M%SZ"
+                    ).replace(tzinfo=timezone.utc).isoformat()
                 except Exception:
-                    published_at = str(seen)
+                    published_at = str(seen_at)
             add_item(title, link, source, published_at)
     except Exception:
         pass
 
-    # 1) Google News RSS: broad currency-specific searches.
+    # 2) Google News RSS: broad currency-specific searches.
     google_queries = [
         'dollar DXY Federal Reserve forex',
         'euro ECB EURUSD forex',
@@ -348,7 +351,7 @@ def fetch_fx_news():
         except Exception:
             continue
 
-    # 2) Investing.com Forex RSS: a stable category feed and useful fallback.
+    # 3) Investing.com Forex RSS: a stable category feed and useful fallback.
     investing_urls = [
         "https://in.investing.com/rss/news_1.rss",
         "https://www.investing.com/rss/news_1.rss",
@@ -376,7 +379,7 @@ def fetch_fx_news():
         except Exception:
             continue
 
-    # 3) Yahoo Finance public search/news endpoint: targeted per currency.
+    # 4) Yahoo Finance public search/news endpoint: targeted per currency.
     yahoo_queries = {
         "USD": "USD dollar DXY Fed",
         "EUR": "EURUSD euro ECB",
@@ -424,7 +427,7 @@ def fetch_fx_news():
     items.sort(key=sort_key, reverse=True)
     return {
         "status": "live" if items else "unavailable",
-        "source": "GDELT DOC + yfinance Yahoo Finance news/search + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
+        "source": "yfinance + GDELT DOC + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "items": items[:20],
     }
@@ -1550,7 +1553,19 @@ def main():
         out = []
         seen = set()
         for item in items or []:
-            title = str(item.get("title") or "").strip()
+            # General-news feeds can return either dictionaries or plain
+            # headline strings. Normalize both forms before reading fields.
+            if isinstance(item, dict):
+                title = str(item.get("title") or "").strip()
+                link = item.get("link") or ""
+                source = item.get("source") or "Market News"
+                published_at = item.get("published_at")
+            else:
+                title = str(item or "").strip()
+                link = ""
+                source = "Market News"
+                published_at = None
+
             text = title.lower()
             if not title:
                 continue
@@ -1567,16 +1582,18 @@ def main():
             seen.add(key)
             out.append({
                 "title": title,
-                "link": item.get("link") or "",
-                "source": item.get("source") or "Market News",
-                "published_at": item.get("published_at"),
+                "link": link,
+                "source": source,
+                "published_at": published_at,
                 "currency": code,
             })
             if len(out) >= 20:
                 break
         return out
 
-    fx_fallback = classify_general_fx_news(general_news)
+    # fetch_news() returns a structured object; classify its headline items, not the wrapper keys.
+    general_items = general_news.get("items", []) if isinstance(general_news, dict) else general_news
+    fx_fallback = classify_general_fx_news(general_items)
     if not fx_news.get("items"):
         fx_news = {
             "status": "fallback",
