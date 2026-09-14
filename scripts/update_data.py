@@ -1555,7 +1555,9 @@ def main():
                 break
         return out
 
-    fx_fallback = classify_general_fx_news(general_news)
+    # fetch_news() returns a structured object; classify its headline items, not the wrapper keys.
+    general_items = general_news.get("items", []) if isinstance(general_news, dict) else general_news
+    fx_fallback = classify_general_fx_news(general_items)
     if not fx_news.get("items"):
         fx_news = {
             "status": "fallback",
