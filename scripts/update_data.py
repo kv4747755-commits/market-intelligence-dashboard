@@ -119,6 +119,100 @@ def fetch_fx_snapshot():
     }
 
 
+
+def fetch_yfinance_fx_news():
+    """Fetch FX headlines through yfinance's built-in Yahoo Finance news/search layer.
+
+    This uses the same Yahoo access layer already used by the dashboard for prices,
+    avoiding direct requests to Yahoo's search endpoint from GitHub Actions.
+    Only headline metadata is stored.
+    """
+    items = []
+    seen = set()
+    currency_queries = {
+        "USD": ["US dollar Federal Reserve DXY", "USD forex"],
+        "EUR": ["EURUSD euro ECB", "euro forex"],
+        "GBP": ["GBPUSD pound Bank England", "sterling forex"],
+        "JPY": ["USDJPY yen Bank Japan", "Japanese yen forex"],
+        "CHF": ["USDCHF Swiss franc SNB", "Swiss franc forex"],
+        "AUD": ["AUDUSD Australian dollar RBA", "Australian dollar forex"],
+        "CAD": ["USDCAD Canadian dollar Bank Canada", "Canadian dollar forex"],
+        "NZD": ["NZDUSD New Zealand dollar RBNZ", "New Zealand dollar forex"],
+        "INR": ["USDINR Indian rupee RBI", "Indian rupee forex"],
+        "CNY": ["USDCNY yuan PBOC", "Chinese yuan forex"],
+    }
+    ticker_map = {
+        "USD": "DX-Y.NYB",
+        "EUR": "EURUSD=X",
+        "GBP": "GBPUSD=X",
+        "JPY": "JPY=X",
+        "CHF": "CHF=X",
+        "AUD": "AUDUSD=X",
+        "CAD": "CAD=X",
+        "NZD": "NZDUSD=X",
+        "INR": "INR=X",
+        "CNY": "CNY=X",
+    }
+
+    def add(story, currency):
+        if not isinstance(story, dict):
+            return
+        title = str(story.get("title") or "").strip()
+        link = str(story.get("link") or story.get("url") or "").strip()
+        if not title:
+            return
+        key = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
+        if key in seen:
+            return
+        seen.add(key)
+        ts = story.get("providerPublishTime")
+        published_at = None
+        if isinstance(ts, (int, float)):
+            try:
+                published_at = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+            except Exception:
+                pass
+        elif isinstance(ts, str) and ts:
+            published_at = ts
+        source = story.get("publisher") or "Yahoo Finance"
+        items.append({
+            "title": title,
+            "link": link,
+            "source": str(source),
+            "published_at": published_at,
+            "currency": currency,
+        })
+
+    # First use ticker-native news because this shares the same yfinance path
+    # already proven to work for the dashboard's market snapshots.
+    for currency, ticker in ticker_map.items():
+        try:
+            stories = yf.Ticker(ticker).get_news(count=8)
+            for story in stories or []:
+                add(story, currency)
+        except Exception:
+            pass
+
+    # Then use yfinance's supported Search API for broader currency headlines.
+    for currency, queries in currency_queries.items():
+        for query in queries:
+            try:
+                result = yf.Search(
+                    query,
+                    max_results=2,
+                    news_count=6,
+                    include_cb=False,
+                    timeout=15,
+                    raise_errors=False,
+                )
+                for story in getattr(result, "news", []) or []:
+                    add(story, currency)
+            except Exception:
+                continue
+
+    items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+    return items[:30]
+
 def fetch_fx_news():
     """Fetch currency-specific headlines using several free fallback feeds.
 
@@ -170,6 +264,15 @@ def fetch_fx_news():
             "published_at": published_at,
             "currency": currency,
         })
+
+    # 0) yfinance/Yahoo Finance news layer. This is the preferred source because
+    # it uses the same library/access path already used successfully for prices.
+    for story in fetch_yfinance_fx_news():
+        title = story.get("title") or ""
+        link = story.get("link") or ""
+        source = story.get("source") or "Yahoo Finance"
+        published_at = story.get("published_at")
+        add_item(title, link, source, published_at, story.get("currency"))
 
     # 1) Google News RSS: broad currency-specific searches.
     google_queries = [
@@ -288,7 +391,7 @@ def fetch_fx_news():
     items.sort(key=sort_key, reverse=True)
     return {
         "status": "live" if items else "unavailable",
-        "source": "Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
+        "source": "yfinance Yahoo Finance news/search + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "items": items[:20],
     }
@@ -1389,8 +1492,79 @@ def main():
 
     # News is additive: it does not delete the existing macro/COT fields
     # already present in data.json.
-    d["fx_news"] = fetch_fx_news()
-    d["news"] = fetch_news()
+    #
+    # FX news gets a second-stage fallback from the general market-news feed.
+    # This is important on GitHub Actions where dedicated RSS/search endpoints
+    # can intermittently return an empty response even though the broader news
+    # feed is working. We classify only headlines that contain explicit FX /
+    # central-bank / currency terms, so the fallback does not invent stories.
+    fx_news = fetch_fx_news()
+    general_news = fetch_news()
+
+    def classify_general_fx_news(items):
+        currency_patterns = {
+            "USD": ["dollar", "dxy", "federal reserve", "fed", "us dollar", "greenback"],
+            "EUR": ["euro", "ecb", "eurusd", "euro zone", "eurozone"],
+            "GBP": ["pound", "sterling", "bank of england", "boe", "gbp"],
+            "JPY": ["yen", "bank of japan", "boj", "jpy", "japan currency"],
+            "CHF": ["swiss franc", "snb", "chf", "switzerland currency"],
+            "AUD": ["australian dollar", "rba", "aud", "australia currency"],
+            "CAD": ["canadian dollar", "bank of canada", "boc", "cad", "canada currency"],
+            "NZD": ["new zealand dollar", "rbnz", "nzd", "new zealand currency"],
+            "INR": ["rupee", "rbi", "inr", "indian currency", "india currency"],
+            "CNY": ["yuan", "renminbi", "pboc", "cny", "china currency", "chinese yuan"],
+        }
+        out = []
+        seen = set()
+        for item in items or []:
+            title = str(item.get("title") or "").strip()
+            text = title.lower()
+            if not title:
+                continue
+            hits = []
+            for code, terms in currency_patterns.items():
+                if any(term in text for term in terms):
+                    hits.append(code)
+            if not hits:
+                continue
+            code = hits[0]
+            key = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({
+                "title": title,
+                "link": item.get("link") or "",
+                "source": item.get("source") or "Market News",
+                "published_at": item.get("published_at"),
+                "currency": code,
+            })
+            if len(out) >= 20:
+                break
+        return out
+
+    fx_fallback = classify_general_fx_news(general_news)
+    if not fx_news.get("items"):
+        fx_news = {
+            "status": "fallback",
+            "source": "Classified general market-news headlines (FX fallback)",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "items": fx_fallback[:20],
+        }
+    elif fx_fallback:
+        # Keep dedicated FX headlines first, then use general headlines only
+        # to fill gaps. Deduplicate by normalized title.
+        existing = {re.sub(r"[^a-z0-9]+", " ", str(x.get("title") or "").lower()).strip() for x in fx_news.get("items", [])}
+        for item in fx_fallback:
+            key = re.sub(r"[^a-z0-9]+", " ", str(item.get("title") or "").lower()).strip()
+            if key not in existing:
+                fx_news.setdefault("items", []).append(item)
+                existing.add(key)
+            if len(fx_news.get("items", [])) >= 20:
+                break
+
+    d["fx_news"] = fx_news
+    d["news"] = general_news
     d["generated_at"] = datetime.now(timezone.utc).isoformat()
     d["sources"] = list(dict.fromkeys((d.get("sources") or []) + ["Filtered Google News RSS aggregation"]))
 
