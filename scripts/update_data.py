@@ -1517,7 +1517,19 @@ def main():
         out = []
         seen = set()
         for item in items or []:
-            title = str(item.get("title") or "").strip()
+            # General-news feeds can return either dictionaries or plain
+            # headline strings. Normalize both forms before reading fields.
+            if isinstance(item, dict):
+                title = str(item.get("title") or "").strip()
+                link = item.get("link") or ""
+                source = item.get("source") or "Market News"
+                published_at = item.get("published_at")
+            else:
+                title = str(item or "").strip()
+                link = ""
+                source = "Market News"
+                published_at = None
+
             text = title.lower()
             if not title:
                 continue
@@ -1534,9 +1546,9 @@ def main():
             seen.add(key)
             out.append({
                 "title": title,
-                "link": item.get("link") or "",
-                "source": item.get("source") or "Market News",
-                "published_at": item.get("published_at"),
+                "link": link,
+                "source": source,
+                "published_at": published_at,
                 "currency": code,
             })
             if len(out) >= 20:
