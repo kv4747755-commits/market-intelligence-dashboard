@@ -274,43 +274,7 @@ def fetch_fx_news():
         published_at = story.get("published_at")
         add_item(title, link, source, published_at, story.get("currency"))
 
-    # 1) GDELT DOC API: independent global-news fallback.
-    # GitHub Actions can intermittently fail to reach Yahoo/Google/Investing,
-    # so FX news must not depend on those three providers all responding.
-    try:
-        gdelt_query = '(forex OR currency OR dollar OR euro OR yen OR pound OR rupee OR yuan OR franc)'
-        params = urllib.parse.urlencode({
-            "query": gdelt_query,
-            "mode": "artlist",
-            "format": "json",
-            "timespan": "2d",
-            "maxrecords": "50",
-            "sort": "datedesc",
-        })
-        url = "https://api.gdeltproject.org/api/v2/doc/doc?" + params
-        req = Request(url, headers={
-            "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
-        })
-        with urlopen(req, timeout=20) as r:
-            payload = json.loads(r.read().decode("utf-8", errors="replace"))
-        for story in (payload.get("articles") or [])[:50]:
-            title = story.get("title") or ""
-            link = story.get("url") or story.get("url_mobile") or ""
-            source = story.get("domain") or "GDELT News"
-            seen_at = story.get("seendate") or ""
-            published_at = None
-            if seen_at:
-                try:
-                    published_at = datetime.strptime(
-                        str(seen_at), "%Y%m%dT%H%M%SZ"
-                    ).replace(tzinfo=timezone.utc).isoformat()
-                except Exception:
-                    published_at = str(seen_at)
-            add_item(title, link, source, published_at)
-    except Exception:
-        pass
-
-    # 2) Google News RSS: broad currency-specific searches.
+    # 1) Google News RSS: broad currency-specific searches.
     google_queries = [
         'dollar DXY Federal Reserve forex',
         'euro ECB EURUSD forex',
@@ -351,7 +315,7 @@ def fetch_fx_news():
         except Exception:
             continue
 
-    # 3) Investing.com Forex RSS: a stable category feed and useful fallback.
+    # 2) Investing.com Forex RSS: a stable category feed and useful fallback.
     investing_urls = [
         "https://in.investing.com/rss/news_1.rss",
         "https://www.investing.com/rss/news_1.rss",
@@ -379,7 +343,7 @@ def fetch_fx_news():
         except Exception:
             continue
 
-    # 4) Yahoo Finance public search/news endpoint: targeted per currency.
+    # 3) Yahoo Finance public search/news endpoint: targeted per currency.
     yahoo_queries = {
         "USD": "USD dollar DXY Fed",
         "EUR": "EURUSD euro ECB",
@@ -427,7 +391,7 @@ def fetch_fx_news():
     items.sort(key=sort_key, reverse=True)
     return {
         "status": "live" if items else "unavailable",
-        "source": "yfinance + GDELT DOC + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
+        "source": "yfinance Yahoo Finance news/search + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "items": items[:20],
     }
