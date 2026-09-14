@@ -120,72 +120,175 @@ def fetch_fx_snapshot():
 
 
 def fetch_fx_news():
-    """Fetch a compact FX-only news layer from Google News RSS."""
-    queries = [
-        'USD dollar DXY Fed forex',
-        'EUR euro ECB forex',
-        'GBP pound Bank of England forex',
-        'JPY yen Bank of Japan forex',
-        'CHF franc Swiss National Bank forex',
-        'AUD Australian dollar RBA forex',
-        'CAD Canadian dollar Bank of Canada oil forex',
-        'NZD New Zealand dollar RBNZ forex',
-        'INR rupee RBI forex',
-        'CNY yuan China PBOC forex',
-    ]
+    """Fetch currency-specific headlines using several free fallback feeds.
+
+    Google News RSS is useful but can intermittently return no data from CI.
+    We therefore combine it with Investing.com Forex RSS and Yahoo Finance's
+    public search/news endpoint. Only headline metadata is stored.
+    """
+    currency_terms = {
+        "USD": ["dollar", "DXY", "Federal Reserve", "Fed", "USD"],
+        "EUR": ["euro", "ECB", "EURUSD", "EUR"],
+        "GBP": ["pound", "sterling", "Bank of England", "GBP"],
+        "JPY": ["yen", "Bank of Japan", "BoJ", "JPY"],
+        "CHF": ["Swiss franc", "SNB", "CHF"],
+        "AUD": ["Australian dollar", "RBA", "AUD"],
+        "CAD": ["Canadian dollar", "Bank of Canada", "CAD"],
+        "NZD": ["New Zealand dollar", "RBNZ", "NZD"],
+        "INR": ["rupee", "RBI", "INR", "India currency"],
+        "CNY": ["yuan", "renminbi", "PBOC", "CNY", "China currency"],
+    }
+
     items = []
-    seen = set()
-    for query in queries:
+    seen_titles = set()
+
+    def add_item(title, link, source, published_at, currency=None):
+        title = (title or "").strip()
+        link = (link or "").strip()
+        source = (source or "News").strip()
+        if not title:
+            return
+        normalized = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
+        key = " ".join(normalized.split()[:16])
+        if not key or key in seen_titles:
+            return
+        seen_titles.add(key)
+
+        if currency is None:
+            text = title.lower()
+            # Prefer longer/more specific phrases before short ticker tokens.
+            for code, terms in currency_terms.items():
+                if any(term.lower() in text for term in terms if len(term) > 3):
+                    currency = code
+                    break
+        if currency is None:
+            return
+        items.append({
+            "title": title,
+            "link": link,
+            "source": source,
+            "published_at": published_at,
+            "currency": currency,
+        })
+
+    # 1) Google News RSS: broad currency-specific searches.
+    google_queries = [
+        'dollar DXY Federal Reserve forex',
+        'euro ECB EURUSD forex',
+        'pound sterling Bank of England forex',
+        'yen Bank of Japan JPY forex',
+        'Swiss franc SNB forex',
+        'Australian dollar RBA forex',
+        'Canadian dollar Bank of Canada oil forex',
+        'New Zealand dollar RBNZ forex',
+        'rupee RBI USDINR forex',
+        'yuan PBOC USDCNY forex',
+    ]
+    for query in google_queries:
         url = (
             "https://news.google.com/rss/search?q="
             + urllib.parse.quote(query)
             + "&hl=en-US&gl=US&ceid=US:en"
         )
         try:
-            req = Request(url, headers={"User-Agent": "market-intelligence-dashboard/1.0"})
-            with urlopen(req, timeout=15) as r:
+            req = Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
+            })
+            with urlopen(req, timeout=12) as r:
                 root = ET.fromstring(r.read())
-            for item in root.findall(".//item")[:6]:
-                title = (item.findtext("title") or "").strip()
-                link = (item.findtext("link") or "").strip()
-                pub = (item.findtext("pubDate") or "").strip()
+            for item in root.findall(".//item")[:8]:
+                title = item.findtext("title") or ""
+                link = item.findtext("link") or ""
+                pub = item.findtext("pubDate") or ""
                 source_node = item.find("source")
-                source = (source_node.text or "").strip() if source_node is not None else "Unknown"
-                if not title or not link or link in seen:
-                    continue
-                seen.add(link)
+                source = (source_node.text or "").strip() if source_node is not None else "Google News"
                 published_at = None
                 if pub:
                     try:
                         published_at = parsedate_to_datetime(pub).astimezone(timezone.utc).isoformat()
                     except Exception:
-                        pass
-                text = title.lower()
-                currency = None
-                for code, terms in {
-                    "USD": ["dollar", "dxy", "fed"], "EUR": ["euro", "ecb"],
-                    "GBP": ["pound", "sterling", "bank of england"],
-                    "JPY": ["yen", "boj", "bank of japan"],
-                    "CHF": ["franc", "snb", "swiss national bank"],
-                    "AUD": ["australian dollar", "rba", "australia"],
-                    "CAD": ["canadian dollar", "boc", "bank of canada"],
-                    "NZD": ["new zealand dollar", "rbnz", "new zealand"],
-                    "INR": ["rupee", "rbi", "india"],
-                    "CNY": ["yuan", "renminbi", "pboc", "china"],
-                }.items():
-                    if any(term in text for term in terms):
-                        currency = code
-                        break
-                items.append({
-                    "title": title, "link": link, "source": source,
-                    "published_at": published_at, "currency": currency,
-                })
+                        published_at = pub
+                add_item(title, link, source, published_at)
         except Exception:
             continue
-    items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+
+    # 2) Investing.com Forex RSS: a stable category feed and useful fallback.
+    investing_urls = [
+        "https://in.investing.com/rss/news_1.rss",
+        "https://www.investing.com/rss/news_1.rss",
+    ]
+    for url in investing_urls:
+        try:
+            req = Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
+            })
+            with urlopen(req, timeout=12) as r:
+                root = ET.fromstring(r.read())
+            for item in root.findall(".//item")[:30]:
+                title = item.findtext("title") or ""
+                link = item.findtext("link") or ""
+                pub = item.findtext("pubDate") or ""
+                published_at = None
+                if pub:
+                    try:
+                        published_at = parsedate_to_datetime(pub).astimezone(timezone.utc).isoformat()
+                    except Exception:
+                        published_at = pub
+                add_item(title, link, "Investing.com", published_at)
+            if items:
+                break
+        except Exception:
+            continue
+
+    # 3) Yahoo Finance public search/news endpoint: targeted per currency.
+    yahoo_queries = {
+        "USD": "USD dollar DXY Fed",
+        "EUR": "EURUSD euro ECB",
+        "GBP": "GBPUSD pound Bank England",
+        "JPY": "USDJPY yen Bank Japan",
+        "CHF": "USDCHF Swiss franc SNB",
+        "AUD": "AUDUSD Australian dollar RBA",
+        "CAD": "USDCAD Canadian dollar Bank Canada oil",
+        "NZD": "NZDUSD New Zealand dollar RBNZ",
+        "INR": "USDINR rupee RBI",
+        "CNY": "USDCNY yuan PBOC",
+    }
+    for currency, query in yahoo_queries.items():
+        try:
+            params = urllib.parse.urlencode({
+                "q": query,
+                "quotesCount": "0",
+                "newsCount": "5",
+            })
+            url = "https://query1.finance.yahoo.com/v1/finance/search?" + params
+            req = Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
+            })
+            with urlopen(req, timeout=8) as r:
+                payload = json.loads(r.read().decode("utf-8", errors="replace"))
+            for story in (payload.get("news") or [])[:5]:
+                title = story.get("title") or ""
+                link = story.get("link") or story.get("url") or ""
+                source = story.get("publisher") or "Yahoo Finance"
+                ts = story.get("providerPublishTime")
+                published_at = None
+                if isinstance(ts, (int, float)):
+                    try:
+                        published_at = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+                    except Exception:
+                        pass
+                add_item(title, link, source, published_at, currency)
+        except Exception:
+            continue
+
+    # Prefer fresh stories, but keep older stories if a feed is sparse.
+    def sort_key(x):
+        return x.get("published_at") or ""
+
+    items.sort(key=sort_key, reverse=True)
     return {
         "status": "live" if items else "unavailable",
-        "source": "Filtered Google News RSS FX aggregation",
+        "source": "Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "items": items[:20],
     }
