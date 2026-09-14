@@ -899,7 +899,7 @@ function renderForex(fx,p,fxNews){
  const db=document.getElementById('fx-drivers-body'); if(db) db.innerHTML=driverRows.map(([n,v,c])=>`<tr><td>${n}</td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td><td>${c}</td></tr>`).join('');
  const pg=document.getElementById('fx-pairs-grid'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
  if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="kpi"><span class="small">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="small ${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
- const ng=document.getElementById('fx-news-grid'); const news=Array.isArray(fxNews)?fxNews.slice(0,20):[];
+ const ng=document.getElementById('fx-news-grid'); const news=Array.isArray(fxNews)?fxNews.slice(0,20):(Array.isArray(fxNews?.items)?fxNews.items.slice(0,20):[]);
  if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:15px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
 }
 
