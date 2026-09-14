@@ -925,9 +925,9 @@ async function load(){
  document.getElementById('dxychg').textContent=pct(p.dxy_change);
  document.getElementById('vix').textContent=fmt(p.vix);
  document.getElementById('vixchg').textContent=pct(p.vix_change);
- document.getElementById('fxdxy').textContent=pct(p.dxy_change);
- document.getElementById('fxeur').textContent=pct(p.eurusd_change);
- document.getElementById('fxvix').textContent=pct(p.vix_change);
+ const fxdxyEl=document.getElementById('fxdxy'); if(fxdxyEl) fxdxyEl.textContent=pct(p.dxy_change);
+ const fxeurEl=document.getElementById('fxeur'); if(fxeurEl) fxeurEl.textContent=pct(p.eurusd_change);
+ const fxvixEl=document.getElementById('fxvix'); if(fxvixEl) fxvixEl.textContent=pct(p.vix_change);
  renderForex(fx,p,fxNews);
 
  const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
@@ -1039,7 +1039,7 @@ async function load(){
  const macroStatus=m.status==='live'?'LIVE FRED + TREASURY':'PARTIAL — FRED API KEY NOT CONFIGURED'; document.getElementById('macro-banner').innerHTML=m.status==='live'?`<b class="up">${macroStatus}</b><br><span class="small">Economic series are pulled from FRED; official Treasury yields are pulled from Treasury. Values retain their native release frequency.</span>`:`<b class="amber">${macroStatus}</b><br><span class="small">Treasury rates and market snapshots can still update, but the full economic dashboard requires a GitHub Actions secret named <b>FRED_API_KEY</b>.</span>`;
 
  const dxyChange=Number(p.dxy_change);
- document.getElementById('usdregime').textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
+ const usdRegimeEl=document.getElementById('usdregime'); if(usdRegimeEl) usdRegimeEl.textContent=Number.isFinite(dxyChange)?(dxyChange>0.15?'STRONG USD':dxyChange<-0.15?'WEAK USD':'NEUTRAL USD'):'—';
 
  // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
  const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
