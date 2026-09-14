@@ -11,7 +11,7 @@ main{max-width:1100px;margin:auto;padding:0 16px 40px}header{position:sticky;top
 .head{max-width:1100px;margin:auto;padding:0 16px}.brand{font-size:27px;font-weight:800}.sub{color:var(--muted);margin-top:3px}.badge{float:right;border:1px solid #6b5924;color:var(--amber);padding:9px 14px;border-radius:22px;font-size:13px}
 .nav{display:flex;gap:8px;overflow-x:auto;padding-top:16px}.nav button{white-space:nowrap;background:#0d151f;border:1px solid #233141;color:#dce5ef;border-radius:12px;padding:11px 16px;font-size:15px}.nav button.active{border-color:#6d9bd0;background:#152130}
 section{padding-top:28px}.title{font-size:25px;font-weight:700;margin:0 0 14px}.small{color:var(--muted);font-size:13px}
-.gex-mode-switch{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 8px}.gex-mode-btn{background:#0d1822;border:1px solid #263847;color:#aebdcb;border-radius:10px;padding:8px 12px;font-size:12px;cursor:pointer}.gex-mode-btn.active{border-color:#69a9ff;background:#15283a;color:#eef6ff}.gex-mode-btn:disabled{opacity:.35;cursor:not-allowed}.gex-selected-note{margin:4px 0 10px;color:#8794a3;font-size:12px}
+.gex-mode-switch{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 8px}.gex-mode-btn{background:#0d1822;border:1px solid #263847;color:#aebdcb;border-radius:10px;padding:8px 12px;font-size:12px;cursor:pointer}.gex-mode-btn.active{border-color:#69a9ff;background:#15283a;color:#eef6ff}.gex-mode-btn:disabled{opacity:.35;cursor:not-allowed}.gex-selected-note{margin:4px 0 10px;color:#8794a3;font-size:12px}.gex-session-badge{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:4px 8px;border-radius:999px;border:1px solid #304355;background:#0d1822;color:#aebdcb;font-size:10px;font-weight:700;letter-spacing:.06em}.gex-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.gex-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.gex-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .card{background:linear-gradient(180deg,#0e161f,#0b121a);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 8px 30px rgba(0,0,0,.15)}
 .label{text-transform:uppercase;color:#84909e;font-size:12px;letter-spacing:1.3px}.big{font-size:34px;font-weight:800;margin-top:7px}.up{color:var(--green)}.down{color:var(--red)}.amber{color:var(--amber)}
@@ -451,7 +451,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="options-layout">
   <div class="card options-chart-card">
     <div class="options-chart-head">
-      <div><div class="options-chart-title">NET GEX PROFILE — NDX</div><div class="small" id="gex-chart-status">Strike-level modeled gamma exposure</div></div>
+      <div><div class="options-chart-title">NET GEX PROFILE — NDX <span id="gex-session-badge" class="gex-session-badge">SESSION —</span></div><div class="small" id="gex-chart-status">Strike-level modeled gamma exposure</div></div>
       <div class="options-chart-tools"><span class="options-tool" id="gex-expiry">—</span><span class="options-tool" id="gex-chain-mode">— • MODELED CHAIN</span></div>
     </div>
     <div class="gex-mode-switch" aria-label="GEX expiry selector">
@@ -611,6 +611,16 @@ function renderGexProfile(o,p){
  const expiryMode=selectedGexMode==='ALL'?(o.expiry_mode||'MULTI-EXPIRY'):(active.expiry_mode||selectedGexMode);
  const expiryText=active.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
+ const sessionBadge=document.getElementById('gex-session-badge');
+ if(sessionBadge){
+   const sess=String(o.market_session||'').toUpperCase();
+   const is0dte=selectedGexMode==='0DTE';
+   let label='SESSION —', cls='';
+   if(sess==='PRE_MARKET'){ label=is0dte?'PRE-MARKET • PREVIOUS SESSION':'PRE-MARKET'; cls='premarket'; }
+   else if(sess==='LIVE'){ label=is0dte?'LIVE • 0DTE ACTIVE':'LIVE SESSION'; cls='live'; }
+   else if(sess==='CLOSED'){ label=is0dte?'0DTE • CLOSED':'MARKET CLOSED'; cls='closed'; }
+   sessionBadge.textContent=label; sessionBadge.className='gex-session-badge '+cls;
+ }
  const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
  const topPcr=document.getElementById('pcr'); if(topPcr){const c=Number(active.call_oi),q=Number(active.put_oi);topPcr.textContent=(c>0&&Number.isFinite(q))?f(q/c,2):(o.pcr_oi==null?'—':f(o.pcr_oi,2));}
  const note=document.getElementById('gex-selected-note'); if(note){ if(usingFallback) note.textContent=`${selectedGexMode} data is unavailable in this snapshot; showing ALL EXPIRATIONS.`; else if(selectedGexMode==='ALL') note.textContent='Showing ALL EXPIRATIONS modeled GEX.'; else note.textContent=`Showing ${selectedLabel}${active.expiry?` • ${active.expiry}`:''} modeled GEX.`; }
