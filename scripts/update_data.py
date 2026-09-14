@@ -32,6 +32,165 @@ def snap(ticker):
         return None, None
 
 
+def fetch_fx_snapshot():
+    """Build the FX market data layer used by the Forex command center.
+
+    Rates are indicative daily snapshots from Yahoo Finance/yfinance.
+    Currency strength is a relative, model-derived score from the tracked
+    major and cross pairs; it is not a forecast.
+    """
+    pair_tickers = {
+        "EURUSD": "EURUSD=X",
+        "GBPUSD": "GBPUSD=X",
+        "USDJPY": "JPY=X",
+        "AUDUSD": "AUDUSD=X",
+        "NZDUSD": "NZDUSD=X",
+        "USDCHF": "CHF=X",
+        "USDCAD": "CAD=X",
+        "EURJPY": "EURJPY=X",
+        "GBPJPY": "GBPJPY=X",
+        "EURGBP": "EURGBP=X",
+        "USDINR": "INR=X",
+        "USDCNY": "CNY=X",
+    }
+
+    pairs = {}
+    for pair, ticker in pair_tickers.items():
+        value, change = snap(ticker)
+        pairs[pair] = {
+            "ticker": ticker,
+            "value": value,
+            "change_pct": change,
+        }
+
+    # Each pair contributes its percentage move to the base currency and the
+    # inverse move to the quote currency. This gives a transparent relative
+    # strength reading without pretending to be an institutional index.
+    pair_currencies = {
+        "EURUSD": ("EUR", "USD"), "GBPUSD": ("GBP", "USD"),
+        "USDJPY": ("USD", "JPY"), "AUDUSD": ("AUD", "USD"),
+        "NZDUSD": ("NZD", "USD"), "USDCHF": ("USD", "CHF"),
+        "USDCAD": ("USD", "CAD"), "EURJPY": ("EUR", "JPY"),
+        "GBPJPY": ("GBP", "JPY"), "EURGBP": ("EUR", "GBP"),
+        "USDINR": ("USD", "INR"), "USDCNY": ("USD", "CNY"),
+    }
+    contributions = {}
+    for pair, (base, quote) in pair_currencies.items():
+        ch = sf(pairs.get(pair, {}).get("change_pct"))
+        if ch is None:
+            continue
+        contributions.setdefault(base, []).append(ch)
+        contributions.setdefault(quote, []).append(-ch)
+
+    raw_strength = {
+        c: (sum(vals) / len(vals) if vals else None)
+        for c, vals in contributions.items()
+    }
+    valid = [v for v in raw_strength.values() if v is not None]
+    center = sum(valid) / len(valid) if valid else 0.0
+    strength = {
+        c: (round(v - center, 3) if v is not None else None)
+        for c, v in raw_strength.items()
+    }
+    ranked = sorted(
+        ((c, v) for c, v in strength.items() if v is not None),
+        key=lambda x: x[1], reverse=True
+    )
+
+    # Cross-market drivers. These are context variables, not predictive signals.
+    drivers = {}
+    for key, ticker in {
+        "WTI": "CL=F",
+        "GOLD": "GC=F",
+    }.items():
+        value, change = snap(ticker)
+        drivers[key] = {"value": value, "change_pct": change, "ticker": ticker}
+
+    return {
+        "status": "live" if any(x.get("value") is not None for x in pairs.values()) else "unavailable",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "pairs": pairs,
+        "currency_strength": strength,
+        "strength_rank": [{"currency": c, "score": v} for c, v in ranked],
+        "strongest_currency": ranked[0][0] if ranked else None,
+        "weakest_currency": ranked[-1][0] if ranked else None,
+        "drivers": drivers,
+        "method": "Relative currency strength is model-derived from daily percentage changes across tracked FX pairs; not a forecast or trade signal.",
+    }
+
+
+def fetch_fx_news():
+    """Fetch a compact FX-only news layer from Google News RSS."""
+    queries = [
+        'USD dollar DXY Fed forex',
+        'EUR euro ECB forex',
+        'GBP pound Bank of England forex',
+        'JPY yen Bank of Japan forex',
+        'CHF franc Swiss National Bank forex',
+        'AUD Australian dollar RBA forex',
+        'CAD Canadian dollar Bank of Canada oil forex',
+        'NZD New Zealand dollar RBNZ forex',
+        'INR rupee RBI forex',
+        'CNY yuan China PBOC forex',
+    ]
+    items = []
+    seen = set()
+    for query in queries:
+        url = (
+            "https://news.google.com/rss/search?q="
+            + urllib.parse.quote(query)
+            + "&hl=en-US&gl=US&ceid=US:en"
+        )
+        try:
+            req = Request(url, headers={"User-Agent": "market-intelligence-dashboard/1.0"})
+            with urlopen(req, timeout=15) as r:
+                root = ET.fromstring(r.read())
+            for item in root.findall(".//item")[:6]:
+                title = (item.findtext("title") or "").strip()
+                link = (item.findtext("link") or "").strip()
+                pub = (item.findtext("pubDate") or "").strip()
+                source_node = item.find("source")
+                source = (source_node.text or "").strip() if source_node is not None else "Unknown"
+                if not title or not link or link in seen:
+                    continue
+                seen.add(link)
+                published_at = None
+                if pub:
+                    try:
+                        published_at = parsedate_to_datetime(pub).astimezone(timezone.utc).isoformat()
+                    except Exception:
+                        pass
+                text = title.lower()
+                currency = None
+                for code, terms in {
+                    "USD": ["dollar", "dxy", "fed"], "EUR": ["euro", "ecb"],
+                    "GBP": ["pound", "sterling", "bank of england"],
+                    "JPY": ["yen", "boj", "bank of japan"],
+                    "CHF": ["franc", "snb", "swiss national bank"],
+                    "AUD": ["australian dollar", "rba", "australia"],
+                    "CAD": ["canadian dollar", "boc", "bank of canada"],
+                    "NZD": ["new zealand dollar", "rbnz", "new zealand"],
+                    "INR": ["rupee", "rbi", "india"],
+                    "CNY": ["yuan", "renminbi", "pboc", "china"],
+                }.items():
+                    if any(term in text for term in terms):
+                        currency = code
+                        break
+                items.append({
+                    "title": title, "link": link, "source": source,
+                    "published_at": published_at, "currency": currency,
+                })
+        except Exception:
+            continue
+    items.sort(key=lambda x: x.get("published_at") or "", reverse=True)
+    return {
+        "status": "live" if items else "unavailable",
+        "source": "Filtered Google News RSS FX aggregation",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "items": items[:20],
+    }
+
+
 def fetch_news():
     """Fetch and rank recent market-relevant headlines.
 
@@ -494,6 +653,20 @@ def main():
         if v is not None:
             d["prices"][key] = v
             d["prices"][key + "_change"] = ch
+
+    # FX command-center layer: major pairs, relative currency strength and
+    # cross-market commodity drivers. This is additive and does not alter GEX.
+    d["fx"] = fetch_fx_snapshot()
+    fx_pairs = d["fx"].get("pairs", {})
+    for pair, payload in fx_pairs.items():
+        if payload.get("value") is not None:
+            d["prices"][pair.lower()] = payload["value"]
+            d["prices"][pair.lower() + "_change"] = payload.get("change_pct")
+    for key, payload in d["fx"].get("drivers", {}).items():
+        k = key.lower()
+        if payload.get("value") is not None:
+            d["prices"][k] = payload["value"]
+            d["prices"][k + "_change"] = payload.get("change_pct")
 
     # Yahoo's ^IRX, ^TNX and ^TYX values are already percent values.
     for key, ticker in [
@@ -1113,6 +1286,7 @@ def main():
 
     # News is additive: it does not delete the existing macro/COT fields
     # already present in data.json.
+    d["fx_news"] = fetch_fx_news()
     d["news"] = fetch_news()
     d["generated_at"] = datetime.now(timezone.utc).isoformat()
     d["sources"] = list(dict.fromkeys((d.get("sources") or []) + ["Filtered Google News RSS aggregation"]))
