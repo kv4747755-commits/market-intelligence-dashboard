@@ -613,7 +613,10 @@ function renderGexProfile(o,p){
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const sessionBadge=document.getElementById('gex-session-badge');
  if(sessionBadge){
-   const sess=String(o.market_session||window.__MI_DATA__?.market_session||'').toUpperCase();
+   const sessRaw=o.market_session||o.session_state||o.marketSession||window.__MI_DATA__?.options?.market_session||window.__MI_DATA__?.options?.session_state||window.__MI_DATA__?.market_session||'';
+    const profile0dte=o.profiles?.['0DTE'];
+    const inferredSess=(String(sessRaw).trim()||((profile0dte?.status==='live')?'LIVE':(profile0dte?.status==='premarket'?'PRE_MARKET':(profile0dte?.status==='closed'?'CLOSED':''))));
+    const sess=String(inferredSess).toUpperCase();
    const is0dte=selectedGexMode==='0DTE';
    let label='SESSION —', cls='';
    if(sess==='PRE_MARKET'){ label=is0dte?'PRE-MARKET • PREVIOUS SESSION':'PRE-MARKET'; cls='premarket'; }
