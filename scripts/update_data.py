@@ -522,275 +522,433 @@ def main():
     options.setdefault("model", "Estimated GEX; dealer-sign assumption, not direct dealer book.")
 
     try:
-        # PROFESSIONAL-STYLE MODELED GEX LAYER
-        # Uses only the listed option chains available through yfinance.
-        # It aggregates multiple expiries, models 0DTE with intraday time,
-        # calculates Black-Scholes gamma, and derives gamma flip/walls from
-        # the aggregate profile. This remains an estimate, not dealer inventory.
+        # REFINED GEX ENGINE -------------------------------------------------
+        # This is intentionally more than a single Black-Scholes calculation.
+        # The model uses:
+        #   1) multiple expiries,
+        #   2) intraday time-to-expiry for 0DTE,
+        #   3) forward estimation from put/call parity when possible,
+        #   4) market-implied-volatility inputs with quote-based IV recovery,
+        #   5) a smoothed strike smile for missing/noisy IVs,
+        #   6) Black-76/BS-consistent gamma, and
+        #   7) full repricing of gamma across a price grid for the flip.
+        # It remains a MODEL of dealer positioning, not observed inventory.
         t = yf.Ticker("^NDX")
         expiries = list(t.options or [])
         spot = sf(d["prices"].get("ndx"))
-        if expiries and spot is not None:
-            ny = ZoneInfo("America/New_York")
-            now_ny = datetime.now(ny)
-            today_ny = now_ny.date()
-            parsed = sorted((e, datetime.fromisoformat(e).date()) for e in expiries)
-            future = [(e, ed) for e, ed in parsed if ed >= today_ny]
-            if not future:
-                raise ValueError("No current/future NDX expiries")
+        if not expiries or spot is None:
+            raise ValueError("Missing NDX spot or option expiries")
 
-            # Keep the model broad enough to capture the near-term surface,
-            # while limiting API calls for a free-data GitHub Actions workflow.
-            selected = future[:12]
-            r = sf(d.get("rates", {}).get("y10"))
-            r = (r / 100.0 if r is not None and abs(r) > 1.5 else (r or 0.0))
-            MULT = 100.0
+        ny = ZoneInfo("America/New_York")
+        now_ny = datetime.now(ny)
+        today_ny = now_ny.date()
+        parsed = sorted((e, datetime.fromisoformat(e).date()) for e in expiries)
+        future = [(e, ed) for e, ed in parsed if ed >= today_ny]
+        selected = future[:12]
+        if not selected:
+            raise ValueError("No current/future NDX expiries")
 
-            def clean_iv(v):
-                v = sf(v)
-                return v if v is not None and 0.0001 < v < 5 else None
+        r = sf(d.get("rates", {}).get("y10"))
+        r = (r / 100.0 if r is not None and abs(r) > 1.5 else (r or 0.0))
+        MULT = 100.0
 
-            def time_to_expiry(ed):
-                if ed == today_ny and now_ny.time() < dt_time(16, 0):
-                    expiry_time = datetime.combine(ed, dt_time(16, 0), tzinfo=ny)
-                    sec = max((expiry_time - now_ny).total_seconds(), 15 * 60)
-                    return sec / (365 * 24 * 3600), "0DTE"
-                days = max((ed - today_ny).days, 1)
-                return days / 365.0, ("1DTE" if days == 1 else "NEAREST")
+        def sane_iv(v):
+            v = sf(v)
+            return v if v is not None and 0.01 <= v <= 2.5 else None
 
-            def bs_terms(S, K, vol, T):
-                if not vol or vol <= 0 or S <= 0 or K <= 0 or T <= 0:
-                    return (0.0, 0.0, 0.0)
-                try:
-                    root = math.sqrt(T)
-                    d1 = (math.log(S / K) + (r + 0.5 * vol * vol) * T) / (vol * root)
-                    d2 = d1 - vol * root
-                    pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
-                    gamma = pdf / (S * vol * root)
-                    # Simplified spot-vanna and charm terms. These are
-                    # analytical sensitivity estimates, not exchange fields.
-                    vanna = -pdf * d2 / vol
-                    charm = -pdf * (2 * r * T - d2 * vol * root) / (2 * T * vol * root)
-                    return gamma, vanna, charm
-                except Exception:
-                    return (0.0, 0.0, 0.0)
+        def mid_price(row):
+            bid = sf(row.get("bid"))
+            ask = sf(row.get("ask"))
+            last = sf(row.get("lastPrice"))
+            if bid is not None and ask is not None and ask > 0 and bid >= 0 and ask >= bid:
+                m = (bid + ask) / 2.0
+                if m > 0:
+                    return m
+            return last if last is not None and last > 0 else None
 
-            all_rows = []
-            expiry_stats = []
-            for expiry, expiry_date in selected:
-                try:
-                    T, mode = time_to_expiry(expiry_date)
-                    ch = t.option_chain(expiry)
-                    c, p = ch.calls.copy(), ch.puts.copy()
-                    if c.empty and p.empty:
+        def norm_cdf(x):
+            return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+
+        def black_price(F, K, vol, T, disc, is_call):
+            if F <= 0 or K <= 0 or vol <= 0 or T <= 0:
+                return 0.0
+            root = math.sqrt(T)
+            d1 = (math.log(F / K) + 0.5 * vol * vol * T) / (vol * root)
+            d2 = d1 - vol * root
+            if is_call:
+                return disc * (F * norm_cdf(d1) - K * norm_cdf(d2))
+            return disc * (K * norm_cdf(-d2) - F * norm_cdf(-d1))
+
+        def implied_vol_from_price(price, F, K, T, disc, is_call):
+            # Robust bisection. We only use this as a recovery path when the
+            # vendor IV is missing/unusable; it is not used blindly on bad quotes.
+            if price is None or price <= 0 or F <= 0 or K <= 0 or T <= 0:
+                return None
+            intrinsic = disc * max((F - K) if is_call else (K - F), 0.0)
+            upper = disc * (F if is_call else K)
+            if price < intrinsic * 0.995 or price > upper * 1.005:
+                return None
+            lo, hi = 0.005, 2.5
+            p_hi = black_price(F, K, hi, T, disc, is_call)
+            if p_hi < price:
+                return None
+            for _ in range(48):
+                mid = (lo + hi) / 2.0
+                p = black_price(F, K, mid, T, disc, is_call)
+                if p < price:
+                    lo = mid
+                else:
+                    hi = mid
+            iv = (lo + hi) / 2.0
+            return iv if sane_iv(iv) else None
+
+        def solve_linear3(A, b):
+            # Small 3x3 Gaussian elimination; avoids adding scipy to the
+            # GitHub Actions dependency footprint.
+            M = [list(A[i]) + [b[i]] for i in range(3)]
+            for col in range(3):
+                pivot = max(range(col, 3), key=lambda i: abs(M[i][col]))
+                if abs(M[pivot][col]) < 1e-12:
+                    return None
+                M[col], M[pivot] = M[pivot], M[col]
+                div = M[col][col]
+                for j in range(col, 4):
+                    M[col][j] /= div
+                for i in range(3):
+                    if i == col:
                         continue
-                    strikes = sorted(set(c.get("strike", []).dropna()) | set(p.get("strike", []).dropna()))
-                    exp_net = 0.0
-                    exp_call_oi = 0.0
-                    exp_put_oi = 0.0
-                    exp_nonzero = 0
-                    for K0 in strikes:
-                        K = float(K0)
-                        cr = c[c["strike"] == K0]
-                        pr = p[p["strike"] == K0]
-                        coi = float(sf(cr.iloc[0].get("openInterest")) or 0.0) if not cr.empty else 0.0
-                        poi = float(sf(pr.iloc[0].get("openInterest")) or 0.0) if not pr.empty else 0.0
-                        civ = clean_iv(cr.iloc[0].get("impliedVolatility")) if not cr.empty else None
-                        piv = clean_iv(pr.iloc[0].get("impliedVolatility")) if not pr.empty else None
-                        cg, cv, cc = bs_terms(spot, K, civ, T)
-                        pg, pv, pc = bs_terms(spot, K, piv, T)
-                        # Standard modeled dealer-sign convention: calls +, puts -.
-                        call_gex = cg * coi * MULT * spot * spot * 0.01
-                        put_gex = -pg * poi * MULT * spot * spot * 0.01
-                        call_vanna = cv * coi * MULT * spot * 0.01
-                        put_vanna = -pv * poi * MULT * spot * 0.01
-                        call_charm = cc * coi * MULT * spot * 0.01
-                        put_charm = -pc * poi * MULT * spot * 0.01
-                        net = call_gex + put_gex
-                        if coi > 0 or poi > 0:
-                            exp_nonzero += 1
-                        exp_call_oi += coi
-                        exp_put_oi += poi
-                        all_rows.append({
-                            "strike": K, "expiry": expiry, "expiry_mode": mode,
-                            "call_oi": coi, "put_oi": poi,
-                            "call_gex": call_gex, "put_gex": put_gex, "net_gex": net,
-                            "call_vanna": call_vanna, "put_vanna": put_vanna,
-                            "call_charm": call_charm, "put_charm": put_charm,
-                            "iv_call": civ, "iv_put": piv, "T": T,
-                        })
-                        exp_net += net
-                    expiry_stats.append({
-                        "expiry": expiry, "mode": mode, "days": max((expiry_date - today_ny).days, 0),
-                        "net_gex": exp_net, "call_oi": exp_call_oi, "put_oi": exp_put_oi,
-                        "nonzero_strikes": exp_nonzero,
-                    })
-                except Exception:
+                    fac = M[i][col]
+                    for j in range(col, 4):
+                        M[i][j] -= fac * M[col][j]
+            return [M[i][3] for i in range(3)]
+
+        def fit_smile(points):
+            # Quadratic IV smile in log-moneyness. Near-ATM observations get
+            # more weight, while raw valid market IVs are retained as anchors.
+            if len(points) < 5:
+                return None
+            A = [[0.0, 0.0, 0.0] for _ in range(3)]
+            b = [0.0, 0.0, 0.0]
+            for x, vol in points:
+                w = math.exp(-min(abs(x), 0.30) ** 2 / (2 * 0.12 ** 2))
+                z = [1.0, x, x * x]
+                for i in range(3):
+                    b[i] += w * z[i] * vol
+                    for j in range(3):
+                        A[i][j] += w * z[i] * z[j]
+            coef = solve_linear3(A, b)
+            if coef is None:
+                return None
+            return lambda x: max(0.01, min(2.5, coef[0] + coef[1] * x + coef[2] * x * x))
+
+        def expiry_time(ed):
+            if ed == today_ny:
+                exp_dt = datetime.combine(ed, dt_time(16, 0), tzinfo=ny)
+                seconds = max((exp_dt - now_ny).total_seconds(), 5 * 60)
+                return seconds / (365 * 24 * 3600), "0DTE"
+            exp_dt = datetime.combine(ed, dt_time(16, 0), tzinfo=ny)
+            seconds = max((exp_dt - now_ny).total_seconds(), 3600)
+            days = (ed - today_ny).days
+            return seconds / (365 * 24 * 3600), ("1DTE" if days == 1 else "NEAREST")
+
+        all_rows = []
+        expiry_stats = []
+        expiry_surfaces = []
+        direct_iv_count = 0
+        solved_iv_count = 0
+        fitted_iv_count = 0
+
+        for expiry, expiry_date in selected:
+            try:
+                T, mode = expiry_time(expiry_date)
+                ch = t.option_chain(expiry)
+                c, p = ch.calls.copy(), ch.puts.copy()
+                if c.empty and p.empty:
                     continue
 
-            if all_rows:
-                # Aggregate the multi-expiry strike profile.
-                by_strike = {}
-                for row in all_rows:
-                    K = row["strike"]
-                    a = by_strike.setdefault(K, {
-                        "strike": K, "call_oi": 0.0, "put_oi": 0.0,
-                        "call_gex": 0.0, "put_gex": 0.0, "net_gex": 0.0,
-                        "vanna": 0.0, "charm": 0.0,
-                    })
-                    for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex"):
-                        a[key] += row[key]
-                    a["vanna"] += row["call_vanna"] + row["put_vanna"]
-                    a["charm"] += row["call_charm"] + row["put_charm"]
+                # Normalize the rows we need. OI is kept as-is; it is the
+                # standing inventory input, not an intraday flow measure.
+                for df in (c, p):
+                    for col in ("strike", "openInterest", "impliedVolatility", "bid", "ask", "lastPrice"):
+                        if col not in df.columns:
+                            df[col] = None
 
-                heat = [by_strike[k] for k in sorted(by_strike)]
-                # Keep a broad but bounded profile around spot for rendering.
-                heat = [x for x in heat if abs(x["strike"] - spot) <= spot * 0.15]
-                total = sum(x["net_gex"] for x in heat)
-                total_call_oi = sum(x["call_oi"] for x in heat)
-                total_put_oi = sum(x["put_oi"] for x in heat)
-                vanna_total = sum(x["vanna"] for x in heat)
-                charm_total = sum(x["charm"] for x in heat)
+                disc = math.exp(-r * T)
 
-                # Walls are concentration levels, not simply the single largest OI.
-                # Use absolute exposure to find the strongest modeled call/put levels.
-                call_candidates = [x for x in heat if x["call_gex"] > 0]
-                put_candidates = [x for x in heat if x["put_gex"] < 0]
-                call_wall = max(call_candidates, key=lambda x: x["call_gex"])["strike"] if call_candidates else None
-                put_wall = min(put_candidates, key=lambda x: x["put_gex"])["strike"] if put_candidates else None
+                # Estimate forward from put-call parity using near-ATM pairs.
+                # For European index options this is more coherent than using
+                # spot directly when computing the volatility surface.
+                by_k_c = {float(row["strike"]): row for _, row in c.iterrows() if sf(row.get("strike")) is not None}
+                by_k_p = {float(row["strike"]): row for _, row in p.iterrows() if sf(row.get("strike")) is not None}
+                forward_samples = []
+                for K in sorted(set(by_k_c) & set(by_k_p)):
+                    if abs(K / spot - 1.0) > 0.08:
+                        continue
+                    cm = mid_price(by_k_c[K])
+                    pm = mid_price(by_k_p[K])
+                    if cm is None or pm is None:
+                        continue
+                    Fk = K + (cm - pm) / disc
+                    if 0.90 * spot < Fk < 1.10 * spot:
+                        weight = 1.0 / (1.0 + abs(math.log(K / spot)) * 50.0)
+                        forward_samples.append((Fk, weight))
+                if forward_samples:
+                    forward_samples.sort(key=lambda x: x[0])
+                    # Weighted mean is less jumpy than a single strike.
+                    F = sum(x * w for x, w in forward_samples) / sum(w for _, w in forward_samples)
+                else:
+                    F = spot * math.exp(r * T)
 
-                def total_at(S):
-                    value = 0.0
-                    for row in all_rows:
-                        if abs(row["strike"] - S) > spot * 0.15:
+                raw_points = []
+                rows = []
+                for side, df in (("call", c), ("put", p)):
+                    for _, row in df.iterrows():
+                        K = sf(row.get("strike"))
+                        if K is None or K <= 0:
                             continue
-                        cg, _, _ = bs_terms(S, row["strike"], row["iv_call"], row["T"])
-                        pg, _, _ = bs_terms(S, row["strike"], row["iv_put"], row["T"])
-                        value += (cg * row["call_oi"] - pg * row["put_oi"]) * MULT * S * S * 0.01
-                    return value
+                        oi = sf(row.get("openInterest")) or 0.0
+                        vendor_iv = sane_iv(row.get("impliedVolatility"))
+                        x = math.log(K / F)
+                        iv = vendor_iv
+                        source = "vendor_iv" if vendor_iv is not None else None
+                        if iv is not None:
+                            direct_iv_count += 1
+                        if iv is None:
+                            price = mid_price(row)
+                            iv = implied_vol_from_price(price, F, K, T, disc, side == "call")
+                            if iv is not None:
+                                source = "quote_solved_iv"
+                                solved_iv_count += 1
+                        if iv is not None and abs(x) <= 0.35:
+                            raw_points.append((x, iv))
+                        rows.append({"side": side, "K": K, "oi": oi, "x": x, "iv": iv, "source": source})
 
-                # Dense profile around spot; interpolate the nearest zero crossing.
-                lo, hi = spot * 0.90, spot * 1.10
-                xs = [lo + (hi - lo) * i / 240 for i in range(241)]
-                ys = [total_at(x) for x in xs]
-                flips = []
-                for i in range(len(xs) - 1):
-                    if ys[i] == 0:
-                        flips.append(xs[i])
-                    elif ys[i] * ys[i + 1] < 0:
-                        flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
-                gamma_flip = min(flips, key=lambda x: abs(x - spot)) if flips else None
+                smile = fit_smile(raw_points)
+                surface_points = 0
+                for row in rows:
+                    if row["iv"] is None and smile is not None and abs(row["x"]) <= 0.35:
+                        row["iv"] = smile(row["x"])
+                        row["source"] = "smoothed_surface"
+                        fitted_iv_count += 1
+                    if row["iv"] is not None:
+                        surface_points += 1
 
-                nonzero = sum(1 for x in heat if x["call_oi"] > 0 or x["put_oi"] > 0)
-                near_atm_nonzero = sum(1 for x in heat if abs(x["strike"] - spot) <= spot * 0.05 and (x["call_oi"] > 0 or x["put_oi"] > 0))
-                reasons = []
-                if len(selected) < 6: reasons.append("limited expiry coverage")
-                if len(heat) < 50: reasons.append("fewer than 50 strikes in modeled window")
-                if nonzero < 40: reasons.append("sparse open interest")
-                if near_atm_nonzero < 8: reasons.append("thin OI near spot")
-                confidence = "HIGH" if len(selected) >= 8 and len(heat) >= 80 and near_atm_nonzero >= 10 else "MEDIUM" if len(selected) >= 4 and len(heat) >= 50 else "LOW"
-                if reasons and confidence == "HIGH": confidence = "MEDIUM"
+                expiry_net = 0.0
+                expiry_call_oi = 0.0
+                expiry_put_oi = 0.0
+                nonzero = 0
+                for row in rows:
+                    K = row["K"]
+                    iv = row["iv"]
+                    oi = row["oi"]
+                    # Ignore very far OTM contracts in the live GEX surface;
+                    # their listed OI is useful context but their numerical
+                    # gamma is effectively noise for the near-term map.
+                    if abs(K / spot - 1.0) > 0.15:
+                        continue
+                    if row["side"] == "call":
+                        expiry_call_oi += oi
+                    else:
+                        expiry_put_oi += oi
+                    if oi > 0:
+                        nonzero += 1
+                    if iv is None or oi <= 0:
+                        continue
 
-                modes = [x["mode"] for x in expiry_stats]
-                expiry_mode = "0DTE" if "0DTE" in modes else ("1DTE" if "1DTE" in modes else "MULTI-EXPIRY")
-                nearest_expiry = selected[0][0]
-                # Build switchable near-term profiles so the frontend can compare
-                # 0DTE, 1DTE and the full multi-expiry aggregate without fabricating data.
-                def make_profile(profile_rows, label):
-                    if not profile_rows:
-                        return {"status":"unavailable","label":label,"heatmap":[],"expiry":None,"net_gex":None,"call_wall":None,"put_wall":None,"gamma_flip":None}
-                    ps = {}
-                    for row in profile_rows:
-                        K = row["strike"]
-                        a = ps.setdefault(K, {"strike":K,"call_oi":0.0,"put_oi":0.0,"call_gex":0.0,"put_gex":0.0,"net_gex":0.0})
-                        for key in ("call_oi","put_oi","call_gex","put_gex","net_gex"):
-                            a[key] += row[key]
-                    ph = [ps[k] for k in sorted(ps) if abs(k-spot) <= spot*0.15]
-                    if not ph:
-                        return {"status":"unavailable","label":label,"heatmap":[]}
-                    ptotal = sum(x["net_gex"] for x in ph)
-                    cc = [x for x in ph if x["call_gex"] > 0]
-                    pp = [x for x in ph if x["put_gex"] < 0]
-                    pcw = max(cc,key=lambda x:x["call_gex"])["strike"] if cc else None
-                    ppw = min(pp,key=lambda x:x["put_gex"])["strike"] if pp else None
-                    def ptotal_at(S):
-                        value=0.0
-                        for row in profile_rows:
-                            if abs(row["strike"]-S)>spot*0.15: continue
-                            cg,_,_=bs_terms(S,row["strike"],row["iv_call"],row["T"])
-                            pg,_,_=bs_terms(S,row["strike"],row["iv_put"],row["T"])
-                            value += (cg*row["call_oi"]-pg*row["put_oi"])*MULT*S*S*0.01
-                        return value
-                    px=[spot*0.90+(spot*0.20)*i/120 for i in range(121)]
-                    py=[ptotal_at(x) for x in px]
-                    pflip=[]
-                    for j in range(len(px)-1):
-                        if py[j]==0: pflip.append(px[j])
-                        elif py[j]*py[j+1]<0: pflip.append(px[j]-py[j]*(px[j+1]-px[j])/(py[j+1]-py[j]))
-                    p_gamma=min(pflip,key=lambda x:abs(x-spot)) if pflip else None
-                    return {
-                        "status":"live","label":label,"expiry":profile_rows[0].get("expiry"),
-                        "expiry_mode":profile_rows[0].get("expiry_mode"),"heatmap":ph,"net_gex":ptotal,
-                        "call_wall":pcw,"put_wall":ppw,"gamma_flip":p_gamma,
-                        "call_oi":sum(x["call_oi"] for x in ph),"put_oi":sum(x["put_oi"] for x in ph),
-                    }
+                    root = math.sqrt(T)
+                    # Black-76 gamma converted back to spot gamma. This keeps
+                    # the forward/discount relationship explicit and is more
+                    # internally consistent for index options than assuming
+                    # spot == forward at every expiry.
+                    d1 = (math.log(F / K) + 0.5 * iv * iv * T) / (iv * root)
+                    pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+                    gamma = disc * pdf * F / (spot * spot * iv * root)
+                    signed = 1.0 if row["side"] == "call" else -1.0
+                    gex = signed * gamma * oi * MULT * spot * spot * 0.01
+                    all_rows.append({
+                        "strike": K, "expiry": expiry, "expiry_mode": mode,
+                        "call_oi": oi if row["side"] == "call" else 0.0,
+                        "put_oi": oi if row["side"] == "put" else 0.0,
+                        "call_gex": gex if row["side"] == "call" else 0.0,
+                        "put_gex": gex if row["side"] == "put" else 0.0,
+                        "net_gex": gex,
+                        "iv": iv,
+                    })
+                    expiry_net += gex
 
-                by_mode = {}
-                for mode in ("0DTE", "1DTE"):
-                    matching = [x for x in all_rows if x.get("expiry_mode") == mode]
-                    by_mode[mode] = make_profile(matching, mode)
-                by_mode["ALL"] = make_profile(all_rows, "ALL EXPIRATIONS")
-
-                options.update({
-                    "status": "live",
-                    "expiry": nearest_expiry,
-                    "profile_mode": "ALL",
-                    "profiles": by_mode,
-                    "expiry_mode": expiry_mode,
-                    "expiry_label": expiry_mode,
-                    "spot": spot,
-                    "oi_heatmap": heat,
-                    "net_gex": total,
-                    "call_wall": call_wall,
-                    "put_wall": put_wall,
-                    "gamma_flip": gamma_flip,
-                    "gex_confidence": confidence,
-                    "gex_methodology": "Multi-expiry Black-Scholes gamma model from listed OI/IV; calls positive, puts negative by dealer-sign assumption.",
-                    "expiry_count": len(expiry_stats),
-                    "expiry_dates": [x["expiry"] for x in expiry_stats],
-                    "expiry_breakdown": expiry_stats,
-                    "vanna": vanna_total,
-                    "charm": charm_total,
-                    "coverage": {
-                        "strikes": len(heat), "nonzero_oi_strikes": nonzero,
-                        "near_atm_nonzero_strikes": near_atm_nonzero,
-                        "total_call_oi": total_call_oi, "total_put_oi": total_put_oi,
-                    },
-                    "data_quality": {
-                        "status": "LIMITED" if reasons else "GOOD",
-                        "reason": "; ".join(reasons) if reasons else "Broad multi-expiry strike and OI coverage",
-                        "strikes": len(heat), "nonzero_oi_strikes": nonzero,
-                        "near_atm_nonzero_strikes": near_atm_nonzero,
-                        "expiry_count": len(expiry_stats),
-                    },
-                    "dealer_positioning": {
-                        "status": "modeled",
-                        "regime": "Positive gamma" if total > 0 else "Negative gamma" if total < 0 else "Neutral gamma",
-                        "net_gex": total, "gamma_flip": gamma_flip,
-                        "confidence": confidence,
-                        "model": "Modeled from listed multi-expiry OI/IV and Black-Scholes sensitivities; not direct dealer inventory.",
-                    },
+                expiry_stats.append({
+                    "expiry": expiry, "mode": mode,
+                    "days": max((expiry_date - today_ny).days, 0),
+                    "net_gex": expiry_net,
+                    "call_oi": expiry_call_oi, "put_oi": expiry_put_oi,
+                    "nonzero_contract_rows": nonzero,
+                    "surface_points": surface_points,
+                    "forward": F,
+                    "atm_iv": (sum(v for x, v in raw_points if abs(x) <= 0.03) / max(1, sum(1 for x, v in raw_points if abs(x) <= 0.03)) * 100) if any(abs(x) <= 0.03 for x, v in raw_points) else None,
                 })
-                options["model_notes"] = [
-                    "Uses up to 12 nearest current/future expirations to improve structure versus single-expiry GEX.",
-                    "0DTE uses time remaining to the modeled 4:00 p.m. ET expiry.",
-                    "Gamma flip is interpolated from the aggregate price-response profile.",
-                    "Vanna and Charm are analytical estimates from the same OI/IV snapshot.",
-                    "Dealer side is inferred by a conventional sign assumption; actual dealer inventory is not observable here.",
-                ]
+            except Exception:
+                continue
 
-    except Exception:
-        pass
+        if not all_rows:
+            raise ValueError("No usable option rows")
+
+        by_strike = {}
+        for row in all_rows:
+            K = row["strike"]
+            a = by_strike.setdefault(K, {
+                "strike": K, "call_oi": 0.0, "put_oi": 0.0,
+                "call_gex": 0.0, "put_gex": 0.0, "net_gex": 0.0,
+            })
+            for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex"):
+                a[key] += row[key]
+
+        heat = [by_strike[k] for k in sorted(by_strike)]
+        heat = [x for x in heat if abs(x["strike"] - spot) <= spot * 0.15]
+        total = sum(x["net_gex"] for x in heat)
+        total_call_oi = sum(x["call_oi"] for x in heat)
+        total_put_oi = sum(x["put_oi"] for x in heat)
+        nonzero = sum(1 for x in heat if x["call_oi"] > 0 or x["put_oi"] > 0)
+        near_atm_nonzero = sum(1 for x in heat if abs(x["strike"] - spot) <= spot * 0.05 and (x["call_oi"] > 0 or x["put_oi"] > 0))
+        nonzero_ratio = nonzero / len(heat) if heat else 0.0
+
+        # The headline ATM IV / expected move comes from the nearest expiry,
+        # not from the aggregate multi-expiry GEX book.
+        nearest = expiry_stats[0]
+        nearest_expiry = nearest["expiry"]
+        nearest_mode = nearest["mode"]
+        nearest_iv = nearest.get("atm_iv")
+        T_near, _ = expiry_time(selected[0][1])
+        if nearest_iv is not None:
+            iv_dec = nearest_iv / 100.0
+            move = spot * iv_dec * math.sqrt(T_near)
+            options.update({
+                "atm_iv": nearest_iv,
+                "expected_move_pct": (move / spot) * 100,
+                "expected_move_points": move,
+                "time_to_expiry_hours": T_near * 365 * 24,
+            })
+
+        # OI PCR should reflect the nearest expiry, while all-expiry OI is
+        # retained in coverage for transparency.
+        nearest_call_oi = nearest.get("call_oi") or 0.0
+        nearest_put_oi = nearest.get("put_oi") or 0.0
+        if nearest_call_oi > 0:
+            options["pcr_oi"] = nearest_put_oi / nearest_call_oi
+
+        # Reprice the whole modeled surface at many hypothetical spot levels.
+        # This is more robust than interpolating the already-aggregated GEX bars.
+        def gex_at(test_spot):
+            total_g = 0.0
+            for row in all_rows:
+                K = row["strike"]
+                iv = row["iv"]
+                if iv is None or row["call_oi"] + row["put_oi"] <= 0:
+                    continue
+                # Recover expiry T and forward from the expiry table.
+                stat = next((x for x in expiry_stats if x["expiry"] == row["expiry"]), None)
+                if not stat:
+                    continue
+                exp_date = datetime.fromisoformat(row["expiry"]).date()
+                T, _ = expiry_time(exp_date)
+                F0 = stat.get("forward") or spot
+                # Preserve the inferred carry from the expiry's parity forward.
+                carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
+                F_test = test_spot * math.exp(carry * T)
+                root = math.sqrt(T)
+                d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
+                pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+                disc = math.exp(-r * T)
+                gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
+                signed_oi = row["call_oi"] - row["put_oi"]
+                total_g += gamma * signed_oi * MULT * test_spot * test_spot * 0.01
+            return total_g
+
+        xs = [spot * 0.90 + spot * 0.20 * i / 240 for i in range(241)]
+        ys = [gex_at(x) for x in xs]
+        flips = []
+        for i in range(len(xs) - 1):
+            if ys[i] == 0:
+                flips.append(xs[i])
+            elif ys[i] * ys[i + 1] < 0:
+                flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
+        gamma_flip = min(flips, key=lambda x: abs(x - spot)) if flips else None
+
+        reasons = []
+        if len(expiry_stats) < 6:
+            reasons.append("limited expiry coverage")
+        if len(heat) < 80:
+            reasons.append("fewer than 80 modeled strikes")
+        if nonzero < 40:
+            reasons.append("sparse open interest")
+        if near_atm_nonzero < 10:
+            reasons.append("thin OI near spot")
+        if direct_iv_count + solved_iv_count < 30:
+            reasons.append("limited volatility-surface observations")
+        confidence = "HIGH" if len(expiry_stats) >= 8 and len(heat) >= 80 and near_atm_nonzero >= 10 and direct_iv_count + solved_iv_count >= 30 else "MEDIUM" if len(expiry_stats) >= 4 and len(heat) >= 50 else "LOW"
+        if reasons and confidence == "HIGH":
+            confidence = "MEDIUM"
+
+        modes = [x["mode"] for x in expiry_stats]
+        expiry_mode = "0DTE" if "0DTE" in modes else ("1DTE" if "1DTE" in modes else "MULTI-EXPIRY")
+        options.update({
+            "status": "live",
+            "expiry": nearest_expiry,
+            "expiry_mode": expiry_mode,
+            "expiry_label": expiry_mode,
+            "spot": spot,
+            "oi_heatmap": heat,
+            "net_gex": total,
+            "call_wall": max(heat, key=lambda x: x["call_gex"])["strike"] if heat else None,
+            "put_wall": min(heat, key=lambda x: x["put_gex"])["strike"] if heat else None,
+            "gamma_flip": gamma_flip,
+            "gex_confidence": confidence,
+            "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
+            "gex_model_version": "GEX v2 surface-aware",
+            "expiry_count": len(expiry_stats),
+            "expiry_dates": [x["expiry"] for x in expiry_stats],
+            "expiry_breakdown": expiry_stats,
+            "surface_quality": {
+                "vendor_iv_points": direct_iv_count,
+                "quote_solved_iv_points": solved_iv_count,
+                "smoothed_iv_points": fitted_iv_count,
+                "total_surface_points": direct_iv_count + solved_iv_count + fitted_iv_count,
+            },
+            "coverage": {
+                "strikes": len(heat), "nonzero_oi_strikes": nonzero,
+                "near_atm_nonzero_strikes": near_atm_nonzero,
+                "total_call_oi": total_call_oi, "total_put_oi": total_put_oi,
+            },
+            "data_quality": {
+                "status": "LIMITED" if reasons else "GOOD",
+                "reason": "; ".join(reasons) if reasons else "Broad multi-expiry OI and volatility-surface coverage",
+                "strikes": len(heat), "nonzero_oi_strikes": nonzero,
+                "near_atm_nonzero_strikes": near_atm_nonzero,
+                "expiry_count": len(expiry_stats),
+            },
+            "dealer_positioning": {
+                "status": "modeled",
+                "regime": "Positive gamma" if total > 0 else "Negative gamma" if total < 0 else "Neutral gamma",
+                "net_gex": total, "gamma_flip": gamma_flip,
+                "confidence": confidence,
+                "model": "Modeled from listed multi-expiry OI and a market-implied volatility surface; not direct dealer inventory.",
+            },
+            "model_notes": [
+                "Uses up to 12 nearest current/future NDX expirations.",
+                "0DTE uses actual time remaining to the 4 p.m. ET expiry.",
+                "Forward is estimated from near-ATM put/call parity when quotes permit.",
+                "Vendor IV is used when sane; missing IV can be recovered from quoted option prices.",
+                "A weighted quadratic smile fills gaps in the per-expiry volatility surface.",
+                "Black-76 gamma is converted consistently to spot gamma using the inferred forward and discount factor.",
+                "Gamma flip is found by revaluing gamma across a dense hypothetical spot grid.",
+                "Call-positive / put-negative dealer sign is a conventional assumption; public OI cannot reveal actual dealer inventory.",
+                "GEX magnitude is best compared within this dashboard's methodology, not treated as an absolute cross-provider number.",
+            ],
+        })
+
+    except Exception as exc:
+        # Never destroy a previously good options snapshot just because one
+        # free-data refresh is incomplete.
+        options.setdefault("model_error", str(exc)[:240])
 
     # Refresh the macro layer without deleting an older good snapshot if a source is temporarily unavailable.
     try:
