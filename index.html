@@ -134,7 +134,8 @@ section:not(#home)>.title{padding-top:4px}
 #nasdaq .card:first-child,#macro .card:first-child{position:relative}
 #nasdaq .card:first-child:before,#macro .card:first-child:before{content:"LIVE";position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7}
 .fx-session-badge{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:4px 8px;border-radius:999px;border:1px solid #304355;background:#0d1822;color:#aebdcb;font-size:10px;font-weight:700;letter-spacing:.05em;vertical-align:middle}.fx-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.fx-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.fx-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
-.fx-overview-grid{margin-top:10px}.compact-metric{padding:14px 16px}.compact-metric .big{font-size:29px}.compact-metric>span.small{display:block;margin-top:4px;color:#748496}.fx-pairs-card{padding-bottom:10px}.table-scroll{overflow-x:hidden}.fx-pairs-table{width:100%;min-width:0;table-layout:fixed;margin-top:10px}.fx-pairs-table th,.fx-pairs-table td{padding:8px 6px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fx-pairs-table th:nth-child(1),.fx-pairs-table td:nth-child(1){width:24%}.fx-pairs-table th:nth-child(2),.fx-pairs-table td:nth-child(2){width:25%}.fx-pairs-table th:nth-child(3),.fx-pairs-table td:nth-child(3){width:17%}.fx-pairs-table th:nth-child(4),.fx-pairs-table td:nth-child(4){width:34%}.fx-pairs-table td:nth-child(2){font-size:14px;font-weight:700}.fx-pair-edge{font-weight:700}.fx-state{font-size:10px;letter-spacing:.04em;color:#7f90a1}.fx-overview-grid .label{font-size:11px}
+.fx-quant-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.fx-quant-chip{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0a121b}.fx-quant-chip span{display:block;color:#748496;font-size:10px;text-transform:uppercase;letter-spacing:.8px}.fx-quant-chip b{display:block;margin-top:4px;font-size:15px}.fx-quant-table{min-width:760px}.fx-quant-table th,.fx-quant-table td{padding:8px 7px;font-size:11px}.fx-quant-table td:nth-child(2){font-weight:700;font-size:13px}.fx-rank-up{color:var(--green);font-weight:700}.fx-rank-down{color:var(--red);font-weight:700}.fx-regime{font-weight:800;font-size:11px;letter-spacing:.05em}.fx-regime.bull{color:var(--green)}.fx-regime.bear{color:var(--red)}.fx-regime.mix{color:var(--amber)}.fx-decision-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.fx-decision{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#0a121b}.fx-decision .label{font-size:10px}.fx-decision b{display:block;margin-top:5px;font-size:16px}.fx-decision .small{margin-top:3px;display:block}@media(max-width:720px){.fx-quant-summary{grid-template-columns:repeat(2,1fr)}.fx-decision-grid{grid-template-columns:repeat(2,1fr)}.fx-quant-table{min-width:760px}}
+.fx-overview-grid{margin-top:10px}.compact-metric{padding:14px 16px}.compact-metric .big{font-size:29px}.compact-metric>span.small{display:block;margin-top:4px;color:#748496}.fx-pairs-card{padding-bottom:10px}.table-scroll{overflow-x:auto}.fx-pairs-table{min-width:620px;margin-top:10px}.fx-pairs-table th,.fx-pairs-table td{padding:8px 7px;font-size:12px}.fx-pairs-table td:nth-child(2){font-size:14px;font-weight:700}.fx-pair-edge{font-weight:700}.fx-state{font-size:10px;letter-spacing:.04em;color:#7f90a1}.fx-overview-grid .label{font-size:11px}
 .options-session-badge{position:absolute;right:10px;top:9px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.05em;border:1px solid #304355;background:#0d1822;color:#aebdcb}.options-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.options-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.options-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 
 /* responsive: turn sidebar back into compact top navigation */
@@ -428,28 +429,45 @@ section:not(#home)>.title{padding-top:4px}
 </section>
 
 <section id="forex">
-<div class="title">FOREX COMMAND CENTER <span id="fx-session-badge" class="fx-session-badge">US SESSION —</span> <span class="small">24/5 FX • relative strength • cross-market drivers • news</span></div>
+<div class="title">FOREX COMMAND CENTER <span id="fx-session-badge" class="fx-session-badge">US SESSION —</span> <span class="small">24/5 FX • relative strength • momentum • macro drivers • news</span></div>
 <div class="grid fx-overview-grid">
 <div class="card compact-metric"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div><span class="small">USD broad proxy</span></div>
 <div class="card compact-metric"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div><span class="small">Risk backdrop</span></div>
-<div class="card compact-metric"><div class="label">FX LEADER</div><div class="big" id="fx-leader">—</div><div id="fx-leader-val" class="small">—</div><span class="small">Model strength</span></div>
-<div class="card compact-metric"><div class="label">FX LAGGARD</div><div class="big" id="fx-laggard">—</div><div id="fx-laggard-val" class="small">—</div><span class="small">Model strength</span></div>
+<div class="card compact-metric"><div class="label">FX LEADER</div><div class="big" id="fx-leader">—</div><div id="fx-leader-val" class="small">—</div><span class="small">1D model strength</span></div>
+<div class="card compact-metric"><div class="label">FX LAGGARD</div><div class="big" id="fx-laggard">—</div><div id="fx-laggard-val" class="small">—</div><span class="small">1D model strength</span></div>
 </div>
 
 <div class="card fx-pairs-card" style="margin-top:12px">
 <h3>FX PAIR MATRIX</h3>
-<div class="small">One compact table for live price, daily move and relative currency edge. No duplicate pair cards.</div>
-<div class="table-scroll"><table class="fx-pairs-table"><thead><tr><th>PAIR</th><th>LAST</th><th>1D</th><th>RELATIVE EDGE</th></tr></thead><tbody id="fx-pairs-table-body"><tr><td colspan="4">Waiting for FX snapshot…</td></tr></tbody></table></div>
+<div class="small">Single decision table: price, 1D/5D momentum, relative currency edge, acceleration and regime. No duplicate pair cards.</div>
+<div class="table-scroll"><table class="fx-pairs-table fx-quant-table"><thead><tr><th>PAIR</th><th>LAST</th><th>1D</th><th>5D</th><th>REL EDGE</th><th>MOM</th><th>STATE</th></tr></thead><tbody id="fx-pairs-table-body"><tr><td colspan="7">Waiting for FX snapshot…</td></tr></tbody></table></div>
+</div>
+
+<div class="card" style="margin-top:12px">
+<h3>FX REGIME SNAPSHOT</h3>
+<div class="small">Quantitative summary from the tracked currency matrix. Scores are relative model outputs, not forecasts.</div>
+<div class="fx-quant-summary">
+<div class="fx-quant-chip"><span>1D LEADER</span><b id="fx-q-leader">—</b></div>
+<div class="fx-quant-chip"><span>1D LAGGARD</span><b id="fx-q-laggard">—</b></div>
+<div class="fx-quant-chip"><span>STRENGTH SPREAD</span><b id="fx-q-spread">—</b></div>
+<div class="fx-quant-chip"><span>5D LEADER</span><b id="fx-q-leader5">—</b></div>
+</div>
 </div>
 
 <div class="grid2" style="margin-top:12px">
-<div class="card"><h3>Currency Strength</h3><div class="small">Model-derived from daily moves across tracked FX pairs; not a forecast or trade signal.</div><table><thead><tr><th>Rank</th><th>Currency</th><th>Strength</th></tr></thead><tbody id="fx-strength-body"><tr><td colspan="3">Waiting for FX data…</td></tr></tbody></table></div>
-<div class="card"><h3>Cross-Market Drivers</h3><table><thead><tr><th>Factor</th><th>Move</th><th>Context</th></tr></thead><tbody id="fx-drivers-body"><tr><td colspan="3">Waiting for driver data…</td></tr></tbody></table></div>
+<div class="card"><h3>Currency Strength</h3><div class="small">1D vs 5D strength, plus rank change versus the previous dashboard snapshot.</div><div class="table-scroll"><table class="fx-quant-table"><thead><tr><th>RANK</th><th>CURRENCY</th><th>1D</th><th>5D</th><th>RANK Δ</th></tr></thead><tbody id="fx-strength-body"><tr><td colspan="5">Waiting for FX data…</td></tr></tbody></table></div></div>
+<div class="card"><h3>Cross-Market Drivers</h3><div class="small">Macro factors translated into broad FX pressure.</div><div class="table-scroll"><table class="fx-quant-table"><thead><tr><th>FACTOR</th><th>MOVE</th><th>FX BIAS</th><th>WHY IT MATTERS</th></tr></thead><tbody id="fx-drivers-body"><tr><td colspan="4">Waiting for driver data…</td></tr></tbody></table></div></div>
 </div>
+
+<div class="card" style="margin-top:12px"><h3>FX DECISION BOARD</h3><div class="small">A compact read-through of the strongest measurable relationships. Not a trade signal.</div><div class="fx-decision-grid" style="margin-top:10px">
+<div class="fx-decision"><div class="label">USD REGIME</div><b id="fx-decision-usd">—</b><span class="small" id="fx-decision-usd-note">—</span></div>
+<div class="fx-decision"><div class="label">BEST RELATIVE PAIR</div><b id="fx-decision-best">—</b><span class="small" id="fx-decision-best-note">—</span></div>
+<div class="fx-decision"><div class="label">WEAKEST RELATIONSHIP</div><b id="fx-decision-worst">—</b><span class="small" id="fx-decision-worst-note">—</span></div>
+<div class="fx-decision"><div class="label">RISK BACKDROP</div><b id="fx-decision-risk">—</b><span class="small" id="fx-decision-risk-note">—</span></div>
+</div></div>
 
 <div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
 </section>
-
 <section id="options">
 <div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
 <div class="grid">
@@ -905,69 +923,41 @@ function renderGexProfile(o,p){
  render();
 }
 
-function renderForex(fx,p,fxNews){
+function renderForex(fx,p,r,fxNews){
  const fmt=(x,n=4)=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
  const pct=x=>x==null||!Number.isFinite(Number(x))?'—':(Number(x)>=0?'+':'')+fmt(Number(x),2)+'%';
  const pairs=fx?.pairs||{};
  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
  const session=__currentNySession();
  const sbEl=document.getElementById('fx-session-badge');
- if(sbEl){
-   const label=session==='LIVE'?'US SESSION • LIVE':session==='PRE_MARKET'?'US SESSION • PRE-MARKET':session==='CLOSED'?'US SESSION • CLOSED':'US SESSION —';
-   sbEl.textContent=label; sbEl.className='fx-session-badge '+(session==='LIVE'?'live':session==='PRE_MARKET'?'premarket':session==='CLOSED'?'closed':'');
- }
+ if(sbEl){const label=session==='LIVE'?'US SESSION • LIVE':session==='PRE_MARKET'?'US SESSION • PRE-MARKET':session==='CLOSED'?'US SESSION • CLOSED':'US SESSION —';sbEl.textContent=label;sbEl.className='fx-session-badge '+(session==='LIVE'?'live':session==='PRE_MARKET'?'premarket':session==='CLOSED'?'closed':'');}
  set('dxy',fmt(p.dxy,2));set('dxychg',pct(p.dxy_change));set('vix',fmt(p.vix,2));set('vixchg',pct(p.vix_change));
- const sb=fx?.currency_strength||{};
- const entries=Object.entries(sb).filter(([k,v])=>Number.isFinite(Number(v))).sort((a,b)=>Number(b[1])-Number(a[1]));
+ const entries=(fx?.strength_rank||[]).filter(x=>x&&Number.isFinite(Number(x.score))).sort((a,b)=>Number(b.score)-Number(a.score));
+ const strengthMap=Object.fromEntries(entries.map(x=>[x.currency,Number(x.score)]));
  const body=document.getElementById('fx-strength-body');
- if(body) body.innerHTML=entries.length?entries.map(([c,v],i)=>`<tr><td>${i+1}</td><td><b>${c}</b></td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td></tr>`).join(''):'<tr><td colspan="3">No strength data available.</td></tr>';
- const leader=entries[0], laggard=entries[entries.length-1];
- set('fx-leader',leader?leader[0]:'—'); set('fx-leader-val',leader?pct(leader[1]):'—');
- set('fx-laggard',laggard?laggard[0]:'—'); set('fx-laggard-val',laggard?pct(laggard[1]):'—');
- const driverRows=[['DXY',p.dxy_change,'USD broad context'],['EURUSD',pairs.EURUSD?.change_pct,'EUR / USD'],['USDJPY',pairs.USDJPY?.change_pct,'JPY / yield sensitivity'],['WTI',fx?.drivers?.WTI?.change_pct,'Oil / CAD / inflation'],['GOLD',fx?.drivers?.GOLD?.change_pct,'Safe-haven / USD'],['VIX',p.vix_change,'Risk appetite']];
- const db=document.getElementById('fx-drivers-body'); if(db) db.innerHTML=driverRows.map(([n,v,c])=>`<tr><td>${n}</td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td><td>${c}</td></tr>`).join('');
- const tb=document.getElementById('fx-pairs-table-body'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
- const strengthMap=Object.fromEntries(entries);
+ if(body) body.innerHTML=entries.length?entries.map((x,i)=>{const rc=Number(x.rank_change)||0;const rcTxt=rc>0?'▲ '+rc:rc<0?'▼ '+Math.abs(rc):'—';const rcCls=rc>0?'fx-rank-up':rc<0?'fx-rank-down':'';return `<tr><td>${i+1}</td><td><b>${x.currency}</b></td><td class="${Number(x.score)>=0?'up':'down'}">${pct(x.score)}</td><td class="${Number(x.score_5d)>=0?'up':'down'}">${pct(x.score_5d)}</td><td class="${rcCls}">${rcTxt}</td></tr>`}).join(''):'<tr><td colspan="5">No strength data available.</td></tr>';
+ const leader=entries[0],laggard=entries[entries.length-1];
+ set('fx-leader',leader?.currency||'—');set('fx-leader-val',leader?pct(leader.score):'—');set('fx-laggard',laggard?.currency||'—');set('fx-laggard-val',laggard?pct(laggard.score):'—');
+ const summary=fx?.strength_summary||{};
+ set('fx-q-leader',leader?`${leader.currency} ${pct(leader.score)}`:'—');set('fx-q-laggard',laggard?`${laggard.currency} ${pct(laggard.score)}`:'—');set('fx-q-spread',summary.spread!=null?pct(summary.spread):'—');set('fx-q-leader5',summary.leader_5d||'—');
+ const bias=(name,move)=>{const n=Number(move);if(!Number.isFinite(n))return '—';if(name==='DXY')return n>0.15?'USD+':n<-0.15?'USD−':'NEUTRAL';if(name==='VIX')return n>3?'RISK−':n<-3?'RISK+':'NEUTRAL';if(name==='GOLD')return n>0.5?'USD− / DEFENSIVE':n<-0.5?'USD+ / RISK-ON':'NEUTRAL';if(name==='WTI')return n>1?'CAD+ / INFLATION':n<-1?'CAD− / GROWTH':'NEUTRAL';if(name==='US10Y')return n>0.5?'USD+ / JPY−':n<-0.5?'USD− / JPY+':'NEUTRAL';return 'NEUTRAL';};
+ const why={DXY:'Broad USD pressure across major pairs',EURUSD:'Direct EUR/USD expression',USDJPY:'USD vs JPY and yield sensitivity',WTI:'Oil can support CAD and inflation expectations',GOLD:'Defensive demand and USD sensitivity',VIX:'Risk appetite / volatility backdrop',US10Y:'US yield pressure on USD and JPY'};
+ const driverRows=[['DXY',p.dxy_change],['EURUSD',pairs.EURUSD?.change_pct],['USDJPY',pairs.USDJPY?.change_pct],['WTI',fx?.drivers?.WTI?.change_pct],['GOLD',fx?.drivers?.GOLD?.change_pct],['US10Y',r?.y10!=null?null:null],['VIX',p.vix_change]];
+ const db=document.getElementById('fx-drivers-body');
+ if(db) db.innerHTML=driverRows.filter(x=>x[1]!=null || x[0]!=='US10Y').map(([n,v])=>`<tr><td><b>${n}</b></td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td><td>${bias(n,v)}</td><td>${why[n]||''}</td></tr>`).join('');
+ const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
  const dec=k=>k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5;
- const pairRows=wanted.map(k=>{
-   const x=pairs[k];
-   const base=k.slice(0,3), quote=k.slice(3);
-   const edge=Number(strengthMap[base])-Number(strengthMap[quote]);
-   const edgeOk=Number.isFinite(edge);
-   const edgeTxt=edgeOk?(edge>0.05?`${base} +${fmt(edge,2)}%`:edge<-0.05?`${quote} +${fmt(Math.abs(edge),2)}%`:'Balanced'):'—';
-   const edgeCls=edgeOk?(edge>=0?'up':'down'):'';
-   return `<tr><td><b>${k}</b></td><td>${x?fmt(x.value,dec(k)):'—'}</td><td class="${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</td><td class="fx-pair-edge ${edgeCls}">${edgeTxt}</td></tr>`;
- }).join('');
- if(tb) tb.innerHTML=pairRows;
- const ng=document.getElementById('fx-news-grid');
- const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]);
- const inferFxCurrency=(title,provided)=>{
-  const s=String(title||'').toLowerCase();
-  const rules=[
-   ['USD',/\b(us dollar|dollar|fed|federal reserve|treasury yields?|dxy)\b/],
-   ['EUR',/\b(euro|ecb|eurozone|european central bank)\b/],
-   ['GBP',/\b(pound|sterling|bank of england|\buk\b|britain|british)\b/],
-   ['JPY',/\b(yen|boj|bank of japan|japan)\b/],
-   ['CHF',/\b(swiss franc|franc|snb|switzerland)\b/],
-   ['CAD',/\b(loonie|canadian dollar|bank of canada|canada)\b/],
-   ['AUD',/\b(australian dollar|aussie|rba|australia)\b/],
-   ['NZD',/\b(new zealand dollar|kiwi|rbnz|new zealand)\b/],
-   ['CNY',/\b(yuan|renminbi|pboc|china|chinese)\b/],
-   ['INR',/\b(rupee|rbi|india|indian rupee)\b/]
-  ];
-  for(const [c,re] of rules) if(re.test(s)) return c;
-  const pc=String(provided||'').toUpperCase();
-  return ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD','CNY','INR'].includes(pc)?pc:null;
- };
- const fxTopic=/\b(fx|forex|currency|exchange rate|dollar|euro|pound|sterling|yen|yuan|rupee|loonie|aussie|kiwi|franc|fed|federal reserve|ecb|boj|bank of japan|bank of england|bank of canada|rbi|rbnz|rba|snb|pboc)\b/i;
- const news=raw.map(x=>({...x,currency:inferFxCurrency(x.title,x.currency)}))
-  .filter(x=>x.currency && fxTopic.test(String(x.title||'')))
-  .filter((x,i,a)=>a.findIndex(y=>String(y.title||'').trim().toLowerCase()===String(x.title||'').trim().toLowerCase())===i)
-  .slice(0,12);
- if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
- if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
+ const pairRows=wanted.map(k=>{const x=pairs[k]||{};const edge=Number(x.relative_edge_pct);const mom=Number(x.momentum_acceleration);const edgeTxt=Number.isFinite(edge)?(edge>=0?`${k.slice(0,3)} +${fmt(edge,2)}%`:`${k.slice(3)} +${fmt(Math.abs(edge),2)}%`):'—';const regime=x.regime||'MIXED';const cls=regime==='BULLISH'?'up':regime==='BEARISH'?'down':'amber';return `<tr><td><b>${k}</b></td><td>${x.value!=null?fmt(x.value,dec(k)):'—'}</td><td class="${Number(x.change_pct)<0?'down':'up'}">${pct(x.change_pct)}</td><td class="${Number(x.change_5d_pct)<0?'down':'up'}">${pct(x.change_5d_pct)}</td><td class="fx-pair-edge ${edge>=0?'up':'down'}">${edgeTxt}</td><td class="${mom>=0?'up':'down'}">${Number.isFinite(mom)?(mom>=0?'+':'')+fmt(mom,2)+'%':'—'}</td><td class="fx-regime ${cls}">${regime}</td></tr>`}).join('');
+ const tb=document.getElementById('fx-pairs-table-body');if(tb)tb.innerHTML=pairRows;
+ const scored=wanted.map(k=>({pair:k,edge:Number(pairs[k]?.relative_edge_pct),mom:Number(pairs[k]?.momentum_acceleration)})).filter(x=>Number.isFinite(x.edge));
+ const best=scored.slice().sort((a,b)=>b.edge-a.edge)[0],worst=scored.slice().sort((a,b)=>a.edge-b.edge)[0];
+ const usdScore=Number(strengthMap.USD); const usd5=Number(fx?.currency_strength_5d?.USD);const usdReg=Number.isFinite(usdScore)?(usdScore>0.15?'USD STRONG':usdScore<-0.15?'USD WEAK':'USD BALANCED'):'—';
+ set('fx-decision-usd',usdReg);set('fx-decision-usd-note',Number.isFinite(usd5)?`1D ${pct(usdScore)} • 5D ${pct(usd5)}`:'1D strength available');
+ set('fx-decision-best',best?.pair||'—');set('fx-decision-best-note',best?`Relative edge ${pct(best.edge)}${Number.isFinite(best.mom)?` • accel ${pct(best.mom)}`:''}`:'—');
+ set('fx-decision-worst',worst?.pair||'—');set('fx-decision-worst-note',worst?`Relative edge ${pct(worst.edge)}`:'—');
+ const v=Number(p.vix_change);const risk=Number.isFinite(v)?(v>3?'RISK-OFF':v<-3?'RISK-ON':'MIXED'):'—';set('fx-decision-risk',risk);set('fx-decision-risk-note',Number.isFinite(v)?`VIX ${pct(v)}`:'VIX unavailable');
+ const ng=document.getElementById('fx-news-grid');const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]);const news=raw.slice(0,8);if(ng)ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
 }
-
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
  const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
@@ -993,7 +983,7 @@ async function load(){
  const fxdxyEl=document.getElementById('fxdxy'); if(fxdxyEl) fxdxyEl.textContent=pct(p.dxy_change);
  const fxeurEl=document.getElementById('fxeur'); if(fxeurEl) fxeurEl.textContent=pct(p.eurusd_change);
  const fxvixEl=document.getElementById('fxvix'); if(fxvixEl) fxvixEl.textContent=pct(p.vix_change);
- renderForex(fx,p,fxNews);
+ renderForex(fx,p,r,fxNews);
 
  const currentSession=__currentNySession();
   const live=currentSession==='LIVE' && o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
