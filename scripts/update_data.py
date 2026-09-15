@@ -1460,7 +1460,7 @@ def main():
                 # Normalize the rows we need. OI is kept as-is; it is the
                 # standing inventory input, not an intraday flow measure.
                 for df in (c, p):
-                    for col in ("strike", "openInterest", "impliedVolatility", "bid", "ask", "lastPrice"):
+                    for col in ("strike", "openInterest", "volume", "impliedVolatility", "bid", "ask", "lastPrice"):
                         if col not in df.columns:
                             df[col] = None
 
@@ -1498,6 +1498,7 @@ def main():
                         if K is None or K <= 0:
                             continue
                         oi = sf(row.get("openInterest")) or 0.0
+                        volume = sf(row.get("volume")) or 0.0
                         vendor_iv = sane_iv(row.get("impliedVolatility"))
                         x = math.log(K / F)
                         iv = vendor_iv
@@ -1512,7 +1513,7 @@ def main():
                                 solved_iv_count += 1
                         if iv is not None and abs(x) <= 0.35:
                             raw_points.append((x, iv))
-                        rows.append({"side": side, "K": K, "oi": oi, "x": x, "iv": iv, "source": source})
+                        rows.append({"side": side, "K": K, "oi": oi, "volume": volume, "x": x, "iv": iv, "source": source})
 
                 smile = fit_smile(raw_points)
                 surface_points = 0
@@ -1563,6 +1564,9 @@ def main():
                         "call_gex": gex if row["side"] == "call" else 0.0,
                         "put_gex": gex if row["side"] == "put" else 0.0,
                         "net_gex": gex,
+                        "call_volume": volume if row["side"] == "call" else 0.0,
+                        "put_volume": volume if row["side"] == "put" else 0.0,
+                        "volume_gex": (signed * gamma * volume * MULT * spot * spot * 0.01),
                         "iv": iv,
                     })
                     expiry_net += gex
@@ -1590,8 +1594,9 @@ def main():
             a = by_strike.setdefault(K, {
                 "strike": K, "call_oi": 0.0, "put_oi": 0.0,
                 "call_gex": 0.0, "put_gex": 0.0, "net_gex": 0.0,
+                "call_volume": 0.0, "put_volume": 0.0, "volume_gex": 0.0,
             })
-            for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex"):
+            for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex", "call_volume", "put_volume", "volume_gex"):
                 a[key] += row[key]
 
         heat = [by_strike[k] for k in sorted(by_strike)]
@@ -1665,6 +1670,44 @@ def main():
                 flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
         gamma_flip = min(flips, key=lambda x: abs(x - spot)) if flips else None
 
+        # GEXmon's live regime/zero-gamma lens is volume-driven for 0DTE.
+        # Build the same type of signed gamma surface from today's option
+        # volume, while retaining the OI model separately for standing structure.
+        def volume_gex_at(test_spot):
+            total_g = 0.0
+            for row in all_rows:
+                K = row["strike"]
+                iv = row.get("iv")
+                vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
+                if iv is None or vol <= 0 or K <= 0:
+                    continue
+                stat = next((x for x in expiry_stats if x["expiry"] == row["expiry"]), None)
+                if not stat:
+                    continue
+                exp_date = datetime.fromisoformat(row["expiry"]).date()
+                T, _ = expiry_time(exp_date)
+                F0 = stat.get("forward") or spot
+                carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
+                F_test = test_spot * math.exp(carry * T)
+                root = math.sqrt(T)
+                d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
+                pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+                disc = math.exp(-r * T)
+                gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
+                signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
+                total_g += gamma * signed_volume * MULT * test_spot * test_spot * 0.01
+            return total_g
+
+        volume_xs = [spot * 0.90 + spot * 0.20 * i / 240 for i in range(241)]
+        volume_ys = [volume_gex_at(x) for x in volume_xs]
+        volume_flips = []
+        for i in range(len(volume_xs) - 1):
+            if volume_ys[i] == 0:
+                volume_flips.append(volume_xs[i])
+            elif volume_ys[i] * volume_ys[i + 1] < 0:
+                volume_flips.append(volume_xs[i] - volume_ys[i] * (volume_xs[i + 1] - volume_xs[i]) / (volume_ys[i + 1] - volume_ys[i]))
+        volume_gamma_flip = min(volume_flips, key=lambda x: abs(x - spot)) if volume_flips else None
+
         reasons = []
         if len(expiry_stats) < 6:
             reasons.append("limited expiry coverage")
@@ -1717,8 +1760,8 @@ def main():
             by_k = {}
             for row in profile_rows:
                 K = row["strike"]
-                a = by_k.setdefault(K, {"strike": K, "call_oi": 0.0, "put_oi": 0.0, "call_gex": 0.0, "put_gex": 0.0, "net_gex": 0.0})
-                for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex"):
+                a = by_k.setdefault(K, {"strike": K, "call_oi": 0.0, "put_oi": 0.0, "call_gex": 0.0, "put_gex": 0.0, "net_gex": 0.0, "call_volume": 0.0, "put_volume": 0.0, "volume_gex": 0.0})
+                for key in ("call_oi", "put_oi", "call_gex", "put_gex", "net_gex", "call_volume", "put_volume", "volume_gex"):
                     a[key] += row.get(key, 0.0)
             ph = [by_k[k] for k in sorted(by_k) if abs(k - spot) <= spot * 0.15]
             if not ph:
@@ -1744,6 +1787,43 @@ def main():
                 elif py[j] * py[j + 1] < 0:
                     flips.append(px[j] - py[j] * (px[j + 1] - px[j]) / (py[j + 1] - py[j]))
             pflip = min(flips, key=lambda x: abs(x - spot)) if flips else None
+            # Volume-model zero gamma, matching the live intraday lens used by
+            # GEXmon. Fall back to the standing-OI flip when no usable volume
+            # surface exists in the selected profile.
+            profile_volume_rows = [x for x in profile_rows if (x.get("call_volume", 0.0) + x.get("put_volume", 0.0)) > 0 and x.get("iv") is not None]
+            def profile_volume_gex_at(test_spot):
+                total_g = 0.0
+                for row in profile_volume_rows:
+                    K = row["strike"]
+                    iv = row.get("iv")
+                    vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
+                    stat = stat_by_expiry.get(row["expiry"])
+                    if iv is None or vol <= 0 or not stat or K <= 0:
+                        continue
+                    exp_date = datetime.fromisoformat(row["expiry"]).date()
+                    T, _ = expiry_time(exp_date)
+                    F0 = stat.get("forward") or spot
+                    carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
+                    F_test = test_spot * math.exp(carry * T)
+                    root = math.sqrt(T)
+                    d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
+                    pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+                    disc = math.exp(-r * T)
+                    gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
+                    signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
+                    total_g += gamma * signed_volume * MULT * test_spot * test_spot * 0.01
+                return total_g
+            volume_profile_flip = None
+            if profile_volume_rows:
+                vxs = [spot * 0.90 + spot * 0.20 * i / 120 for i in range(121)]
+                vys = [profile_volume_gex_at(x) for x in vxs]
+                vflips = []
+                for j in range(len(vxs) - 1):
+                    if vys[j] == 0:
+                        vflips.append(vxs[j])
+                    elif vys[j] * vys[j + 1] < 0:
+                        vflips.append(vxs[j] - vys[j] * (vxs[j + 1] - vxs[j]) / (vys[j + 1] - vys[j]))
+                volume_profile_flip = min(vflips, key=lambda x: abs(x - spot)) if vflips else None
             modes_here = sorted({x.get("expiry_mode") for x in profile_rows if x.get("expiry_mode")})
             return {
                 "status": "live", "label": label,
@@ -1751,7 +1831,9 @@ def main():
                 "expiry_mode": profile_rows[0].get("expiry_mode"),
                 "expiry_count": len({x.get("expiry") for x in profile_rows}),
                 "heatmap": ph, "net_gex": ptotal,
-                "call_wall": call_wall, "put_wall": put_wall, "gamma_flip": pflip,
+                "call_wall": call_wall, "put_wall": put_wall,
+                "gamma_flip": volume_profile_flip if volume_profile_flip is not None else pflip,
+                "oi_gamma_flip": pflip, "volume_gamma_flip": volume_profile_flip,
                 "call_oi": sum(x["call_oi"] for x in ph),
                 "put_oi": sum(x["put_oi"] for x in ph),
             }
@@ -1829,7 +1911,9 @@ def main():
                     key=lambda x: x["put_gex"])["strike"]
                 if any(x.get("put_gex", 0.0) < 0 and x["strike"] <= spot for x in heat) else None
             ),
-            "gamma_flip": gamma_flip,
+            "gamma_flip": (profiles.get("0DTE", {}).get("volume_gamma_flip") if session_state == "LIVE" and profiles.get("0DTE", {}).get("volume_gamma_flip") is not None else gamma_flip),
+            "oi_gamma_flip": gamma_flip,
+            "volume_gamma_flip": volume_gamma_flip,
             "gex_confidence": confidence,
             "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
             "gex_model_version": "GEX v2 surface-aware",
@@ -1871,7 +1955,8 @@ def main():
                 "Vendor IV is used when sane; missing IV can be recovered from quoted option prices.",
                 "A weighted quadratic smile fills gaps in the per-expiry volatility surface.",
                 "Black-76 gamma is converted consistently to spot gamma using the inferred forward and discount factor.",
-                "Gamma flip is found by revaluing gamma across a dense hypothetical spot grid.",
+                "OI gamma flip is found by revaluing standing OI gamma across a dense hypothetical spot grid.",
+                "Live 0DTE canonical zero-gamma also uses a volume-weighted signed gamma surface, matching the dashboard's intraday flow lens; OI flip remains available separately.",
                 "Call-positive / put-negative dealer sign is a conventional assumption; public OI cannot reveal actual dealer inventory.",
                 "GEX magnitude is best compared within this dashboard's methodology, not treated as an absolute cross-provider number.",
             ],
