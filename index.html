@@ -956,7 +956,13 @@ function renderForex(fx,p,r,fxNews){
  set('fx-decision-best',best?.pair||'—');set('fx-decision-best-note',best?`Relative edge ${pct(best.edge)}${Number.isFinite(best.mom)?` • accel ${pct(best.mom)}`:''}`:'—');
  set('fx-decision-worst',worst?.pair||'—');set('fx-decision-worst-note',worst?`Relative edge ${pct(worst.edge)}`:'—');
  const v=Number(p.vix_change);const risk=Number.isFinite(v)?(v>3?'RISK-OFF':v<-3?'RISK-ON':'MIXED'):'—';set('fx-decision-risk',risk);set('fx-decision-risk-note',Number.isFinite(v)?`VIX ${pct(v)}`:'VIX unavailable');
- const ng=document.getElementById('fx-news-grid');const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]);const news=raw.slice(0,8);if(ng)ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
+ const ng=document.getElementById('fx-news-grid');const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]); // Trust only the backend's strict currency relevance classification.
+  const news=raw.filter(x=>x&&x.currency&&x.title)
+   .filter((x,i,a)=>a.findIndex(y=>String(y.title||'').trim().toLowerCase()===String(x.title||'').trim().toLowerCase())===i)
+   .sort((a,b)=>(Number(b.relevance_score||0)-Number(a.relevance_score||0))||String(b.published_at||'').localeCompare(String(a.published_at||'')))
+   .slice(0,8);
+  const newsTime=x=>{const t=x?.published_at;if(!t)return 'Time unavailable';const d=new Date(t);return Number.isNaN(d.getTime())?String(t):d.toLocaleString([], {month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});};
+  if(ng) ng.innerHTML=news.length?news.map(x=>{const impact=String(x.impact||'MEDIUM').toUpperCase();return `<div class="kpi fx-news-item"><div class="small"><b>${x.currency}</b> • ${x.source||'News'} <span class="fx-news-impact ${impact==='HIGH'?'amber':''}">${impact}</span></div><b class="fx-news-title">${x.title}</b><div class="small">${x.topic||'FX'} • ${newsTime(x)}</div></div>`;}).join(''):'<div class="small">No genuinely FX-relevant headlines available right now.</div>';
 }
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
