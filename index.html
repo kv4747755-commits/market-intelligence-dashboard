@@ -236,7 +236,7 @@ section:not(#home)>.title{padding-top:4px}
 /* V8 OPTIONS GEX TERMINAL CHART */
 .options-shell{margin-top:10px}
 .options-layout{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(260px,.85fr);gap:10px;margin-top:10px}
-.options-chart-card{padding:13px;min-width:0}
+.options-chart-card{padding:13px;min-width:0;position:relative}.options-chart-card:before{content:attr(data-session-label);position:absolute;right:12px;top:10px;font-size:8px;font-weight:700;letter-spacing:.7px;color:#55d9a7}.options-chart-card[data-session-state="PRE_MARKET"]:before{color:#f4c95d}.options-chart-card[data-session-state="CLOSED"]:before{color:#9aa6b2}
 .options-chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .options-chart-title{font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
 .options-chart-tools{display:flex;gap:6px;flex-wrap:wrap}
@@ -627,8 +627,15 @@ function renderGexProfile(o,p){
  const expiryText=active?.expiry?`${expiryMode} • ${active.expiry}`:expiryMode;
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const sessionBadge=document.getElementById('gex-session-badge');
+ const gexCard=document.querySelector('.options-chart-card');
+ const sess=__currentNySession();
+ if(gexCard){
+   const cardLabel=sess==='LIVE'?(selectedGexMode==='0DTE'?'LIVE • 0DTE ACTIVE':'LIVE SESSION'):sess==='PRE_MARKET'?'PRE-MARKET • PREVIOUS SESSION':sess==='CLOSED'?(selectedGexMode==='0DTE'?'0DTE • CLOSED':'MARKET CLOSED'):'SESSION —';
+   gexCard.setAttribute('data-session-state',sess);
+   gexCard.setAttribute('data-session-label',cardLabel);
+ }
  if(sessionBadge){
-   const sess=__currentNySession();
+   
    const is0dte=selectedGexMode==='0DTE';
    let label='SESSION —', cls='';
    if(sess==='PRE_MARKET'){ label=is0dte?'PRE-MARKET • PREVIOUS SESSION':'PRE-MARKET'; cls='premarket'; }
