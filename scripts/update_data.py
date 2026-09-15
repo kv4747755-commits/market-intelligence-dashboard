@@ -848,6 +848,129 @@ def yoy(obs, months=12):
     return (a / b - 1.0) * 100.0
 
 
+
+def build_market_regime(d):
+    """Synthesize the canonical snapshot into a transparent cross-asset regime.
+
+    Scores are directional context, not forecasts or trading signals. Each
+    factor contributes at most +/-1 so a missing data source cannot silently
+    become a bullish/bearish vote.
+    """
+    prices = d.get("prices") or {}
+    rates = d.get("rates") or {}
+    fx = d.get("fx") or {}
+    options = d.get("options") or {}
+    macro = d.get("macro") or {}
+    factors = []
+
+    def add(name, score, read, source):
+        if score is None:
+            return
+        score = 1 if score > 0 else -1 if score < 0 else 0
+        factors.append({"factor": name, "score": score, "read": read, "source": source})
+
+    ndx_ch = sf(prices.get("ndx_change"))
+    if ndx_ch is not None:
+        add("NDX", 1 if ndx_ch > 0.25 else -1 if ndx_ch < -0.25 else 0,
+            f"NDX {ndx_ch:+.2f}%", "market")
+
+    vix_ch = sf(prices.get("vix_change"))
+    if vix_ch is not None:
+        add("VIX", -1 if vix_ch > 2.0 else 1 if vix_ch < -2.0 else 0,
+            f"VIX {vix_ch:+.2f}%", "volatility")
+
+    dxy_ch = sf(prices.get("dxy_change"))
+    if dxy_ch is not None:
+        # Rising USD is a defensive pressure input; falling USD is supportive.
+        add("DXY", -1 if dxy_ch > 0.20 else 1 if dxy_ch < -0.20 else 0,
+            f"DXY {dxy_ch:+.2f}%", "dollar")
+
+    gex = sf(options.get("net_gex"))
+    if gex is not None:
+        # GEX is not directional by itself: positive gamma tends to dampen
+        # moves, so it contributes only a modest stabilizing/defensive vote.
+        add("GEX", 1 if gex > 0 else -1 if gex < 0 else 0,
+            "Positive gamma" if gex > 0 else "Negative gamma" if gex < 0 else "Neutral gamma", "options")
+
+    fx_summary = fx.get("strength_summary") or {}
+    usd_score = sf(fx_summary.get("leader_score")) if fx_summary.get("leader") == "USD" else None
+    usd_is_leader = fx_summary.get("leader") == "USD"
+    usd_is_laggard = fx_summary.get("laggard") == "USD"
+    if usd_is_leader or usd_is_laggard:
+        # Strong USD is treated as defensive pressure only when it is not
+        # contradicted by a falling VIX. The standalone FX factor stays small.
+        add("FX", -1 if usd_is_leader else 1,
+            "USD leading" if usd_is_leader else "USD lagging", "FX strength")
+
+    regime = macro.get("regime") or {}
+    growth = str(regime.get("growth") or "").upper()
+    liquidity = str(regime.get("liquidity") or "").upper()
+    credit = str(regime.get("credit") or "").upper()
+    macro_score = 0
+    macro_parts = []
+    if growth == "EXPANDING": macro_score += 1; macro_parts.append("growth expanding")
+    elif growth == "CONTRACTING": macro_score -= 1; macro_parts.append("growth contracting")
+    if liquidity == "EXPANDING": macro_score += 1; macro_parts.append("liquidity expanding")
+    elif liquidity == "TIGHTENING": macro_score -= 1; macro_parts.append("liquidity tightening")
+    if "STRESS" in credit: macro_score -= 1; macro_parts.append("credit stress")
+    if macro_score or macro_parts:
+        add("MACRO", macro_score, "; ".join(macro_parts) or "macro mixed", "macro regime")
+
+    valid = [f for f in factors if f["score"] != 0]
+    total = sum(f["score"] for f in valid)
+    max_score = len(valid)
+    normalized = (total / max_score * 100.0) if max_score else None
+    if normalized is None:
+        regime_label = "UNAVAILABLE"
+    elif normalized >= 45:
+        regime_label = "RISK-ON"
+    elif normalized <= -45:
+        regime_label = "RISK-OFF"
+    else:
+        regime_label = "MIXED"
+
+    agreement = abs(total) / max_score if max_score else 0.0
+    coverage = min(1.0, len(factors) / 6.0)
+    confidence = round(max(0.0, min(100.0, 45.0 + agreement * 40.0 + coverage * 15.0))) if max_score else 0
+
+    # Directional context is deliberately separated by asset rather than
+    # pretending the master regime is a trade recommendation.
+    equity_bias = "BULLISH" if regime_label == "RISK-ON" else "BEARISH" if regime_label == "RISK-OFF" else "NEUTRAL"
+    usd_bias = "STRONG" if usd_is_leader else "WEAK" if usd_is_laggard else "MIXED"
+    gold_ch = sf(prices.get("gold_change"))
+    gold_bias = "BULLISH" if gold_ch is not None and gold_ch > 0.5 else "BEARISH" if gold_ch is not None and gold_ch < -0.5 else "NEUTRAL"
+    fx_bias = "USD STRONG" if usd_is_leader else "USD WEAK" if usd_is_laggard else "MIXED"
+    vol_bias = "RISING RISK" if vix_ch is not None and vix_ch > 2 else "FALLING RISK" if vix_ch is not None and vix_ch < -2 else "STABLE"
+
+    history = d.get("market_regime_history") if isinstance(d.get("market_regime_history"), list) else []
+    history = [x for x in history if isinstance(x, dict)]
+    previous = history[-1] if history else None
+    now = datetime.now(timezone.utc).isoformat()
+    changed = bool(previous and previous.get("regime") != regime_label)
+    if not previous or changed:
+        history.append({"timestamp": now, "regime": regime_label, "score": round(normalized, 1) if normalized is not None else None, "confidence": confidence})
+    history = history[-10:]
+
+    return {
+        "status": "live" if factors else "unavailable",
+        "updated_at": now,
+        "regime": regime_label,
+        "score": round(normalized, 1) if normalized is not None else None,
+        "confidence": confidence,
+        "changed": changed,
+        "previous_regime": previous.get("regime") if previous else None,
+        "asset_bias": {
+            "equities": equity_bias,
+            "usd": usd_bias,
+            "gold": gold_bias,
+            "fx": fx_bias,
+            "volatility": vol_bias,
+        },
+        "factors": factors,
+        "history": history,
+        "method": "Rules-based synthesis of NDX, VIX, DXY, modeled GEX, FX strength and macro regime. Not a forecast or trade signal."
+    }
+
 def build_macro(previous_macro=None):
     series, fred_live = fetch_fred_macro()
     curve = fetch_treasury_curve()
@@ -1694,6 +1817,14 @@ def main():
                     d.setdefault("rates", {})[k] = curve[k]
     except Exception:
         pass
+
+    # Master cross-asset regime engine. It consumes the same canonical snapshot
+    # and preserves a short regime-change history across refreshes.
+    try:
+        d["market_regime"] = build_market_regime(d)
+        d["market_regime_history"] = d["market_regime"].get("history", [])
+    except Exception as exc:
+        d["market_regime"] = {"status": "unavailable", "error": str(exc)[:500], "factors": []}
 
     # News is additive: it does not delete the existing macro/COT fields
     # already present in data.json.
