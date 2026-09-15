@@ -134,7 +134,7 @@ section:not(#home)>.title{padding-top:4px}
 #nasdaq .card:first-child,#macro .card:first-child{position:relative}
 #nasdaq .card:first-child:before,#macro .card:first-child:before{content:"LIVE";position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7}
 .fx-session-badge{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:4px 8px;border-radius:999px;border:1px solid #304355;background:#0d1822;color:#aebdcb;font-size:10px;font-weight:700;letter-spacing:.05em;vertical-align:middle}.fx-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.fx-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.fx-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
-.fx-overview-grid{margin-top:10px}.compact-metric{padding:14px 16px}.compact-metric .big{font-size:29px}.compact-metric>span.small{display:block;margin-top:4px;color:#748496}.fx-pairs-card{padding-bottom:10px}.table-scroll{overflow-x:auto}.fx-pairs-table{min-width:620px;margin-top:10px}.fx-pairs-table th,.fx-pairs-table td{padding:8px 7px;font-size:12px}.fx-pairs-table td:nth-child(2){font-size:14px;font-weight:700}.fx-pair-edge{font-weight:700}.fx-state{font-size:10px;letter-spacing:.04em;color:#7f90a1}.fx-overview-grid .label{font-size:11px}
+.fx-overview-grid{margin-top:10px}.compact-metric{padding:14px 16px}.compact-metric .big{font-size:29px}.compact-metric>span.small{display:block;margin-top:4px;color:#748496}.fx-pairs-card{padding-bottom:10px}.table-scroll{overflow-x:hidden}.fx-pairs-table{width:100%;min-width:0;table-layout:fixed;margin-top:10px}.fx-pairs-table th,.fx-pairs-table td{padding:8px 6px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fx-pairs-table th:nth-child(1),.fx-pairs-table td:nth-child(1){width:24%}.fx-pairs-table th:nth-child(2),.fx-pairs-table td:nth-child(2){width:25%}.fx-pairs-table th:nth-child(3),.fx-pairs-table td:nth-child(3){width:17%}.fx-pairs-table th:nth-child(4),.fx-pairs-table td:nth-child(4){width:34%}.fx-pairs-table td:nth-child(2){font-size:14px;font-weight:700}.fx-pair-edge{font-weight:700}.fx-state{font-size:10px;letter-spacing:.04em;color:#7f90a1}.fx-overview-grid .label{font-size:11px}
 .options-session-badge{position:absolute;right:10px;top:9px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.05em;border:1px solid #304355;background:#0d1822;color:#aebdcb}.options-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.options-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.options-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 
 /* responsive: turn sidebar back into compact top navigation */
@@ -439,7 +439,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="card fx-pairs-card" style="margin-top:12px">
 <h3>FX PAIR MATRIX</h3>
 <div class="small">One compact table for live price, daily move and relative currency edge. No duplicate pair cards.</div>
-<div class="table-scroll"><table class="fx-pairs-table"><thead><tr><th>PAIR</th><th>LAST</th><th>1D</th><th>RELATIVE EDGE</th><th>STATE</th></tr></thead><tbody id="fx-pairs-table-body"><tr><td colspan="5">Waiting for FX snapshot…</td></tr></tbody></table></div>
+<div class="table-scroll"><table class="fx-pairs-table"><thead><tr><th>PAIR</th><th>LAST</th><th>1D</th><th>RELATIVE EDGE</th></tr></thead><tbody id="fx-pairs-table-body"><tr><td colspan="4">Waiting for FX snapshot…</td></tr></tbody></table></div>
 </div>
 
 <div class="grid2" style="margin-top:12px">
@@ -936,11 +936,35 @@ function renderForex(fx,p,fxNews){
    const edgeOk=Number.isFinite(edge);
    const edgeTxt=edgeOk?(edge>0.05?`${base} +${fmt(edge,2)}%`:edge<-0.05?`${quote} +${fmt(Math.abs(edge),2)}%`:'Balanced'):'—';
    const edgeCls=edgeOk?(edge>=0?'up':'down'):'';
-   const state=session==='LIVE'?'US LIVE':session==='PRE_MARKET'?'PRE-US':'US CLOSED';
-   return `<tr><td><b>${k}</b></td><td>${x?fmt(x.value,dec(k)):'—'}</td><td class="${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</td><td class="fx-pair-edge ${edgeCls}">${edgeTxt}</td><td class="fx-state">${state}</td></tr>`;
+   return `<tr><td><b>${k}</b></td><td>${x?fmt(x.value,dec(k)):'—'}</td><td class="${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</td><td class="fx-pair-edge ${edgeCls}">${edgeTxt}</td></tr>`;
  }).join('');
  if(tb) tb.innerHTML=pairRows;
- const ng=document.getElementById('fx-news-grid'); const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]); const news=raw.slice(0,12);
+ const ng=document.getElementById('fx-news-grid');
+ const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]);
+ const inferFxCurrency=(title,provided)=>{
+  const s=String(title||'').toLowerCase();
+  const rules=[
+   ['USD',/\b(us dollar|dollar|fed|federal reserve|treasury yields?|dxy)\b/],
+   ['EUR',/\b(euro|ecb|eurozone|european central bank)\b/],
+   ['GBP',/\b(pound|sterling|bank of england|\buk\b|britain|british)\b/],
+   ['JPY',/\b(yen|boj|bank of japan|japan)\b/],
+   ['CHF',/\b(swiss franc|franc|snb|switzerland)\b/],
+   ['CAD',/\b(loonie|canadian dollar|bank of canada|canada)\b/],
+   ['AUD',/\b(australian dollar|aussie|rba|australia)\b/],
+   ['NZD',/\b(new zealand dollar|kiwi|rbnz|new zealand)\b/],
+   ['CNY',/\b(yuan|renminbi|pboc|china|chinese)\b/],
+   ['INR',/\b(rupee|rbi|india|indian rupee)\b/]
+  ];
+  for(const [c,re] of rules) if(re.test(s)) return c;
+  const pc=String(provided||'').toUpperCase();
+  return ['USD','EUR','GBP','JPY','CHF','CAD','AUD','NZD','CNY','INR'].includes(pc)?pc:null;
+ };
+ const fxTopic=/\b(fx|forex|currency|exchange rate|dollar|euro|pound|sterling|yen|yuan|rupee|loonie|aussie|kiwi|franc|fed|federal reserve|ecb|boj|bank of japan|bank of england|bank of canada|rbi|rbnz|rba|snb|pboc)\b/i;
+ const news=raw.map(x=>({...x,currency:inferFxCurrency(x.title,x.currency)}))
+  .filter(x=>x.currency && fxTopic.test(String(x.title||'')))
+  .filter((x,i,a)=>a.findIndex(y=>String(y.title||'').trim().toLowerCase()===String(x.title||'').trim().toLowerCase())===i)
+  .slice(0,12);
+ if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
  if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
 }
 
