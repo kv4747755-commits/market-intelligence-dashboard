@@ -34,7 +34,7 @@ def snap(ticker):
         return None, None, None
 
 
-def fetch_fx_snapshot():
+def fetch_fx_snapshot(previous_fx=None):
     """Build the FX market data layer used by the Forex command center.
 
     Rates are indicative daily snapshots from Yahoo Finance/yfinance.
@@ -125,7 +125,7 @@ def fetch_fx_snapshot():
     strength_5d = {c: (round(v - center5, 3) if v is not None else None) for c, v in raw_strength_5d.items()}
 
     # Rank change is compared with the previous saved FX snapshot when available.
-    previous_fx = d.get("fx") if isinstance(d, dict) else None
+    previous_fx = previous_fx if isinstance(previous_fx, dict) else None
     previous_rank = {}
     if isinstance(previous_fx, dict):
         for i, item in enumerate(previous_fx.get("strength_rank") or []):
@@ -920,7 +920,7 @@ def main():
 
     # FX command-center layer: major pairs, relative currency strength and
     # cross-market commodity drivers. This is additive and does not alter GEX.
-    d["fx"] = fetch_fx_snapshot()
+    d["fx"] = fetch_fx_snapshot(d.get("fx") if isinstance(d.get("fx"), dict) else None)
     fx_pairs = d["fx"].get("pairs", {})
     for pair, payload in fx_pairs.items():
         if payload.get("value") is not None:
