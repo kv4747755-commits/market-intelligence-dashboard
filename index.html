@@ -347,6 +347,21 @@ section:not(#home)>.title{padding-top:4px}
 <div class="pulse-card"><div class="label">EXPECTED RANGE</div><div class="pulse-value" id="pulse-range">—</div><div class="range-track"><div class="range-fill"></div><div class="range-dot" id="pulse-range-dot"></div></div><div class="pulse-sub">Current spot inside modeled range</div></div>
 <div class="pulse-card"><div class="label">RISK STATE</div><div class="pulse-value" id="pulse-risk">—</div><div class="pulse-sub" id="pulse-risk-sub">Options + volatility</div></div>
 </div>
+<div class="card" id="master-regime-card" style="margin-top:14px;border-color:#26394a">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
+    <div><h3 style="margin:0">MASTER MARKET REGIME</h3><div class="small" style="margin-top:5px">Cross-asset synthesis from the canonical snapshot. Context only — not a trade signal.</div></div>
+    <div class="small" id="master-regime-change">—</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px">
+    <div class="kpi" style="min-height:112px"><span class="small">CURRENT REGIME</span><b id="master-regime" style="font-size:28px">—</b><span class="small" id="master-regime-score">Score —</span></div>
+    <div class="kpi" style="min-height:112px"><span class="small">CONFIDENCE</span><b id="master-regime-confidence">—</b><span class="small">Based on available factor agreement + coverage</span></div>
+  </div>
+  <div class="grid2" style="margin-top:12px">
+    <div class="card"><h3>ASSET BIASES</h3><div class="watch-list" id="master-asset-bias"></div></div>
+    <div class="card"><h3>REGIME DRIVERS</h3><div class="watch-list" id="master-regime-factors"></div></div>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>REGIME HISTORY</h3><div id="master-regime-history" class="small">No regime changes recorded yet.</div></div>
+</div>
 <div class="title">LIVE DATA LAYER <span class="small">one canonical snapshot</span></div>
 <div class="grid" id="live-grid"></div>
 <div class="grid2" style="margin-top:12px">
@@ -993,6 +1008,35 @@ async function load(){
  const fxeurEl=document.getElementById('fxeur'); if(fxeurEl) fxeurEl.textContent=pct(p.eurusd_change);
  const fxvixEl=document.getElementById('fxvix'); if(fxvixEl) fxvixEl.textContent=pct(p.vix_change);
  renderForex(fx,p,r,fxNews);
+
+ // MASTER MARKET REGIME — transparent cross-asset synthesis from the backend.
+ const mr=d.market_regime||{};
+ const mrReg=String(mr.regime||'UNAVAILABLE').toUpperCase();
+ const mrScore=Number(mr.score);
+ const mrConf=Number(mr.confidence);
+ const regimeEl=document.getElementById('master-regime');
+ const scoreEl=document.getElementById('master-regime-score');
+ const mrConfEl=document.getElementById('master-regime-confidence');
+ const changeEl=document.getElementById('master-regime-change');
+ const cardEl=document.getElementById('master-regime-card');
+ const regimeClass=mrReg==='RISK-ON'?'up':mrReg==='RISK-OFF'?'down':'amber';
+ if(regimeEl){regimeEl.textContent=mrReg;regimeEl.className='big '+regimeClass;}
+ if(scoreEl)scoreEl.textContent=Number.isFinite(mrScore)?`Composite score ${mrScore>0?'+':''}${mrScore.toFixed(1)} / 100`:'Score unavailable';
+ if(mrConfEl)mrConfEl.textContent=Number.isFinite(mrConf)?`${mrConf}%`:'—';
+ if(changeEl){changeEl.textContent=mr.changed&&mr.previous_regime?`REGIME CHANGE • ${mr.previous_regime} → ${mrReg}`:'No regime change detected';changeEl.className=mr.changed?'down small':'small';}
+ if(cardEl)cardEl.setAttribute('data-regime',mrReg);
+ const safe=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+ const ab=mr.asset_bias||{};
+ const biasRows=[['Equities',ab.equities],['USD',ab.usd],['Gold',ab.gold],['FX',ab.fx],['Volatility',ab.volatility]];
+ const biasCls=v=>String(v||'').includes('BEARISH')||String(v||'').includes('WEAK')||String(v||'RISING')==='RISING RISK'?'down':String(v||'').includes('BULLISH')||String(v||'STRONG')||String(v||'FALLING')==='FALLING RISK'?'up':'amber';
+ const mrBiasEl=document.getElementById('master-asset-bias');
+ if(mrBiasEl)mrBiasEl.innerHTML=biasRows.map(([k,v])=>`<div class="watch-row"><span>${k}</span><b class="${biasCls(v)}">${safe(v||'—')}</b></div>`).join('');
+ const factors=Array.isArray(mr.factors)?mr.factors:[];
+ const factorEl=document.getElementById('master-regime-factors');
+ if(factorEl)factorEl.innerHTML=factors.length?factors.map(x=>{const n=Number(x.score);const cls=n>0?'up':n<0?'down':'amber';return `<div class="watch-row"><span>${safe(x.factor)} <small>${safe(x.read||'')}</small></span><b class="${cls}">${n>0?'+':n<0?'−':'0'}</b></div>`}).join(''):'<div class="small">No usable regime factors available.</div>';
+ const hist=Array.isArray(mr.history)?mr.history:[];
+ const histEl=document.getElementById('master-regime-history');
+ if(histEl&&hist.length){histEl.innerHTML=hist.slice(-8).map((x,i)=>{const dt=x.timestamp?new Date(x.timestamp):null;const when=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleString([],{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';const cls=x.regime==='RISK-ON'?'up':x.regime==='RISK-OFF'?'down':'amber';return `<span style="display:inline-flex;gap:6px;align-items:center;margin:0 8px 8px 0;padding:7px 9px;border:1px solid #1c2b38;border-radius:8px"><b class="${cls}">${safe(x.regime)}</b><span>${when}</span></span>`}).join('');}
 
  const currentSession=__currentNySession();
   const live=currentSession==='LIVE' && o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
