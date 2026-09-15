@@ -466,7 +466,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="fx-decision"><div class="label">RISK BACKDROP</div><b id="fx-decision-risk">—</b><span class="small" id="fx-decision-risk-note">—</span></div>
 </div></div>
 
-<div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
+<div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Fresh FX headlines from the last 7 days, grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
 </section>
 <section id="options">
 <div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
@@ -959,7 +959,10 @@ function renderForex(fx,p,r,fxNews){
  const ng=document.getElementById('fx-news-grid');const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]); // Trust only the backend's strict currency relevance classification.
   const news=raw.filter(x=>x&&x.currency&&x.title)
    .filter((x,i,a)=>a.findIndex(y=>String(y.title||'').trim().toLowerCase()===String(x.title||'').trim().toLowerCase())===i)
-   .sort((a,b)=>(Number(b.relevance_score||0)-Number(a.relevance_score||0))||String(b.published_at||'').localeCompare(String(a.published_at||'')))
+   // Backend applies a hard 7-day freshness gate. Keep the newest headline first
+   // here too; relevance only breaks ties instead of allowing an old HIGH-score
+   // story to outrank a materially newer FX headline.
+   .sort((a,b)=>String(b.published_at||'').localeCompare(String(a.published_at||''))||(Number(b.relevance_score||0)-Number(a.relevance_score||0)))
    .slice(0,8);
   const newsTime=x=>{const t=x?.published_at;if(!t)return 'Time unavailable';const d=new Date(t);return Number.isNaN(d.getTime())?String(t):d.toLocaleString([], {month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});};
   if(ng) ng.innerHTML=news.length?news.map(x=>{const impact=String(x.impact||'MEDIUM').toUpperCase();return `<div class="kpi fx-news-item"><div class="small"><b>${x.currency}</b> • ${x.source||'News'} <span class="fx-news-impact ${impact==='HIGH'?'amber':''}">${impact}</span></div><b class="fx-news-title">${x.title}</b><div class="small">${x.topic||'FX'} • ${newsTime(x)}</div></div>`;}).join(''):'<div class="small">No genuinely FX-relevant headlines available right now.</div>';
