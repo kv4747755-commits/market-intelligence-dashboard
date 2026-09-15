@@ -1242,19 +1242,28 @@ async function load(){
  const pulseRisk=document.getElementById('pulse-risk');
  const pulseRiskSub=document.getElementById('pulse-risk-sub');
  if(pulseReg){
-   pulseReg.textContent=bias;
-   pulseReg.className='pulse-regime '+(['BEARISH','CAUTIOUS'].includes(bias)?'down':bias==='NEUTRAL'?'amber':'up');
-   pulseNote.textContent=`${optImpact} options • ${vixImpact} volatility • ${macroImpact} macro • ${dollarImpact} dollar`;
+   // Canonical regime: Market Pulse must use the same master engine as the
+   // dashboard below. Do not mix the NDX-specific dollar impact with the
+   // standalone USD direction; a strong USD can be bearish for equities while
+   // still being bullish/strong for the dollar itself.
+   const canonicalReg=String(mr.regime||'UNAVAILABLE').toUpperCase();
+   const canonicalScore=Number(mr.score);
+   const canonicalBias=canonicalReg==='RISK-ON'?'BULLISH':canonicalReg==='RISK-OFF'?'BEARISH':canonicalReg==='MIXED'?'MIXED':'UNAVAILABLE';
+   const canonicalUsd=String(mr.asset_bias?.usd||'MIXED').toUpperCase();
+   const canonicalFx=String(mr.asset_bias?.fx||'MIXED').toUpperCase();
+   pulseReg.textContent=canonicalBias;
+   pulseReg.className='pulse-regime '+(canonicalBias==='BEARISH'?'down':canonicalBias==='MIXED'?'amber':'up');
+   pulseNote.textContent=`${optImpact} options • ${vixImpact} volatility • ${macroImpact} macro • ${canonicalUsd} dollar`;
    pulseNdx.textContent=Number.isFinite(spot)?fmt(spot,0):'—';
    pulseNdxChg.textContent=Number.isFinite(Number(p.ndx_change))?fmt(Number(p.ndx_change),2)+'%':'—';
    pulseRange.textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
    const risk=gammaReg.includes('negative')?'EXPANSION RISK':gammaReg.includes('positive')?'MEAN-REVERSION':'MIXED';
    pulseRisk.textContent=risk; pulseRisk.className='pulse-value '+(risk==='EXPANSION RISK'?'amber':'');
    pulseRiskSub.textContent=gammaReg.includes('negative')?'Negative gamma can amplify moves':'Gamma regime from modeled option chain';
-   const drivers=[['OPT',optImpact],['VIX',vixImpact],['MACRO',macroImpact],['USD',dollarImpact]];
+   const drivers=[['OPT',optImpact],['VIX',vixImpact],['MACRO',macroImpact],['USD',canonicalUsd]];
    document.getElementById('pulse-drivers').innerHTML=drivers.map(x=>`<span class="driver-chip"><b>${x[0]}</b> ${x[1]}</span>`).join('');
-   const pulseScore=Math.max(0,Math.min(100,50+score*16));
-   document.getElementById('pulse-ring').style.background=`conic-gradient(${score>=0.5?'var(--green)':score<=-0.5?'var(--red)':'var(--amber)'} 0 ${pulseScore}%,#1a2a39 ${pulseScore}% 100%)`;
+   const pulseScore=Number.isFinite(canonicalScore)?Math.max(0,Math.min(100,50+canonicalScore/2)):50;
+   document.getElementById('pulse-ring').style.background=`conic-gradient(${canonicalReg==='RISK-ON'?'var(--green)':canonicalReg==='RISK-OFF'?'var(--red)':'var(--amber)'} 0 ${pulseScore}%,#1a2a39 ${pulseScore}% 100%)`;
    if(Number.isFinite(spot)&&Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)&&rangeHigh>rangeLow){
      const pct=Math.max(0,Math.min(100,(spot-rangeLow)/(rangeHigh-rangeLow)*100));
      document.getElementById('pulse-range-dot').style.left=pct+'%';
