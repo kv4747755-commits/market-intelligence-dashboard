@@ -1670,20 +1670,24 @@ def main():
                 flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
         gamma_flip = min(flips, key=lambda x: abs(x - spot)) if flips else None
 
-        # Live intraday gamma lens: combine standing OI gamma with today's
-        # volume gamma instead of treating raw volume as a replacement for
-        # the standing book.  Public GEXmon documentation describes Volume as
-        # today's fast 0DTE lens and OI as standing structure; the exact
-        # provider formula is private, so this is an explicit approximation,
-        # not a claim of exact replication.
-        def live_volume_surface_gex_at(rows_for_surface, test_spot):
+        # Live intraday zero-gamma lens. GEXmon's public docs distinguish
+        # today's Volume model from standing OI and use the Volume lens for
+        # the live regime/zero-gamma engine. We cannot reproduce its private
+        # trade-direction logic from Yahoo aggregate volume, so use a
+        # volume-dominant NORMALIZED blend rather than raw OI + raw volume.
+        # Normalization is important: raw OI counts and daily volume counts
+        # are on different scales, so adding them directly makes OI dominate
+        # and leaves the live zero-gamma almost unchanged.
+        LIVE_VOLUME_WEIGHT = 0.75
+        LIVE_OI_WEIGHT = 0.25
+
+        def oi_surface_gex_at(rows_for_surface, test_spot):
             total_g = 0.0
             for row in rows_for_surface:
                 K = row["strike"]
                 iv = row.get("iv")
                 oi = row.get("call_oi", 0.0) + row.get("put_oi", 0.0)
-                vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
-                if iv is None or K <= 0 or (oi <= 0 and vol <= 0):
+                if iv is None or oi <= 0 or K <= 0:
                     continue
                 stat = next((x for x in expiry_stats if x["expiry"] == row["expiry"]), None)
                 if not stat:
@@ -1699,41 +1703,12 @@ def main():
                 disc = math.exp(-r * T)
                 gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
                 signed_oi = row.get("call_oi", 0.0) - row.get("put_oi", 0.0)
-                signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
-                # Volume is an intraday positioning proxy. Keep the same
-                # call-positive / put-negative convention as the standing
-                # model, but add it to OI so a sparse/noisy volume feed cannot
-                # manufacture a distant zero crossing by itself.
-                exposure = signed_oi + signed_volume
-                total_g += gamma * exposure * MULT * test_spot * test_spot * 0.01
+                total_g += gamma * signed_oi * MULT * test_spot * test_spot * 0.01
             return total_g
 
-        def find_nearest_flip(surface_fn, rows_for_surface, points=240):
-            if not rows_for_surface:
-                return None
-            grid = [spot * 0.90 + spot * 0.20 * i / points for i in range(points + 1)]
-            vals = [surface_fn(rows_for_surface, x) for x in grid]
-            roots = []
-            for i in range(len(grid) - 1):
-                if vals[i] == 0:
-                    roots.append(grid[i])
-                elif vals[i] * vals[i + 1] < 0:
-                    roots.append(grid[i] - vals[i] * (grid[i + 1] - grid[i]) / (vals[i + 1] - vals[i]))
-            return min(roots, key=lambda x: abs(x - spot)) if roots else None
-
-        # Use only today's 0DTE rows while the regular U.S. session is live.
-        # Outside that session the existing standing-OI model remains the
-        # authoritative fallback.
-        live_0dte_rows = [x for x in all_rows if x.get("expiry_mode") == "0DTE"]
-        live_0dte_volume_flip = None
-        if session_state == "LIVE" and live_0dte_rows:
-            live_0dte_volume_flip = find_nearest_flip(live_volume_surface_gex_at, live_0dte_rows)
-
-        # Retain the pure volume surface as a diagnostic. It is deliberately
-        # not promoted to the headline zero-gamma level when it has no root.
-        def pure_volume_gex_at(test_spot):
+        def volume_surface_gex_at(rows_for_surface, test_spot):
             total_g = 0.0
-            for row in all_rows:
+            for row in rows_for_surface:
                 K = row["strike"]
                 iv = row.get("iv")
                 vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
@@ -1756,8 +1731,41 @@ def main():
                 total_g += gamma * signed_volume * MULT * test_spot * test_spot * 0.01
             return total_g
 
+        def normalized_blended_flip(rows_for_surface, points=240):
+            if not rows_for_surface:
+                return None
+            grid = [spot * 0.90 + spot * 0.20 * i / points for i in range(points + 1)]
+            oi_vals = [oi_surface_gex_at(rows_for_surface, x) for x in grid]
+            vol_vals = [volume_surface_gex_at(rows_for_surface, x) for x in grid]
+            oi_scale = sorted(abs(v) for v in oi_vals if math.isfinite(v))[len([v for v in oi_vals if math.isfinite(v)]) // 2] if any(math.isfinite(v) for v in oi_vals) else 0.0
+            vol_scale = sorted(abs(v) for v in vol_vals if math.isfinite(v))[len([v for v in vol_vals if math.isfinite(v)]) // 2] if any(math.isfinite(v) for v in vol_vals) else 0.0
+            if oi_scale <= 1e-12 and vol_scale <= 1e-12:
+                return None
+            if oi_scale <= 1e-12:
+                oi_scale = 1.0
+            if vol_scale <= 1e-12:
+                vol_scale = 1.0
+            blended = [LIVE_OI_WEIGHT * (o / oi_scale) + LIVE_VOLUME_WEIGHT * (v / vol_scale) for o, v in zip(oi_vals, vol_vals)]
+            roots = []
+            for i in range(len(grid) - 1):
+                if blended[i] == 0:
+                    roots.append(grid[i])
+                elif blended[i] * blended[i + 1] < 0:
+                    roots.append(grid[i] - blended[i] * (grid[i + 1] - grid[i]) / (blended[i + 1] - blended[i]))
+            return min(roots, key=lambda x: abs(x - spot)) if roots else None
+
+        live_0dte_rows = [x for x in all_rows if x.get("expiry_mode") == "0DTE"]
+        live_0dte_volume_flip = None
+        live_0dte_blended_flip = None
+        if session_state == "LIVE" and live_0dte_rows:
+            live_0dte_volume_flip = normalized_blended_flip(live_0dte_rows)
+            live_0dte_blended_flip = live_0dte_volume_flip
+
+        # Pure Volume remains a diagnostic. Aggregate call-minus-put volume
+        # is not true trade direction, so a missing root is expected in some
+        # sessions and must not be fabricated.
         volume_xs = [spot * 0.90 + spot * 0.20 * i / 240 for i in range(241)]
-        volume_ys = [pure_volume_gex_at(x) for x in volume_xs]
+        volume_ys = [volume_surface_gex_at(all_rows, x) for x in volume_xs]
         volume_flips = []
         for i in range(len(volume_xs) - 1):
             if volume_ys[i] == 0:
@@ -1845,46 +1853,11 @@ def main():
                 elif py[j] * py[j + 1] < 0:
                     flips.append(px[j] - py[j] * (px[j + 1] - px[j]) / (py[j + 1] - py[j]))
             pflip = min(flips, key=lambda x: abs(x - spot)) if flips else None
-            # Live 0DTE zero gamma uses the same OI + today's-volume
-            # approximation as the headline model. Keep pure volume as a
-            # diagnostic so a missing/one-sided volume root does not create a
-            # misleading distant flip.
-            profile_volume_rows = [x for x in profile_rows if (x.get("call_volume", 0.0) + x.get("put_volume", 0.0)) > 0 and x.get("iv") is not None]
-            def profile_live_gex_at(test_spot):
-                total_g = 0.0
-                for row in profile_rows:
-                    K = row["strike"]
-                    iv = row.get("iv")
-                    oi = row.get("call_oi", 0.0) + row.get("put_oi", 0.0)
-                    vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
-                    stat = stat_by_expiry.get(row["expiry"])
-                    if iv is None or not stat or K <= 0 or (oi <= 0 and vol <= 0):
-                        continue
-                    exp_date = datetime.fromisoformat(row["expiry"]).date()
-                    T, _ = expiry_time(exp_date)
-                    F0 = stat.get("forward") or spot
-                    carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
-                    F_test = test_spot * math.exp(carry * T)
-                    root = math.sqrt(T)
-                    d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
-                    pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
-                    disc = math.exp(-r * T)
-                    gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
-                    signed_oi = row.get("call_oi", 0.0) - row.get("put_oi", 0.0)
-                    signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
-                    total_g += gamma * (signed_oi + signed_volume) * MULT * test_spot * test_spot * 0.01
-                return total_g
+            # Use the same normalized 75% Volume / 25% OI live lens as the
+            # headline model. This keeps the selected 0DTE profile consistent.
             volume_profile_flip = None
             if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE":
-                vxs = [spot * 0.90 + spot * 0.20 * i / 120 for i in range(121)]
-                vys = [profile_live_gex_at(x) for x in vxs]
-                vflips = []
-                for j in range(len(vxs) - 1):
-                    if vys[j] == 0:
-                        vflips.append(vxs[j])
-                    elif vys[j] * vys[j + 1] < 0:
-                        vflips.append(vxs[j] - vys[j] * (vxs[j + 1] - vxs[j]) / (vys[j + 1] - vys[j]))
-                volume_profile_flip = min(vflips, key=lambda x: abs(x - spot)) if vflips else None
+                volume_profile_flip = normalized_blended_flip(profile_rows, points=120)
             modes_here = sorted({x.get("expiry_mode") for x in profile_rows if x.get("expiry_mode")})
             return {
                 "status": "live", "label": label,
@@ -1895,6 +1868,8 @@ def main():
                 "call_wall": call_wall, "put_wall": put_wall,
                 "gamma_flip": volume_profile_flip if volume_profile_flip is not None else pflip,
                 "oi_gamma_flip": pflip, "volume_gamma_flip": volume_profile_flip,
+                "zero_gamma_model": "LIVE_BLEND_75V_25OI_NORMALIZED" if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE" else "OI_REPRICED",
+                "zero_gamma_volume_weight": LIVE_VOLUME_WEIGHT if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE" else None,
                 "call_oi": sum(x["call_oi"] for x in ph),
                 "put_oi": sum(x["put_oi"] for x in ph),
             }
@@ -2017,7 +1992,7 @@ def main():
                 "A weighted quadratic smile fills gaps in the per-expiry volatility surface.",
                 "Black-76 gamma is converted consistently to spot gamma using the inferred forward and discount factor.",
                 "OI gamma flip is found by revaluing standing OI gamma across a dense hypothetical spot grid.",
-                "Live 0DTE canonical zero-gamma also uses a volume-weighted signed gamma surface, matching the dashboard's intraday flow lens; OI flip remains available separately.",
+                "Live 0DTE canonical zero-gamma uses a normalized 75% Volume / 25% OI blend; pure Volume and OI flips remain separately available.",
                 "Call-positive / put-negative dealer sign is a conventional assumption; public OI cannot reveal actual dealer inventory.",
                 "GEX magnitude is best compared within this dashboard's methodology, not treated as an absolute cross-provider number.",
             ],
