@@ -392,7 +392,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="home-stat"><div class="label">GOLD</div><b id="home-map-gold">—</b><span>Spot snapshot</span></div>
 </div>
 <div class="home-grid">
-<div class="card"><h3>KEY LEVELS & RANGE</h3><div class="level-strip"><div class="level-box"><div class="small">PUT WALL</div><b id="home-putwall">—</b></div><div class="level-box"><div class="small">GAMMA FLIP</div><b id="home-flip">—</b></div><div class="level-box"><div class="small">SPOT</div><b id="home-spot">—</b></div><div class="level-box"><div class="small">CALL WALL</div><b id="home-callwall">—</b></div><div class="level-box"><div class="small">EXP. RANGE</div><b id="home-emrange">—</b></div></div><div class="small" style="margin-top:9px">Modeled option levels. Expected range is volatility-derived, not a price target.</div></div>
+<div class="card"><h3>KEY LEVELS & RANGE</h3><div class="level-strip"><div class="level-box"><div class="small">PUT WALL</div><b id="home-putwall">—</b></div><div class="level-box"><div class="small">ZERO GAMMA</div><b id="home-flip">—</b></div><div class="level-box"><div class="small">SPOT</div><b id="home-spot">—</b></div><div class="level-box"><div class="small">CALL WALL</div><b id="home-callwall">—</b></div><div class="level-box"><div class="small">EXP. RANGE</div><b id="home-emrange">—</b></div></div><div class="small" style="margin-top:9px">Modeled option levels. Expected range is volatility-derived, not a price target.</div></div>
 <div class="card"><h3>MACRO WATCH</h3><div class="watch-list"><div class="watch-row"><span>Inflation</span><b id="home-watch-inflation">—</b></div><div class="watch-row"><span>Growth</span><b id="home-watch-growth">—</b></div><div class="watch-row"><span>Liquidity</span><b id="home-watch-liquidity">—</b></div><div class="watch-row"><span>Credit</span><b id="home-watch-credit">—</b></div><div class="watch-row"><span>Next FOMC</span><b id="home-watch-fomc">—</b></div></div></div>
 </div>
 <div class="home-grid">
@@ -453,7 +453,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="grid2" style="margin-top:12px">
 <div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div>
 <div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">ZERO GAMMA • LIVE MODEL</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div>
-<div class="card"><h3>Scenario Map</h3><table><tr><td>BULL</td><td>Reclaim gamma flip + rates stabilize</td></tr><tr><td>BEAR</td><td>Lose put wall + rates/DXY accelerate</td></tr><tr><td>BASE</td><td>Remain between major option walls</td></tr></table></div>
+<div class="card"><h3>Scenario Map</h3><table><tr><td>BULL</td><td>Reclaim zero gamma + rates stabilize</td></tr><tr><td>BEAR</td><td>Lose put wall + rates/DXY accelerate</td></tr><tr><td>BASE</td><td>Remain between major option walls</td></tr></table></div>
 </div>
 </section>
 
@@ -943,7 +943,7 @@ function renderGexProfile(o,p){
    };
  });
  const total=Number(active.net_gex),ins=[];
- if(Number.isFinite(spot)&&Number.isFinite(flip)){ if(spot>flip)ins.push(`<strong>Above gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else if(spot<flip)ins.push(`<strong>Below gamma flip</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else ins.push(`<strong>At gamma flip</strong>Spot is near the modeled gamma flip.`); }
+ if(Number.isFinite(spot)&&Number.isFinite(flip)){ if(spot>flip)ins.push(`<strong>Above zero gamma</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else if(spot<flip)ins.push(`<strong>Below zero gamma</strong>Spot ${f(spot,0)} vs flip ${f(flip,0)}.`); else ins.push(`<strong>At zero gamma</strong>Spot is near the modeled zero gamma.`); }
  const levelInsight=(name,level)=>{ if(!Number.isFinite(level))return; const dist=Math.abs(spot-level)/spot; const where=dist<=0.003?'near spot':level>spot?'above spot':'below spot'; ins.push(`<strong>${name} ${f(level,0)}</strong>${where==='near spot'?'Spot is near this modeled concentration level.':where==='above spot'?'Overhead modeled level above spot.':'Downside modeled level below spot.'}`); };
  levelInsight('Call wall',callWall); levelInsight('Put wall',putWall);
  if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled ${selectedLabel.toLowerCase()} exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
@@ -1222,9 +1222,9 @@ async function load(){
  const macroReg=m.regime||{};
  let score=0, optRead='No usable options location', optImpact='NEUTRAL';
  if(Number.isFinite(spot)&&Number.isFinite(flip)){
-   if(spot>flip){score+=1; optRead='Above gamma flip'; optImpact='BULLISH';}
-   else if(spot<flip){score-=1; optRead='Below gamma flip'; optImpact='BEARISH';}
-   else {optRead='At gamma flip'; optImpact='NEUTRAL';}
+   if(spot>flip){score+=1; optRead='Above zero gamma'; optImpact='BULLISH';}
+   else if(spot<flip){score-=1; optRead='Below zero gamma'; optImpact='BEARISH';}
+   else {optRead='At zero gamma'; optImpact='NEUTRAL';}
  }
  if(gammaReg.includes('negative')){
    optRead += ' • negative gamma = wider moves';
@@ -1345,8 +1345,8 @@ async function load(){
  const downgradeRisk=[];
  if(Number.isFinite(flip)){
    const aboveFlip=spot>flip;
-   upgradeParts.push(`NDX > gamma flip ${fmt(flip,0)}`);
-   if(aboveFlip) upgradeReady.push('NDX above gamma flip');
+   upgradeParts.push(`NDX > zero gamma ${fmt(flip,0)}`);
+   if(aboveFlip) upgradeReady.push('NDX above zero gamma');
  }
  if(Number.isFinite(vixCh)){
    const vixOk=vixCh<=5;
