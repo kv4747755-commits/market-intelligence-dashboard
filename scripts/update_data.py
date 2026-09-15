@@ -1670,10 +1670,68 @@ def main():
                 flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
         gamma_flip = min(flips, key=lambda x: abs(x - spot)) if flips else None
 
-        # GEXmon's live regime/zero-gamma lens is volume-driven for 0DTE.
-        # Build the same type of signed gamma surface from today's option
-        # volume, while retaining the OI model separately for standing structure.
-        def volume_gex_at(test_spot):
+        # Live intraday gamma lens: combine standing OI gamma with today's
+        # volume gamma instead of treating raw volume as a replacement for
+        # the standing book.  Public GEXmon documentation describes Volume as
+        # today's fast 0DTE lens and OI as standing structure; the exact
+        # provider formula is private, so this is an explicit approximation,
+        # not a claim of exact replication.
+        def live_volume_surface_gex_at(rows_for_surface, test_spot):
+            total_g = 0.0
+            for row in rows_for_surface:
+                K = row["strike"]
+                iv = row.get("iv")
+                oi = row.get("call_oi", 0.0) + row.get("put_oi", 0.0)
+                vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
+                if iv is None or K <= 0 or (oi <= 0 and vol <= 0):
+                    continue
+                stat = next((x for x in expiry_stats if x["expiry"] == row["expiry"]), None)
+                if not stat:
+                    continue
+                exp_date = datetime.fromisoformat(row["expiry"]).date()
+                T, _ = expiry_time(exp_date)
+                F0 = stat.get("forward") or spot
+                carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
+                F_test = test_spot * math.exp(carry * T)
+                root = math.sqrt(T)
+                d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
+                pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
+                disc = math.exp(-r * T)
+                gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
+                signed_oi = row.get("call_oi", 0.0) - row.get("put_oi", 0.0)
+                signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
+                # Volume is an intraday positioning proxy. Keep the same
+                # call-positive / put-negative convention as the standing
+                # model, but add it to OI so a sparse/noisy volume feed cannot
+                # manufacture a distant zero crossing by itself.
+                exposure = signed_oi + signed_volume
+                total_g += gamma * exposure * MULT * test_spot * test_spot * 0.01
+            return total_g
+
+        def find_nearest_flip(surface_fn, rows_for_surface, points=240):
+            if not rows_for_surface:
+                return None
+            grid = [spot * 0.90 + spot * 0.20 * i / points for i in range(points + 1)]
+            vals = [surface_fn(rows_for_surface, x) for x in grid]
+            roots = []
+            for i in range(len(grid) - 1):
+                if vals[i] == 0:
+                    roots.append(grid[i])
+                elif vals[i] * vals[i + 1] < 0:
+                    roots.append(grid[i] - vals[i] * (grid[i + 1] - grid[i]) / (vals[i + 1] - vals[i]))
+            return min(roots, key=lambda x: abs(x - spot)) if roots else None
+
+        # Use only today's 0DTE rows while the regular U.S. session is live.
+        # Outside that session the existing standing-OI model remains the
+        # authoritative fallback.
+        live_0dte_rows = [x for x in all_rows if x.get("expiry_mode") == "0DTE"]
+        live_0dte_volume_flip = None
+        if session_state == "LIVE" and live_0dte_rows:
+            live_0dte_volume_flip = find_nearest_flip(live_volume_surface_gex_at, live_0dte_rows)
+
+        # Retain the pure volume surface as a diagnostic. It is deliberately
+        # not promoted to the headline zero-gamma level when it has no root.
+        def pure_volume_gex_at(test_spot):
             total_g = 0.0
             for row in all_rows:
                 K = row["strike"]
@@ -1699,7 +1757,7 @@ def main():
             return total_g
 
         volume_xs = [spot * 0.90 + spot * 0.20 * i / 240 for i in range(241)]
-        volume_ys = [volume_gex_at(x) for x in volume_xs]
+        volume_ys = [pure_volume_gex_at(x) for x in volume_xs]
         volume_flips = []
         for i in range(len(volume_xs) - 1):
             if volume_ys[i] == 0:
@@ -1787,18 +1845,20 @@ def main():
                 elif py[j] * py[j + 1] < 0:
                     flips.append(px[j] - py[j] * (px[j + 1] - px[j]) / (py[j + 1] - py[j]))
             pflip = min(flips, key=lambda x: abs(x - spot)) if flips else None
-            # Volume-model zero gamma, matching the live intraday lens used by
-            # GEXmon. Fall back to the standing-OI flip when no usable volume
-            # surface exists in the selected profile.
+            # Live 0DTE zero gamma uses the same OI + today's-volume
+            # approximation as the headline model. Keep pure volume as a
+            # diagnostic so a missing/one-sided volume root does not create a
+            # misleading distant flip.
             profile_volume_rows = [x for x in profile_rows if (x.get("call_volume", 0.0) + x.get("put_volume", 0.0)) > 0 and x.get("iv") is not None]
-            def profile_volume_gex_at(test_spot):
+            def profile_live_gex_at(test_spot):
                 total_g = 0.0
-                for row in profile_volume_rows:
+                for row in profile_rows:
                     K = row["strike"]
                     iv = row.get("iv")
+                    oi = row.get("call_oi", 0.0) + row.get("put_oi", 0.0)
                     vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
                     stat = stat_by_expiry.get(row["expiry"])
-                    if iv is None or vol <= 0 or not stat or K <= 0:
+                    if iv is None or not stat or K <= 0 or (oi <= 0 and vol <= 0):
                         continue
                     exp_date = datetime.fromisoformat(row["expiry"]).date()
                     T, _ = expiry_time(exp_date)
@@ -1810,13 +1870,14 @@ def main():
                     pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
                     disc = math.exp(-r * T)
                     gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
+                    signed_oi = row.get("call_oi", 0.0) - row.get("put_oi", 0.0)
                     signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
-                    total_g += gamma * signed_volume * MULT * test_spot * test_spot * 0.01
+                    total_g += gamma * (signed_oi + signed_volume) * MULT * test_spot * test_spot * 0.01
                 return total_g
             volume_profile_flip = None
-            if profile_volume_rows:
+            if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE":
                 vxs = [spot * 0.90 + spot * 0.20 * i / 120 for i in range(121)]
-                vys = [profile_volume_gex_at(x) for x in vxs]
+                vys = [profile_live_gex_at(x) for x in vxs]
                 vflips = []
                 for j in range(len(vxs) - 1):
                     if vys[j] == 0:
