@@ -122,7 +122,7 @@ table{font-size:12px}th,td{padding:8px 6px}th{font-size:9px;letter-spacing:.8px}
 .section-kicker{font-size:9px;margin-bottom:4px}
 .footer{font-size:10px;padding:24px 0}
 body:after{
-  content:"LIVE • CANONICAL DATA SNAPSHOT";
+  content:"MODEL SNAPSHOT";
   position:fixed;right:14px;bottom:10px;z-index:40;
   color:#587087;font-size:9px;letter-spacing:1px;
   pointer-events:none
@@ -954,10 +954,10 @@ async function load(){
  const iv=hasIv?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
  const em=hasEm?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
  const optionsStatusLabel=currentSession==='LIVE'?'LIVE':(currentSession==='PRE_MARKET'?'PRE-MARKET':'CLOSED');
- const atmLabel=document.getElementById('atm-iv-label'); if(atmLabel) atmLabel.textContent=previousSession?'ATM IV • PREVIOUS SESSION':'ATM IV';
+ const atmLabel=document.getElementById('atm-iv-label'); if(atmLabel) atmLabel.textContent='ATM IV';
  document.getElementById('opt-expiry-mode').textContent=previousSession?`PREVIOUS SESSION • ${o.expiry||'LAST VALID SNAPSHOT'}`:expiryText;
- document.getElementById('em-label').textContent=previousSession?'EXPECTED MOVE • PREVIOUS SESSION':`Expected Move • ${expiryMode}`;
- document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV • ${sessionDataLabel}</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE • ${previousSession?'PREVIOUS SESSION':expiryMode}</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${currentSession==='LIVE'?'up':'amber'}">${optionsStatusLabel}</b></div></div>`;
+ document.getElementById('em-label').textContent=`Expected Move • ${expiryMode}`;
+ document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b><span class="small">${previousSession?'PREVIOUS SESSION • '+(o.expiry||'LAST VALID SNAPSHOT'):expiryText}</span></div><div class="kpi"><span class="small">EXPECTED MOVE • ${expiryMode}</span><b>${em}</b><span class="small">${hasEmPoints?'≈ '+fmt(o.expected_move_points)+' points'+(previousSession?' • PREVIOUS SESSION':''):'No valid chain available'}</span></div><div class="kpi"><span class="small">STATUS</span><b class="${currentSession==='LIVE'?'up':'amber'}">${optionsStatusLabel}</b></div></div>`;
  const osb=document.getElementById('options-session-badge'); if(osb){osb.textContent=optionsStatusLabel;osb.className='options-session-badge '+(currentSession==='LIVE'?'live':currentSession==='PRE_MARKET'?'premarket':'closed');}
  ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
