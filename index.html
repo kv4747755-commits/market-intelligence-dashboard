@@ -131,13 +131,9 @@ body:after{
 /* visual section separators */
 section:not(#home){border-top:1px solid #101f2c;margin-top:10px}
 section:not(#home)>.title{padding-top:4px}
-#nasdaq .card:first-child,#forex .card:first-child,#options .card:first-child,#macro .card:first-child{
-  position:relative
-}
-#nasdaq .card:first-child:before,#forex .card:first-child:before,#options .card:first-child:before,#macro .card:first-child:before{
-  content:"LIVE";
-  position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7
-}
+#nasdaq .card:first-child,#forex .card:first-child,#macro .card:first-child{position:relative}
+#nasdaq .card:first-child:before,#forex .card:first-child:before,#macro .card:first-child:before{content:"LIVE";position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7}
+.options-session-badge{position:absolute;right:10px;top:9px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.05em;border:1px solid #304355;background:#0d1822;color:#aebdcb}.options-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.options-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.options-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 
 /* responsive: turn sidebar back into compact top navigation */
 @media(max-width:900px){
@@ -448,7 +444,7 @@ section:not(#home)>.title{padding-top:4px}
 <section id="options">
 <div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
 <div class="grid">
-<div class="card"><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small" id="opt-expiry-mode">Expiry mode —</div></div>
+<div class="card"><span id="options-session-badge" class="options-session-badge">SESSION —</span><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small" id="opt-expiry-mode">Expiry mode —</div></div>
 <div class="card"><div class="label" id="em-label">Expected Move</div><div class="big" id="em2">—</div><div class="small" id="opt-em-points">—</div></div>
 <div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div><div class="small">Put OI / Call OI</div></div>
 <div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div><div class="small">Modeled notional exposure</div></div>
@@ -612,6 +608,7 @@ function setGexMode(mode){
  }catch(e){}
  document.querySelectorAll('.gex-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.gexMode===mode));
 }
+function __currentNySession(){try{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());const get=k=>parts.find(x=>x.type===k)?.value||'';const wd=get('weekday');const mins=(Number(get('hour'))||0)*60+(Number(get('minute'))||0);if(wd==='Sat'||wd==='Sun')return 'CLOSED';if(mins<570)return 'PRE_MARKET';if(mins<960)return 'LIVE';return 'CLOSED';}catch(e){return 'UNKNOWN';}}
 function renderGexProfile(o,p){
  const svg=document.getElementById('options-gex-svg'); if(!svg) return;
  const profiles=o.profiles||{};
@@ -631,30 +628,12 @@ function renderGexProfile(o,p){
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const sessionBadge=document.getElementById('gex-session-badge');
  if(sessionBadge){
-   // Do not trust a stale data.json session flag. GitHub Actions can stop
-   // refreshing outside the trading window, leaving yesterday's LIVE state
-   // on the page. Derive the current regular U.S. session from the browser's
-   // New York clock so the UI cannot show LIVE after 4:00 p.m. ET.
-   let sess='CLOSED';
-   try{
-     const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());
-     const vals=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
-     const weekday=String(vals.weekday||'');
-     const hour=Number(vals.hour), minute=Number(vals.minute);
-     const mins=hour*60+minute;
-     const weekdayOk=['Mon','Tue','Wed','Thu','Fri'].includes(weekday);
-     if(weekdayOk && mins>=9*60+30 && mins<16*60) sess='LIVE';
-     else if(weekdayOk && mins<9*60+30) sess='PRE_MARKET';
-     else sess='CLOSED';
-   }catch(e){
-     const sessRaw=o.market_session||o.session_state||o.marketSession||window.__MI_DATA__?.options?.market_session||window.__MI_DATA__?.options?.session_state||window.__MI_DATA__?.market_session||'';
-     sess=String(sessRaw||'CLOSED').toUpperCase();
-   }
+   const sess=__currentNySession();
    const is0dte=selectedGexMode==='0DTE';
    let label='SESSION —', cls='';
    if(sess==='PRE_MARKET'){ label=is0dte?'PRE-MARKET • PREVIOUS SESSION':'PRE-MARKET'; cls='premarket'; }
    else if(sess==='LIVE'){ label=is0dte?'LIVE • 0DTE ACTIVE':'LIVE SESSION'; cls='live'; }
-   else { label=is0dte?'0DTE • CLOSED':'MARKET CLOSED'; cls='closed'; }
+   else if(sess==='CLOSED'){ label=is0dte?'0DTE • CLOSED':'MARKET CLOSED'; cls='closed'; }
    sessionBadge.textContent=label; sessionBadge.className='gex-session-badge '+cls;
  }
  const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=active&&Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
@@ -958,7 +937,8 @@ async function load(){
  const fxvixEl=document.getElementById('fxvix'); if(fxvixEl) fxvixEl.textContent=pct(p.vix_change);
  renderForex(fx,p,fxNews);
 
- const live=o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
+ const currentSession=__currentNySession();
+  const live=currentSession==='LIVE' && o.status==='live' && typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
  const expiryMode=o.expiry_mode||'NEAREST';
  const expiryText=o.expiry?`${expiryMode} • ${o.expiry}`:expiryMode;
  const expiryCount=Number(o.expiry_count)||0;
@@ -968,7 +948,9 @@ async function load(){
  const homeEmLabel=document.getElementById('home-em-label'); if(homeEmLabel) homeEmLabel.textContent=`Expected Move • ${expiryMode}`;
  const iv=live?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
  const em=live?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
- document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE • ${expiryMode}</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${live?'up':'amber'}">${live?'LIVE':'WAITING'}</b></div></div>`;
+ const optionsStatusLabel=currentSession==='LIVE'?'LIVE':(currentSession==='PRE_MARKET'?'PRE-MARKET':'CLOSED');
+  document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE • ${expiryMode}</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${currentSession==='LIVE'?'up':'amber'}">${optionsStatusLabel}</b></div></div>`;
+  const osb=document.getElementById('options-session-badge'); if(osb){osb.textContent=optionsStatusLabel;osb.className='options-session-badge '+(currentSession==='LIVE'?'live':currentSession==='PRE_MARKET'?'premarket':'closed');}
 
  ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
