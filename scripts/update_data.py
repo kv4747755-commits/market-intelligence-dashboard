@@ -885,14 +885,6 @@ def build_market_regime(d):
         add("DXY", -1 if dxy_ch > 0.20 else 1 if dxy_ch < -0.20 else 0,
             f"DXY {dxy_ch:+.2f}%", "dollar")
 
-    gex = sf(options.get("net_gex"))
-    if gex is not None:
-        # GEX is a volatility/market-structure regime, not a directional
-        # bullish/bearish asset signal. Keep it neutral in the directional
-        # composite and let the separate risk-state UI interpret its sign.
-        add("GEX", 0,
-            "Positive gamma (stabilizing)" if gex > 0 else "Negative gamma (expansion risk)" if gex < 0 else "Neutral gamma", "options")
-
     fx_summary = fx.get("strength_summary") or {}
     usd_score = sf(fx_summary.get("leader_score")) if fx_summary.get("leader") == "USD" else None
     usd_is_leader = fx_summary.get("leader") == "USD"
@@ -957,6 +949,16 @@ def build_market_regime(d):
         history.append({"timestamp": now, "regime": regime_label, "score": round(normalized, 1) if normalized is not None else None, "confidence": confidence})
     history = history[-10:]
 
+    gex = sf(options.get("net_gex"))
+    gex_structure = None
+    if gex is not None:
+        gex_structure = {
+            "net_gex": gex,
+            "regime": "POSITIVE_GAMMA" if gex > 0 else "NEGATIVE_GAMMA" if gex < 0 else "NEUTRAL_GAMMA",
+            "risk_read": "STABILIZING" if gex > 0 else "EXPANSION_RISK" if gex < 0 else "NEUTRAL",
+            "directional_vote": 0,
+        }
+
     return {
         "status": "live" if factors else "unavailable",
         "updated_at": now,
@@ -972,9 +974,10 @@ def build_market_regime(d):
             "fx": fx_bias,
             "volatility": vol_bias,
         },
+        "structure": {"gex": gex_structure},
         "factors": factors,
         "history": history,
-        "method": "Rules-based synthesis of NDX, VIX, DXY, modeled GEX, FX strength and macro regime. Not a forecast or trade signal."
+        "method": "Rules-based directional synthesis of NDX, VIX, DXY, FX strength and macro regime. GEX is reported separately as market structure/risk, not a directional vote. Not a forecast or trade signal."
     }
 
 def build_macro(previous_macro=None):
@@ -1858,6 +1861,8 @@ def main():
         }
         out = []
         seen = set()
+        now_utc = datetime.now(timezone.utc)
+        max_age_hours = 7 * 24
         for item in items or []:
             # General-news feeds can return either dictionaries or plain
             # headline strings. Normalize both forms before reading fields.
@@ -1874,6 +1879,29 @@ def main():
 
             text = title.lower()
             if not title:
+                continue
+            # The general-news fallback must obey the same freshness contract
+            # as dedicated FX news; otherwise an old headline can bypass the
+            # seven-day hard gate when the dedicated feed is empty.
+            if published_at is None:
+                continue
+            try:
+                if isinstance(published_at, datetime):
+                    pub_dt = published_at
+                else:
+                    raw_dt = str(published_at).strip()
+                    try:
+                        pub_dt = parsedate_to_datetime(raw_dt)
+                    except Exception:
+                        pub_dt = datetime.fromisoformat(raw_dt.replace('Z', '+00:00'))
+                if pub_dt.tzinfo is None:
+                    pub_dt = pub_dt.replace(tzinfo=timezone.utc)
+                pub_dt = pub_dt.astimezone(timezone.utc)
+                age_hours = (now_utc - pub_dt).total_seconds() / 3600.0
+                if age_hours < -2 or age_hours > max_age_hours:
+                    continue
+                published_at = pub_dt.isoformat()
+            except Exception:
                 continue
             hits = []
             for code, terms in currency_patterns.items():
