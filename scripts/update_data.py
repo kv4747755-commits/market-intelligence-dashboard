@@ -22,7 +22,7 @@ def snap(ticker):
     try:
         h = yf.Ticker(ticker).history(period="10d", interval="1d", auto_adjust=False)
         if h.empty:
-            return None, None
+            return None, None, None
         c = h["Close"].dropna()
         v = sf(c.iloc[-1])
         p1 = sf(c.iloc[-2]) if len(c) >= 2 else None
@@ -887,10 +887,11 @@ def build_market_regime(d):
 
     gex = sf(options.get("net_gex"))
     if gex is not None:
-        # GEX is not directional by itself: positive gamma tends to dampen
-        # moves, so it contributes only a modest stabilizing/defensive vote.
-        add("GEX", 1 if gex > 0 else -1 if gex < 0 else 0,
-            "Positive gamma" if gex > 0 else "Negative gamma" if gex < 0 else "Neutral gamma", "options")
+        # GEX is a volatility/market-structure regime, not a directional
+        # bullish/bearish asset signal. Keep it neutral in the directional
+        # composite and let the separate risk-state UI interpret its sign.
+        add("GEX", 0,
+            "Positive gamma (stabilizing)" if gex > 0 else "Negative gamma (expansion risk)" if gex < 0 else "Neutral gamma", "options")
 
     fx_summary = fx.get("strength_summary") or {}
     usd_score = sf(fx_summary.get("leader_score")) if fx_summary.get("leader") == "USD" else None
@@ -917,8 +918,8 @@ def build_market_regime(d):
         add("MACRO", macro_score, "; ".join(macro_parts) or "macro mixed", "macro regime")
 
     valid = [f for f in factors if f["score"] != 0]
-    total = sum(f["score"] for f in valid)
-    max_score = len(valid)
+    total = sum(f["score"] for f in factors)
+    max_score = len(factors)
     # Contribution is expressed in composite-score points so the individual
     # factor impacts are auditable and sum back to the displayed score.
     contribution_scale = (100.0 / max_score) if max_score else 0.0
