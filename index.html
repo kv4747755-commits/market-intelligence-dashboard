@@ -526,7 +526,7 @@ section:not(#home)>.title{padding-top:4px}
       <span><i class="legend-swatch" style="background:#ff617b"></i>Put Wall</span>
     </div>
     <div class="options-svg-wrap"><svg id="options-gex-svg" viewBox="0 0 980 500" preserveAspectRatio="none" aria-label="NDX net gamma exposure profile"></svg></div>
-    <div class="options-disclaimer">Bars show modeled net GEX by strike from the available listed option chain. Horizontal markers are the model's put wall, call wall, gamma flip and current spot. This is not a direct view of dealer inventory.</div>
+    <div class="options-disclaimer">Bars show modeled net GEX by strike from the available listed option chain. Horizontal markers are the model's put wall, call wall, zero gamma and current spot. This is not a direct view of dealer inventory.</div>
   </div>
   <div class="options-side">
     <div class="card options-side-card">
@@ -784,7 +784,7 @@ function renderGexProfile(o,p){
    const levels=[
      ['putWall',putWall,'opt-level-put','PUT WALL','#ff617b'],
      ['callWall',callWall,'opt-level-call','CALL WALL','#31e0a2'],
-     ['flip',flip,'opt-level-flip','GAMMA FLIP','#f4c95d'],
+     ['flip',flip,'opt-level-flip','ZERO GAMMA','#f4c95d'],
      ['spot',spot,'opt-level-spot','SPOT','#edf3f8']
    ];
    levels.forEach(([key,val,cls,label,color])=>{
@@ -929,7 +929,7 @@ function renderGexProfile(o,p){
        (Number.isFinite(callWall)&&Math.abs(r.strike-callWall)<1)?'level-call':
        (Number.isFinite(flip)&&Math.abs(r.strike-flip)<2)?'level-flip':
        (Number.isFinite(spot)&&Math.abs(r.strike-spot)<2)?'level-spot':'';
-     const tag=cls==='level-put'?'PUT WALL':cls==='level-call'?'CALL WALL':cls==='level-flip'?'GAMMA FLIP':cls==='level-spot'?'SPOT':'';
+     const tag=cls==='level-put'?'PUT WALL':cls==='level-call'?'CALL WALL':cls==='level-flip'?'ZERO GAMMA':cls==='level-spot'?'SPOT':'';
      const bar=Math.min(100,Math.abs(r.net)/(Math.max(1,...list.map(x=>Math.abs(x.net))))*100);
      const dist=Number.isFinite(spot)?((r.strike-spot)/spot*100):NaN;
      return `<tr class="${cls}"><td><b>${f(r.strike,0)}</b>${tag?`<span class="small" style="margin-left:6px">${tag}</span>`:''}</td><td>${Number.isFinite(dist)?`${dist>=0?'+':''}${dist.toFixed(2)}%`:'—'}</td><td>${f(r.call,0)}</td><td>${f(r.put,0)}</td><td class="gex-number ${r.net<0?'down':'up'}">${f(r.net,0)}<span class="gex-mini"><i style="width:${bar}%;background:${r.net<0?'#ff617b':'#31e0a2'}"></i></span></td><td>${r.net<0?'Negative GEX':'Positive GEX'}</td></tr>`;
@@ -948,7 +948,7 @@ function renderGexProfile(o,p){
  levelInsight('Call wall',callWall); levelInsight('Put wall',putWall);
  if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled ${selectedLabel.toLowerCase()} exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
  document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No valid GEX interpretation available.</div>';
- document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Gamma Flip: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span></div>`;
+ document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Zero Gamma: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma; live 0DTE zero gamma blends today's volume proxy with standing OI. This is not direct dealer inventory.</span></div>`;
  render();
 }
 
@@ -1150,7 +1150,7 @@ async function load(){
    const gexText=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
    const flipText=Number.isFinite(activeFlip)?fmt(activeFlip):'—';
    document.getElementById('dealer').innerHTML=
-     `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Gamma Flip: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma. This is not direct dealer inventory.</span>`;
+     `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Zero Gamma: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma; live 0DTE zero gamma blends today's volume proxy with standing OI. This is not direct dealer inventory.</span>`;
  }else{
    document.getElementById('dealer').textContent='Waiting for a valid option chain. No dealer-positioning number is fabricated.';
  }
