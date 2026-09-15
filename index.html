@@ -373,7 +373,7 @@ section:not(#home)>.title{padding-top:4px}
 <div class="title">NASDAQ COMMAND CENTER</div>
 <div class="grid">
 <div class="card"><div class="label">NASDAQ-100 INDEX (NDX)</div><div class="big" id="ndx1">—</div><div id="ndxchg1" class="small">—</div></div>
-<div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small" id="iv1-sub">Only from valid chain</div></div>
+<div class="card"><div class="label">ATM IV</div><div class="big" id="iv1">—</div><div class="small">Only from valid chain</div></div>
 <div class="card"><div class="label" id="home-em-label">Expected Move</div><div class="big" id="em1">—</div><div id="emp1" class="small">—</div></div>
 <div class="card"><div class="label">Gamma Regimes</div><div class="gamma-regime-pair"><div class="gamma-regime-mini"><div class="small">0DTE</div><b id="gamma-0dte">—</b><span id="gamma-0dte-sub">Intraday gamma</span></div><div class="gamma-regime-mini"><div class="small">ALL EXP</div><b id="gamma-all">—</b><span id="gamma-all-sub">Multi-expiry gamma</span></div></div></div>
 </div>
@@ -444,10 +444,10 @@ section:not(#home)>.title{padding-top:4px}
 <section id="options">
 <div class="title">OPTIONS COMMAND CENTER <span class="small">NDX gamma • open interest • volatility structure</span></div>
 <div class="grid">
-<div class="card"><span id="options-session-badge" class="options-session-badge">SESSION —</span><div class="label">ATM IV</div><div class="big" id="iv2">—</div><div class="small" id="opt-expiry-mode">Expiry mode —</div></div>
+<div class="card"><span id="options-session-badge" class="options-session-badge">SESSION —</span><div class="label" id="atm-iv-label">ATM IV</div><div class="big" id="iv2">—</div><div class="small" id="opt-expiry-mode">Expiry mode —</div></div>
 <div class="card"><div class="label" id="em-label">Expected Move</div><div class="big" id="em2">—</div><div class="small" id="opt-em-points">—</div></div>
-<div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div><div class="small">Put OI / Call OI</div></div>
-<div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div><div class="small">Modeled notional exposure</div></div>
+<div class="card"><div class="label">OI PCR</div><div class="big" id="pcr">—</div><div class="small" id="pcr-sub">Put OI / Call OI</div></div>
+<div class="card"><div class="label">Net GEX</div><div class="big" id="gex">—</div><div class="small" id="gex-sub">Modeled notional exposure</div></div>
 </div>
 <div class="options-layout">
   <div class="card options-chart-card">
@@ -946,20 +946,25 @@ async function load(){
  document.getElementById('opt-expiry-mode').textContent=expiryText;
  document.getElementById('em-label').textContent=`Expected Move • ${expiryMode}`;
  const homeEmLabel=document.getElementById('home-em-label'); if(homeEmLabel) homeEmLabel.textContent=`Expected Move • ${expiryMode}`;
- const hasSnapshot=typeof o.atm_iv==='number' && typeof o.expected_move_pct==='number';
- const previousSession=currentSession==='PRE_MARKET' && hasSnapshot;
- const iv=(live||previousSession)?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
- const em=(live||previousSession)?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
+ const hasIv=typeof o.atm_iv==='number' && Number.isFinite(o.atm_iv);
+ const hasEm=typeof o.expected_move_pct==='number' && Number.isFinite(o.expected_move_pct);
+ const hasEmPoints=typeof o.expected_move_points==='number' && Number.isFinite(o.expected_move_points);
+ const previousSession=currentSession!=='LIVE';
+ const sessionDataLabel=previousSession?'PREVIOUS SESSION':'LIVE';
+ const iv=hasIv?fmt(o.atm_iv,2)+'%':'UNAVAILABLE';
+ const em=hasEm?'±'+fmt(o.expected_move_pct,2)+'%':'UNAVAILABLE';
  const optionsStatusLabel=currentSession==='LIVE'?'LIVE':(currentSession==='PRE_MARKET'?'PRE-MARKET':'CLOSED');
- const optionDataLabel=previousSession?'PREVIOUS SESSION':(live?'LIVE DATA':'NO VALID CHAIN');
-  document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV</span><b>${iv}</b><span class="small">${optionDataLabel}</span></div><div class="kpi"><span class="small">EXPECTED MOVE • ${expiryMode}</span><b>${em}</b><span class="small">${previousSession?'FINAL PREVIOUS 0DTE':'MODELED CURRENT SESSION'}</span></div><div class="kpi"><span class="small">STATUS</span><b class="${currentSession==='LIVE'?'up':'amber'}">${optionsStatusLabel}</b></div></div>`;
-  const osb=document.getElementById('options-session-badge'); if(osb){osb.textContent=optionsStatusLabel;osb.className='options-session-badge '+(currentSession==='LIVE'?'live':currentSession==='PRE_MARKET'?'premarket':'closed');}
-
+ const atmLabel=document.getElementById('atm-iv-label'); if(atmLabel) atmLabel.textContent=previousSession?'ATM IV • PREVIOUS SESSION':'ATM IV';
+ document.getElementById('opt-expiry-mode').textContent=previousSession?`PREVIOUS SESSION • ${o.expiry||'LAST VALID SNAPSHOT'}`:expiryText;
+ document.getElementById('em-label').textContent=previousSession?'EXPECTED MOVE • PREVIOUS SESSION':`Expected Move • ${expiryMode}`;
+ document.getElementById('options-summary').innerHTML=`<div class="kpis"><div class="kpi"><span class="small">ATM IV • ${sessionDataLabel}</span><b>${iv}</b></div><div class="kpi"><span class="small">EXPECTED MOVE • ${previousSession?'PREVIOUS SESSION':expiryMode}</span><b>${em}</b></div><div class="kpi"><span class="small">STATUS</span><b class="${currentSession==='LIVE'?'up':'amber'}">${optionsStatusLabel}</b></div></div>`;
+ const osb=document.getElementById('options-session-badge'); if(osb){osb.textContent=optionsStatusLabel;osb.className='options-session-badge '+(currentSession==='LIVE'?'live':currentSession==='PRE_MARKET'?'premarket':'closed');}
  ['iv1','iv2'].forEach(id=>document.getElementById(id).textContent=iv);
- const iv1sub=document.getElementById('iv1-sub'); if(iv1sub) iv1sub.textContent=previousSession?'Final previous 0DTE session':(live?'Current valid chain':'No valid chain available');
  ['em1','em2'].forEach(id=>document.getElementById(id).textContent=em);
- document.getElementById('emp1').textContent=(live||previousSession)?'≈ '+fmt(o.expected_move_points)+' points'+(previousSession?' • previous session':''):'No valid chain available';
- document.getElementById('opt-em-points').textContent=(live||previousSession)?'≈ '+fmt(o.expected_move_points)+' points'+(previousSession?' • previous session':''):'No valid chain available';
+ document.getElementById('emp1').textContent=hasEmPoints?'≈ '+fmt(o.expected_move_points)+' points'+(previousSession?' • previous session':''):'No valid chain available';
+ document.getElementById('opt-em-points').textContent=hasEmPoints?'≈ '+fmt(o.expected_move_points)+' points'+(previousSession?' • previous session':''):'No valid chain available';
+ const pcrSub=document.getElementById('pcr-sub'); if(pcrSub) pcrSub.textContent=previousSession?'Put OI / Call OI • previous session':'Put OI / Call OI';
+ const gexSub=document.getElementById('gex-sub'); if(gexSub) gexSub.textContent=previousSession?'Modeled notional exposure • previous session':'Modeled notional exposure';
 
  const dq=o.data_quality||{};
  const dqStatus=dq.status||'UNAVAILABLE';
@@ -1033,10 +1038,13 @@ async function load(){
    const stamp=d.generated_at?new Date(d.generated_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';
    const hasGexProfile=Object.values(o.profiles||{}).some(pr=>pr&&pr.status!=='unavailable'&&Array.isArray(pr.heatmap)&&pr.heatmap.length);
    const hasLegacyGex=Array.isArray(o.heatmap)&&o.heatmap.length || Array.isArray(o.oi_heatmap)&&o.oi_heatmap.length;
-   const inferredGexStatus=gexRefresh.status || (o.status==='live' && (hasGexProfile || hasLegacyGex) ? 'CALCULATED' : (o.model_error ? 'FAILED' : 'UNKNOWN'));
+   const inferredGexStatus=gexRefresh.status || ((hasGexProfile || hasLegacyGex) ? 'CALCULATED' : (o.model_error ? 'FAILED' : 'UNKNOWN'));
    const rs=String(inferredGexStatus).toUpperCase();
    const err=gexRefresh.error||o.model_error||'';
-   gexRefreshEl.textContent=`${gexRefreshEl.textContent} • DATA ${stamp} • GEX ${rs}${rs==='FAILED'?' • '+err:''}`;
+   const preMarketGex=__currentNySession()!=='LIVE';
+   gexRefreshEl.textContent=preMarketGex
+     ? `${gexRefreshEl.textContent} • PREVIOUS SESSION SNAPSHOT • GEX ${rs}`
+     : `${gexRefreshEl.textContent} • DATA ${stamp} • GEX ${rs}${rs==='FAILED'?' • '+err:''}`;
  }
 
  const rateRows=[['1M',r.y1m],['3M',r.y3m],['6M',r.y6m],['1Y',r.y1],['2Y',r.y2],['5Y',r.y5],['10Y',r.y10],['20Y',r.y20],['30Y',r.y30]];
