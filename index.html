@@ -136,6 +136,19 @@ section:not(#home)>.title{padding-top:4px}
 .fx-session-badge{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:4px 8px;border-radius:999px;border:1px solid #304355;background:#0d1822;color:#aebdcb;font-size:10px;font-weight:700;letter-spacing:.05em;vertical-align:middle}.fx-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.fx-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.fx-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 .fx-quant-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.fx-quant-chip{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0a121b}.fx-quant-chip span{display:block;color:#748496;font-size:10px;text-transform:uppercase;letter-spacing:.8px}.fx-quant-chip b{display:block;margin-top:4px;font-size:15px}.fx-quant-table{min-width:760px}.fx-quant-table th,.fx-quant-table td{padding:8px 7px;font-size:11px}.fx-quant-table td:nth-child(2){font-weight:700;font-size:13px}.fx-rank-up{color:var(--green);font-weight:700}.fx-rank-down{color:var(--red);font-weight:700}.fx-regime{font-weight:800;font-size:11px;letter-spacing:.05em}.fx-regime.bull{color:var(--green)}.fx-regime.bear{color:var(--red)}.fx-regime.mix{color:var(--amber)}.fx-decision-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.fx-decision{padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:#0a121b}.fx-decision .label{font-size:10px}.fx-decision b{display:block;margin-top:5px;font-size:16px}.fx-decision .small{margin-top:3px;display:block}@media(max-width:720px){.fx-quant-summary{grid-template-columns:repeat(2,1fr)}.fx-decision-grid{grid-template-columns:repeat(2,1fr)}.fx-quant-table{min-width:760px}}
 .fx-overview-grid{margin-top:10px}.compact-metric{padding:14px 16px}.compact-metric .big{font-size:29px}.compact-metric>span.small{display:block;margin-top:4px;color:#748496}.fx-pairs-card{padding-bottom:10px}.table-scroll{overflow-x:auto}.fx-pairs-table{min-width:620px;margin-top:10px}.fx-pairs-table th,.fx-pairs-table td{padding:8px 7px;font-size:12px}.fx-pairs-table td:nth-child(2){font-size:14px;font-weight:700}.fx-pair-edge{font-weight:700}.fx-state{font-size:10px;letter-spacing:.04em;color:#7f90a1}.fx-overview-grid .label{font-size:11px}
+
+@media(max-width:600px){
+  .fx-pairs-table{min-width:0;width:100%;table-layout:fixed}
+  .fx-pairs-table th,.fx-pairs-table td{padding:8px 5px;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fx-pairs-table th:nth-child(1),.fx-pairs-table td:nth-child(1){width:18%}
+  .fx-pairs-table th:nth-child(2),.fx-pairs-table td:nth-child(2),
+  .fx-pairs-table th:nth-child(6),.fx-pairs-table td:nth-child(6){display:none}
+  .fx-pairs-table th:nth-child(3),.fx-pairs-table td:nth-child(3),
+  .fx-pairs-table th:nth-child(4),.fx-pairs-table td:nth-child(4){width:16%}
+  .fx-pairs-table th:nth-child(5),.fx-pairs-table td:nth-child(5){width:28%}
+  .fx-pairs-table th:nth-child(7),.fx-pairs-table td:nth-child(7){width:22%}
+  .fx-pairs-card .small{line-height:1.35}
+}
 .options-session-badge{position:absolute;right:10px;top:9px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.05em;border:1px solid #304355;background:#0d1822;color:#aebdcb}.options-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.options-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.options-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 
 /* responsive: turn sidebar back into compact top navigation */
@@ -354,8 +367,9 @@ section:not(#home)>.title{padding-top:4px}
   </div>
   <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:12px;margin-top:12px">
     <div class="kpi" style="min-height:112px"><span class="small">CURRENT REGIME</span><b id="master-regime" style="font-size:28px">—</b><span class="small" id="master-regime-score">Score —</span></div>
-    <div class="kpi" style="min-height:112px"><span class="small">CONFIDENCE</span><b id="master-regime-confidence">—</b><span class="small">Based on available factor agreement + coverage</span></div>
+    <div class="kpi" style="min-height:112px"><span class="small">CONFIDENCE</span><b id="master-regime-confidence">—</b><span class="small">Based on available directional factor agreement + coverage</span></div>
   </div>
+  <div class="callout" id="master-gex-structure" style="margin-top:12px">Market structure: GEX is separate from the directional composite.</div>
   <div class="grid2" style="margin-top:12px">
     <div class="card"><h3>ASSET BIASES</h3><div class="watch-list" id="master-asset-bias"></div></div>
     <div class="card"><h3>REGIME DRIVERS</h3><div class="small" style="margin-bottom:8px">Factor contribution to the composite score. Positive = supportive; negative = defensive.</div><div id="master-regime-factors"></div></div>
@@ -454,7 +468,7 @@ section:not(#home)>.title{padding-top:4px}
 
 <div class="card fx-pairs-card" style="margin-top:12px">
 <h3>FX PAIR MATRIX</h3>
-<div class="small">Single decision table: price, 1D/5D momentum, relative currency edge, acceleration and regime. No duplicate pair cards.</div>
+<div class="small">Single decision table: 1D/5D momentum, relative currency edge and regime. Price + acceleration remain available on wider screens.</div>
 <div class="table-scroll"><table class="fx-pairs-table fx-quant-table"><thead><tr><th>PAIR</th><th>LAST</th><th>1D</th><th>5D</th><th>REL EDGE</th><th>MOM</th><th>STATE</th></tr></thead><tbody id="fx-pairs-table-body"><tr><td colspan="7">Waiting for FX snapshot…</td></tr></tbody></table></div>
 </div>
 
@@ -1031,6 +1045,14 @@ async function load(){
  const biasCls=v=>String(v||'').includes('BEARISH')||String(v||'').includes('WEAK')||String(v||'RISING')==='RISING RISK'?'down':String(v||'').includes('BULLISH')||String(v||'STRONG')||String(v||'FALLING')==='FALLING RISK'?'up':'amber';
  const mrBiasEl=document.getElementById('master-asset-bias');
  if(mrBiasEl)mrBiasEl.innerHTML=biasRows.map(([k,v])=>`<div class="watch-row"><span>${k}</span><b class="${biasCls(v)}">${safe(v||'—')}</b></div>`).join('');
+ const gexStruct=mr.structure?.gex||{};
+ const gexStructEl=document.getElementById('master-gex-structure');
+ if(gexStructEl){
+   const gn=Number(gexStruct.net_gex);
+   const gr=String(gexStruct.regime||'UNAVAILABLE').replaceAll('_',' ');
+   const rr=String(gexStruct.risk_read||'UNAVAILABLE').replaceAll('_',' ');
+   gexStructEl.innerHTML=Number.isFinite(gn)?`<b>MARKET STRUCTURE • GEX ${gr}</b><br><span class="small">Net GEX ${gn>=0?'+':''}${fmt(gn,2)} • ${rr}. GEX contributes <b>0</b> directional points to the Master Regime.</span>`:'<b>MARKET STRUCTURE • GEX UNAVAILABLE</b><br><span class="small">No valid modeled GEX is available for this snapshot.</span>';
+ }
  const factors=Array.isArray(mr.factors)?mr.factors:[];
  const factorEl=document.getElementById('master-regime-factors');
  const factorMove=x=>{let r=String(x.read||'');const f=String(x.factor||'');const prefix=f+' ';if(r.toUpperCase().startsWith(prefix.toUpperCase()))r=r.slice(prefix.length);return r||'No move detail';};
@@ -1070,10 +1092,17 @@ async function load(){
 
  const dq=o.data_quality||{};
  const dqStatus=dq.status||'UNAVAILABLE';
- const dqClass=dqStatus==='GOOD'?'up':'amber';
+ const dqClass=dqStatus==='GOOD'?'up':dqStatus==='LIMITED'?'amber':'down';
  const dqText=dqStatus==='GOOD'?'GOOD CHAIN COVERAGE':dqStatus==='LIMITED'?'LIMITED CHAIN DATA':'OPTION CHAIN UNAVAILABLE';
  const dqReason=dq.reason||'No quality assessment available.';
- document.getElementById('data-quality').innerHTML=`<b class="${dqClass}">${dqText}</b><br><span class="small">${dqReason}</span>${dq.strikes?`<br><span class="small">${dq.strikes} modeled strikes • ${dq.nonzero_oi_strikes||0} with non-zero OI • ${dq.near_atm_nonzero_strikes||0} non-zero strikes within ±5% of spot</span>`:''}`;
+ const generatedMs=Date.parse(d.generated_at||'');
+ const ageMin=Number.isFinite(generatedMs)?Math.max(0,(Date.now()-generatedMs)/60000):null;
+ const snapshotState=ageMin==null?'TIMESTAMP UNKNOWN':ageMin>45?'STALE SNAPSHOT':ageMin>30?'AGING SNAPSHOT':'FRESH SNAPSHOT';
+ const gexRefreshQuality=o.gex_refresh||{};
+ const gexState=String(gexRefreshQuality.status||((o.model_error)?'FAILED':'CALCULATED')).toUpperCase();
+ const gexLabel=gexState==='FAILED'?'GEX FAILED • LAST GOOD VALUE MAY BE STALE':(currentSession!=='LIVE'?'GEX PREVIOUS SESSION':'GEX '+gexState);
+ const newsCount=Array.isArray(fxNews)?fxNews.length:(Array.isArray(fxNews?.items)?fxNews.items.length:0);
+ document.getElementById('data-quality').innerHTML=`<b class="${dqClass}">${dqText}</b><br><span class="small">${dqReason}</span>${dq.strikes?`<br><span class="small">${dq.strikes} modeled strikes • ${dq.nonzero_oi_strikes||0} with non-zero OI • ${dq.near_atm_nonzero_strikes||0} non-zero strikes within ±5% of spot</span>`:''}<br><span class="small" style="display:block;margin-top:7px"><b>${snapshotState}</b>${ageMin!=null?` • snapshot age ${fmt(ageMin,0)} min`:''} • ${gexLabel} • FX news ${newsCount?'available':'unavailable'}</span>`;
 
  const cov=o.coverage||{};
  const confidence=String(o.gex_confidence||o.dealer_positioning?.confidence||'—').toUpperCase();
@@ -1251,16 +1280,17 @@ async function load(){
    const canonicalBias=canonicalReg==='RISK-ON'?'BULLISH':canonicalReg==='RISK-OFF'?'BEARISH':canonicalReg==='MIXED'?'MIXED':'UNAVAILABLE';
    const canonicalUsd=String(mr.asset_bias?.usd||'MIXED').toUpperCase();
    const canonicalFx=String(mr.asset_bias?.fx||'MIXED').toUpperCase();
+   const canonicalVol=String(mr.asset_bias?.volatility||'STABLE').toUpperCase();
    pulseReg.textContent=canonicalBias;
    pulseReg.className='pulse-regime '+(canonicalBias==='BEARISH'?'down':canonicalBias==='MIXED'?'amber':'up');
-   pulseNote.textContent=`${optImpact} options • ${vixImpact} volatility • ${macroImpact} macro • ${canonicalUsd} dollar`;
+   pulseNote.textContent=`${optImpact} options • ${canonicalVol} volatility • ${macroImpact} macro • ${canonicalUsd} dollar`;
    pulseNdx.textContent=Number.isFinite(spot)?fmt(spot,0):'—';
    pulseNdxChg.textContent=Number.isFinite(Number(p.ndx_change))?fmt(Number(p.ndx_change),2)+'%':'—';
    pulseRange.textContent=Number.isFinite(rangeLow)&&Number.isFinite(rangeHigh)?`${fmt(rangeLow,0)} – ${fmt(rangeHigh,0)}`:'—';
    const risk=gammaReg.includes('negative')?'EXPANSION RISK':gammaReg.includes('positive')?'MEAN-REVERSION':'MIXED';
    pulseRisk.textContent=risk; pulseRisk.className='pulse-value '+(risk==='EXPANSION RISK'?'amber':'');
    pulseRiskSub.textContent=gammaReg.includes('negative')?'Negative gamma can amplify moves':'Gamma regime from modeled option chain';
-   const drivers=[['OPT',optImpact],['VIX',vixImpact],['MACRO',macroImpact],['USD',canonicalUsd]];
+   const drivers=[['OPT',optImpact],['VIX',canonicalVol],['MACRO',macroImpact],['USD',canonicalUsd]];
    document.getElementById('pulse-drivers').innerHTML=drivers.map(x=>`<span class="driver-chip"><b>${x[0]}</b> ${x[1]}</span>`).join('');
    const pulseScore=Number.isFinite(canonicalScore)?Math.max(0,Math.min(100,50+canonicalScore/2)):50;
    document.getElementById('pulse-ring').style.background=`conic-gradient(${canonicalReg==='RISK-ON'?'var(--green)':canonicalReg==='RISK-OFF'?'var(--red)':'var(--amber)'} 0 ${pulseScore}%,#1a2a39 ${pulseScore}% 100%)`;
