@@ -631,15 +631,30 @@ function renderGexProfile(o,p){
  const selectedLabel=selectedGexMode==='ALL'?'ALL EXPIRATIONS':selectedGexMode;
  const sessionBadge=document.getElementById('gex-session-badge');
  if(sessionBadge){
-   const sessRaw=o.market_session||o.session_state||o.marketSession||window.__MI_DATA__?.options?.market_session||window.__MI_DATA__?.options?.session_state||window.__MI_DATA__?.market_session||'';
-    const profile0dte=o.profiles?.['0DTE'];
-    const inferredSess=(String(sessRaw).trim()||((profile0dte?.status==='live')?'LIVE':(profile0dte?.status==='premarket'?'PRE_MARKET':(profile0dte?.status==='closed'?'CLOSED':''))));
-    const sess=String(inferredSess).toUpperCase();
+   // Do not trust a stale data.json session flag. GitHub Actions can stop
+   // refreshing outside the trading window, leaving yesterday's LIVE state
+   // on the page. Derive the current regular U.S. session from the browser's
+   // New York clock so the UI cannot show LIVE after 4:00 p.m. ET.
+   let sess='CLOSED';
+   try{
+     const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());
+     const vals=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+     const weekday=String(vals.weekday||'');
+     const hour=Number(vals.hour), minute=Number(vals.minute);
+     const mins=hour*60+minute;
+     const weekdayOk=['Mon','Tue','Wed','Thu','Fri'].includes(weekday);
+     if(weekdayOk && mins>=9*60+30 && mins<16*60) sess='LIVE';
+     else if(weekdayOk && mins<9*60+30) sess='PRE_MARKET';
+     else sess='CLOSED';
+   }catch(e){
+     const sessRaw=o.market_session||o.session_state||o.marketSession||window.__MI_DATA__?.options?.market_session||window.__MI_DATA__?.options?.session_state||window.__MI_DATA__?.market_session||'';
+     sess=String(sessRaw||'CLOSED').toUpperCase();
+   }
    const is0dte=selectedGexMode==='0DTE';
    let label='SESSION —', cls='';
    if(sess==='PRE_MARKET'){ label=is0dte?'PRE-MARKET • PREVIOUS SESSION':'PRE-MARKET'; cls='premarket'; }
    else if(sess==='LIVE'){ label=is0dte?'LIVE • 0DTE ACTIVE':'LIVE SESSION'; cls='live'; }
-   else if(sess==='CLOSED'){ label=is0dte?'0DTE • CLOSED':'MARKET CLOSED'; cls='closed'; }
+   else { label=is0dte?'0DTE • CLOSED':'MARKET CLOSED'; cls='closed'; }
    sessionBadge.textContent=label; sessionBadge.className='gex-session-badge '+cls;
  }
  const topGex=document.getElementById('gex'); if(topGex) topGex.textContent=active&&Number.isFinite(Number(active.net_gex))?f(Number(active.net_gex),2):'—';
