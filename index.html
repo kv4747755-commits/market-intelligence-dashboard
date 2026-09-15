@@ -358,7 +358,7 @@ section:not(#home)>.title{padding-top:4px}
   </div>
   <div class="grid2" style="margin-top:12px">
     <div class="card"><h3>ASSET BIASES</h3><div class="watch-list" id="master-asset-bias"></div></div>
-    <div class="card"><h3>REGIME DRIVERS</h3><div class="watch-list" id="master-regime-factors"></div></div>
+    <div class="card"><h3>REGIME DRIVERS</h3><div class="small" style="margin-bottom:8px">Factor contribution to the composite score. Positive = supportive; negative = defensive.</div><div id="master-regime-factors"></div></div>
   </div>
   <div class="card" style="margin-top:12px"><h3>REGIME HISTORY</h3><div id="master-regime-history" class="small">No regime changes recorded yet.</div></div>
 </div>
@@ -1033,7 +1033,8 @@ async function load(){
  if(mrBiasEl)mrBiasEl.innerHTML=biasRows.map(([k,v])=>`<div class="watch-row"><span>${k}</span><b class="${biasCls(v)}">${safe(v||'—')}</b></div>`).join('');
  const factors=Array.isArray(mr.factors)?mr.factors:[];
  const factorEl=document.getElementById('master-regime-factors');
- if(factorEl)factorEl.innerHTML=factors.length?factors.map(x=>{const n=Number(x.score);const cls=n>0?'up':n<0?'down':'amber';return `<div class="watch-row"><span>${safe(x.factor)} <small>${safe(x.read||'')}</small></span><b class="${cls}">${n>0?'+':n<0?'−':'0'}</b></div>`}).join(''):'<div class="small">No usable regime factors available.</div>';
+ const factorMove=x=>{let r=String(x.read||'');const f=String(x.factor||'');const prefix=f+' ';if(r.toUpperCase().startsWith(prefix.toUpperCase()))r=r.slice(prefix.length);return r||'No move detail';};
+ if(factorEl)factorEl.innerHTML=factors.length?`<div style="display:grid;grid-template-columns:minmax(72px,.75fr) minmax(0,1.55fr) minmax(62px,.55fr);gap:10px;padding:0 0 7px;color:#8795a5;font-size:11px;letter-spacing:.08em;text-transform:uppercase"><span>Factor</span><span>Move / Read</span><span style="text-align:right">Contribution</span></div>`+factors.map(x=>{const n=Number(x.score);const c=Number(x.contribution);const cls=n>0?'up':n<0?'down':'amber';const cTxt=Number.isFinite(c)?`${c>0?'+':''}${c.toFixed(1)}`:'—';return `<div style="display:grid;grid-template-columns:minmax(72px,.75fr) minmax(0,1.55fr) minmax(62px,.55fr);gap:10px;align-items:center;padding:9px 0;border-top:1px solid #1c2b38"><span><b>${safe(x.factor)}</b></span><span class="small">${safe(factorMove(x))}</span><b class="${cls}" style="text-align:right">${cTxt}</b></div>`}).join(''):'<div class="small">No usable regime factors available.</div>';
  const hist=Array.isArray(mr.history)?mr.history:[];
  const histEl=document.getElementById('master-regime-history');
  if(histEl&&hist.length){histEl.innerHTML=hist.slice(-8).map((x,i)=>{const dt=x.timestamp?new Date(x.timestamp):null;const when=dt&&!Number.isNaN(dt.getTime())?dt.toLocaleString([],{month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';const cls=x.regime==='RISK-ON'?'up':x.regime==='RISK-OFF'?'down':'amber';return `<span style="display:inline-flex;gap:6px;align-items:center;margin:0 8px 8px 0;padding:7px 9px;border:1px solid #1c2b38;border-radius:8px"><b class="${cls}">${safe(x.regime)}</b><span>${when}</span></span>`}).join('');}
