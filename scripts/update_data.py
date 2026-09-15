@@ -20,21 +20,19 @@ def sf(x):
 
 def snap(ticker):
     try:
-        h = yf.Ticker(ticker).history(period="10d", interval="1d", auto_adjust=False)
+        h = yf.Ticker(ticker).history(period="5d", interval="1d", auto_adjust=False)
         if h.empty:
             return None, None
         c = h["Close"].dropna()
         v = sf(c.iloc[-1])
-        p1 = sf(c.iloc[-2]) if len(c) >= 2 else None
-        p5 = sf(c.iloc[-6]) if len(c) >= 6 else (sf(c.iloc[0]) if len(c) >= 2 else None)
-        ch1 = ((v / p1) - 1) * 100 if v is not None and p1 else None
-        ch5 = ((v / p5) - 1) * 100 if v is not None and p5 else None
-        return v, ch1, ch5
+        p = sf(c.iloc[-2]) if len(c) >= 2 else None
+        ch = ((v / p) - 1) * 100 if v is not None and p else None
+        return v, ch
     except Exception:
-        return None, None, None
+        return None, None
 
 
-def fetch_fx_snapshot(previous_fx=None):
+def fetch_fx_snapshot():
     """Build the FX market data layer used by the Forex command center.
 
     Rates are indicative daily snapshots from Yahoo Finance/yfinance.
@@ -58,12 +56,11 @@ def fetch_fx_snapshot(previous_fx=None):
 
     pairs = {}
     for pair, ticker in pair_tickers.items():
-        value, change, change5 = snap(ticker)
+        value, change = snap(ticker)
         pairs[pair] = {
             "ticker": ticker,
             "value": value,
             "change_pct": change,
-            "change_5d_pct": change5,
         }
 
     # Each pair contributes its percentage move to the base currency and the
@@ -106,74 +103,19 @@ def fetch_fx_snapshot(previous_fx=None):
         "WTI": "CL=F",
         "GOLD": "GC=F",
     }.items():
-        value, change, change5 = snap(ticker)
-        drivers[key] = {"value": value, "change_pct": change, "change_5d_pct": change5, "ticker": ticker}
-
-    # Five-day currency strength uses the same transparent pair-contribution model,
-    # but over a slower horizon. This prevents the dashboard from treating one
-    # noisy session as a full regime change.
-    contributions_5d = {}
-    for pair, (base, quote) in pair_currencies.items():
-        ch5 = sf(pairs.get(pair, {}).get("change_5d_pct"))
-        if ch5 is None:
-            continue
-        contributions_5d.setdefault(base, []).append(ch5)
-        contributions_5d.setdefault(quote, []).append(-ch5)
-    raw_strength_5d = {c: (sum(vals) / len(vals) if vals else None) for c, vals in contributions_5d.items()}
-    valid5 = [v for v in raw_strength_5d.values() if v is not None]
-    center5 = sum(valid5) / len(valid5) if valid5 else 0.0
-    strength_5d = {c: (round(v - center5, 3) if v is not None else None) for c, v in raw_strength_5d.items()}
-
-    # Rank change is compared with the previous saved FX snapshot when available.
-    previous_fx = previous_fx if isinstance(previous_fx, dict) else None
-    previous_rank = {}
-    if isinstance(previous_fx, dict):
-        for i, item in enumerate(previous_fx.get("strength_rank") or []):
-            if isinstance(item, dict) and item.get("currency"):
-                previous_rank[str(item["currency"])] = i + 1
-    rank_change = {}
-    for i, (c, _) in enumerate(ranked, 1):
-        rank_change[c] = (previous_rank[c] - i) if c in previous_rank else 0
-
-    leader = ranked[0] if ranked else (None, None)
-    laggard = ranked[-1] if ranked else (None, None)
-    spread = (leader[1] - laggard[1]) if leader[1] is not None and laggard[1] is not None else None
-    leader5 = max(((c, v) for c, v in strength_5d.items() if v is not None), key=lambda x: x[1], default=(None, None))
-    laggard5 = min(((c, v) for c, v in strength_5d.items() if v is not None), key=lambda x: x[1], default=(None, None))
-
-    # Pair-level relative edge plus a simple momentum regime. The edge is the
-    # current currency-strength spread; acceleration is 1D minus 1/5 of 5D.
-    for pair, payload in pairs.items():
-        base, quote = pair_currencies.get(pair, (pair[:3], pair[3:]))
-        b1, q1 = strength.get(base), strength.get(quote)
-        b5, q5 = strength_5d.get(base), strength_5d.get(quote)
-        edge = (b1 - q1) if b1 is not None and q1 is not None else None
-        edge5 = (b5 - q5) if b5 is not None and q5 is not None else None
-        acceleration = (edge - edge5 / 5.0) if edge is not None and edge5 is not None else None
-        payload["relative_edge_pct"] = round(edge, 3) if edge is not None else None
-        payload["relative_edge_5d_pct"] = round(edge5, 3) if edge5 is not None else None
-        payload["momentum_acceleration"] = round(acceleration, 3) if acceleration is not None else None
-        payload["regime"] = ("BULLISH" if edge is not None and edge > 0.05 and (acceleration is None or acceleration >= 0)
-                              else "BEARISH" if edge is not None and edge < -0.05 and (acceleration is None or acceleration <= 0)
-                              else "MIXED")
+        value, change = snap(ticker)
+        drivers[key] = {"value": value, "change_pct": change, "ticker": ticker}
 
     return {
         "status": "live" if any(x.get("value") is not None for x in pairs.values()) else "unavailable",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "pairs": pairs,
         "currency_strength": strength,
-        "currency_strength_5d": strength_5d,
-        "strength_rank": [{"currency": c, "score": v, "score_5d": strength_5d.get(c), "rank_change": rank_change.get(c, 0)} for c, v in ranked],
-        "strongest_currency": leader[0],
-        "weakest_currency": laggard[0],
-        "strength_summary": {
-            "leader": leader[0], "leader_score": leader[1],
-            "laggard": laggard[0], "laggard_score": laggard[1],
-            "spread": round(spread, 3) if spread is not None else None,
-            "leader_5d": leader5[0], "laggard_5d": laggard5[0],
-        },
+        "strength_rank": [{"currency": c, "score": v} for c, v in ranked],
+        "strongest_currency": ranked[0][0] if ranked else None,
+        "weakest_currency": ranked[-1][0] if ranked else None,
         "drivers": drivers,
-        "method": "Relative currency strength is model-derived from 1D and 5D percentage changes across tracked FX pairs; not a forecast or trade signal.",
+        "method": "Relative currency strength is model-derived from daily percentage changes across tracked FX pairs; not a forecast or trade signal.",
     }
 
 
@@ -272,27 +214,128 @@ def fetch_yfinance_fx_news():
     return items[:30]
 
 def fetch_fx_news():
-    """Fetch currency-specific headlines using several free fallback feeds.
+    """Fetch and rank genuinely currency-relevant headlines.
 
-    Google News RSS is useful but can intermittently return no data from CI.
-    We therefore combine it with Investing.com Forex RSS and Yahoo Finance's
-    public search/news endpoint. Only headline metadata is stored.
+    A feed can be tagged with a currency because of the query/ticker that produced
+    it, but that tag is NOT trusted by itself.  The headline must contain explicit
+    currency/central-bank/country evidence before it is shown under that currency.
+    Generic company, China-tech, stock and commodity headlines are rejected.
     """
-    currency_terms = {
-        "USD": ["dollar", "DXY", "Federal Reserve", "Fed", "USD"],
-        "EUR": ["euro", "ECB", "EURUSD", "EUR"],
-        "GBP": ["pound", "sterling", "Bank of England", "GBP"],
-        "JPY": ["yen", "Bank of Japan", "BoJ", "JPY"],
-        "CHF": ["Swiss franc", "SNB", "CHF"],
-        "AUD": ["Australian dollar", "RBA", "AUD"],
-        "CAD": ["Canadian dollar", "Bank of Canada", "CAD"],
-        "NZD": ["New Zealand dollar", "RBNZ", "NZD"],
-        "INR": ["rupee", "RBI", "INR", "India currency"],
-        "CNY": ["yuan", "renminbi", "PBOC", "CNY", "China currency"],
+    currency_rules = {
+        "USD": {
+            "terms": [r"\bus dollar\b", r"\bdollar\b", r"\bdxy\b", r"\bfederal reserve\b", r"\bfed\b", r"\bfomc\b", r"\btreasury\b", r"\btreasuries\b", r"\bus yields?\b", r"\bamerican economy\b", r"\bus economy\b"],
+            "countries": [r"\bunited states\b", r"\bus\b", r"\bu\.s\.\b", r"\bamerica\b", r"\bamerican\b"],
+        },
+        "EUR": {
+            "terms": [r"\beuro\b", r"\beurozone\b", r"\beuro area\b", r"\becb\b", r"\beuropean central bank\b", r"\beurusd\b", r"\beuropean economy\b"],
+            "countries": [r"\bgermany\b", r"\bfrance\b", r"\bitaly\b", r"\bspain\b", r"\bnetherlands\b", r"\beuropean union\b", r"\beu\b"],
+        },
+        "GBP": {
+            "terms": [r"\bpound\b", r"\bsterling\b", r"\bgbpusd\b", r"\bbank of england\b", r"\bboe\b", r"\buk economy\b", r"\bbritish economy\b"],
+            "countries": [r"\bunited kingdom\b", r"\buk\b", r"\bbritain\b", r"\bbritish\b", r"\bengland\b"],
+        },
+        "JPY": {
+            "terms": [r"\byen\b", r"\busdjpy\b", r"\bbank of japan\b", r"\bboj\b", r"\bjapanese economy\b"],
+            "countries": [r"\bjapan\b", r"\bjapanese\b"],
+        },
+        "CHF": {
+            "terms": [r"\bswiss franc\b", r"\bchf\b", r"\bsnb\b", r"\bswiss national bank\b", r"\bswiss economy\b"],
+            "countries": [r"\bswitzerland\b", r"\bswiss\b"],
+        },
+        "AUD": {
+            "terms": [r"\baustralian dollar\b", r"\baussie\b", r"\baudusd\b", r"\brba\b", r"\breserve bank of australia\b", r"\baustralian economy\b"],
+            "countries": [r"\baustralia\b", r"\baustralian\b"],
+        },
+        "CAD": {
+            "terms": [r"\bcanadian dollar\b", r"\bloonie\b", r"\busdcad\b", r"\bbank of canada\b", r"\bboc\b", r"\bcanadian economy\b"],
+            "countries": [r"\bcanada\b", r"\bcanadian\b"],
+        },
+        "NZD": {
+            "terms": [r"\bnew zealand dollar\b", r"\bkiwi\b", r"\bnzdusd\b", r"\brbnz\b", r"\breserve bank of new zealand\b", r"\bnew zealand economy\b"],
+            "countries": [r"\bnew zealand\b", r"\bnew zealanders?\b"],
+        },
+        "INR": {
+            "terms": [r"\brupee\b", r"\bindian rupee\b", r"\busdinr\b", r"\brbi\b", r"\breserve bank of india\b", r"\bindian economy\b"],
+            "countries": [r"\bindia\b", r"\bindian\b"],
+        },
+        "CNY": {
+            "terms": [r"\byuan\b", r"\brenminbi\b", r"\busdcny\b", r"\bpboc\b", r"\bpeople's bank of china\b", r"\bchinese yuan\b", r"\bchinese economy\b"],
+            "countries": [r"\bchina\b", r"\bchinese\b"],
+        },
     }
+
+    # Topics that are materially useful for FX decision-making.
+    topic_rules = [
+        ("MONETARY_POLICY", [r"central bank", r"interest rate", r"rate hike", r"rate cut", r"rate decision", r"policy rate", r"fomc", r"ecb", r"boe", r"boj", r"rba", r"rbnz", r"snb", r"rbi", r"pboc"]),
+        ("INFLATION", [r"inflation", r"cpi", r"ppi", r"consumer prices?", r"producer prices?", r"price pressure"]),
+        ("LABOR", [r"jobs", r"employment", r"payroll", r"nonfarm", r"unemployment", r"wages?", r"jobless claims"]),
+        ("GROWTH", [r"gdp", r"growth", r"recession", r"manufacturing", r"services pmi", r"pmi", r"retail sales", r"industrial production"]),
+        ("FX_MARKET", [r"forex", r"currency", r"exchange rate", r"fx market", r"dollar", r"euro", r"pound", r"yen", r"yuan", r"rupee", r"franc", r"sterling"]),
+        ("INTERVENTION", [r"intervention", r"currency intervention", r"verbal intervention", r"defend.*currency", r"buying.*currency", r"selling.*currency"]),
+        ("TRADE", [r"tariff", r"trade deficit", r"trade surplus", r"exports?", r"imports?", r"trade war", r"sanctions?"]),
+        ("COMMODITIES", [r"oil", r"crude", r"opec", r"commodity", r"iron ore", r"copper"]),
+        ("RISK", [r"risk[- ]off", r"risk[- ]on", r"safe haven", r"geopolit", r"war", r"sanctions?"]),
+    ]
+    high_topics = {"MONETARY_POLICY", "INFLATION", "LABOR", "INTERVENTION"}
+    reject_terms = [
+        r"earnings call", r"revenue", r"ipo", r"cash burn", r"shares rebound", r"stock jumps?", r"stock falls?",
+        r"technology", r"ai company", r"artificial intelligence", r"quarterly results", r"company shares", r"investor relations",
+        r"sports", r"celebrity", r"movie", r"entertainment", r"lottery", r"casino", r"recipe", r"restaurant",
+    ]
 
     items = []
     seen_titles = set()
+
+    def classify(title, provided=None):
+        text = re.sub(r"\s+", " ", str(title or "").strip().lower())
+        if not text:
+            return None
+        if any(re.search(pat, text) for pat in reject_terms):
+            return None
+
+        candidates = []
+        for code, cfg in currency_rules.items():
+            term_hits = [pat for pat in cfg["terms"] if re.search(pat, text)]
+            country_hits = [pat for pat in cfg["countries"] if re.search(pat, text)]
+            # Direct currency/central-bank/pair language is strong evidence.
+            score = 0
+            if term_hits:
+                score += 5 + 2 * min(len(term_hits) - 1, 3)
+            # Country-only evidence is accepted only when paired with FX/macro context.
+            if country_hits:
+                score += 2
+            macro_context = any(re.search(pat, text) for pat in [
+                r"forex", r"currency", r"exchange rate", r"central bank", r"interest rate", r"rate decision",
+                r"inflation", r"cpi", r"ppi", r"gdp", r"jobs", r"employment", r"payroll", r"unemployment",
+                r"yield", r"bond", r"tariff", r"trade", r"intervention", r"economy", r"economic",
+            ])
+            if country_hits and macro_context:
+                score += 3
+            if term_hits:
+                candidates.append((score, code, term_hits, country_hits))
+
+        if not candidates:
+            return None
+        candidates.sort(reverse=True, key=lambda x: x[0])
+        score, code, term_hits, country_hits = candidates[0]
+        if score < 5:
+            return None
+
+        topic = "OTHER"
+        topic_score = 0
+        for name, patterns in topic_rules:
+            hits = sum(1 for pat in patterns if re.search(pat, text))
+            if hits > topic_score:
+                topic, topic_score = name, hits
+        if topic_score == 0:
+            return None
+
+        # A provided feed tag is merely a fallback tie-breaker; never override
+        # stronger headline evidence with it.
+        if provided and str(provided).upper() == code:
+            score += 1
+        impact = "HIGH" if topic in high_topics or score >= 11 else ("MEDIUM" if score >= 7 else "LOW")
+        return code, score, topic, impact
 
     def add_item(title, link, source, published_at, currency=None):
         title = (title or "").strip()
@@ -301,136 +344,95 @@ def fetch_fx_news():
         if not title:
             return
         normalized = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
-        key = " ".join(normalized.split()[:16])
+        key = " ".join(normalized.split()[:20])
         if not key or key in seen_titles:
             return
-        seen_titles.add(key)
-
-        if currency is None:
-            text = title.lower()
-            # Prefer longer/more specific phrases before short ticker tokens.
-            for code, terms in currency_terms.items():
-                if any(term.lower() in text for term in terms if len(term) > 3):
-                    currency = code
-                    break
-        if currency is None:
+        result = classify(title, currency)
+        if not result:
             return
+        code, score, topic, impact = result
+        seen_titles.add(key)
         items.append({
             "title": title,
             "link": link,
             "source": source,
             "published_at": published_at,
-            "currency": currency,
+            "currency": code,
+            "relevance_score": score,
+            "impact": impact,
+            "topic": topic,
         })
 
-    # 0) yfinance/Yahoo Finance news layer. This is the preferred source because
-    # it uses the same library/access path already used successfully for prices.
+    # 0) yfinance/Yahoo Finance layer.
     for story in fetch_yfinance_fx_news():
-        title = story.get("title") or ""
-        link = story.get("link") or ""
-        source = story.get("source") or "Yahoo Finance"
-        published_at = story.get("published_at")
-        add_item(title, link, source, published_at, story.get("currency"))
+        add_item(story.get("title"), story.get("link"), story.get("source"), story.get("published_at"), story.get("currency"))
 
-    # 1) Google News RSS: broad currency-specific searches.
+    # 1) Google News RSS: targeted macro/FX searches.
     google_queries = [
-        'dollar DXY Federal Reserve forex',
-        'euro ECB EURUSD forex',
-        'pound sterling Bank of England forex',
-        'yen Bank of Japan JPY forex',
-        'Swiss franc SNB forex',
-        'Australian dollar RBA forex',
-        'Canadian dollar Bank of Canada oil forex',
-        'New Zealand dollar RBNZ forex',
-        'rupee RBI USDINR forex',
-        'yuan PBOC USDCNY forex',
+        'dollar DXY Federal Reserve forex', 'euro ECB EURUSD forex', 'pound sterling Bank of England forex',
+        'yen Bank of Japan JPY forex', 'Swiss franc SNB forex', 'Australian dollar RBA forex',
+        'Canadian dollar Bank of Canada oil forex', 'New Zealand dollar RBNZ forex',
+        'rupee RBI USDINR forex', 'yuan PBOC USDCNY forex',
     ]
     for query in google_queries:
-        url = (
-            "https://news.google.com/rss/search?q="
-            + urllib.parse.quote(query)
-            + "&hl=en-US&gl=US&ceid=US:en"
-        )
+        url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(query) + "&hl=en-US&gl=US&ceid=US:en"
         try:
-            req = Request(url, headers={
-                "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
-            })
+            req = Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/2.0)"})
             with urlopen(req, timeout=12) as r:
                 root = ET.fromstring(r.read())
-            for item in root.findall(".//item")[:8]:
+            for item in root.findall(".//item")[:10]:
                 title = item.findtext("title") or ""
                 link = item.findtext("link") or ""
                 pub = item.findtext("pubDate") or ""
                 source_node = item.find("source")
                 source = (source_node.text or "").strip() if source_node is not None else "Google News"
-                published_at = None
+                published_at = pub
                 if pub:
                     try:
                         published_at = parsedate_to_datetime(pub).astimezone(timezone.utc).isoformat()
                     except Exception:
-                        published_at = pub
+                        pass
                 add_item(title, link, source, published_at)
         except Exception:
             continue
 
-    # 2) Investing.com Forex RSS: a stable category feed and useful fallback.
-    investing_urls = [
-        "https://in.investing.com/rss/news_1.rss",
-        "https://www.investing.com/rss/news_1.rss",
-    ]
-    for url in investing_urls:
+    # 2) Investing.com Forex RSS fallback.
+    for url in ["https://in.investing.com/rss/news_1.rss", "https://www.investing.com/rss/news_1.rss"]:
         try:
-            req = Request(url, headers={
-                "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
-            })
+            req = Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/2.0)"})
             with urlopen(req, timeout=12) as r:
                 root = ET.fromstring(r.read())
-            for item in root.findall(".//item")[:30]:
+            for item in root.findall(".//item")[:40]:
                 title = item.findtext("title") or ""
                 link = item.findtext("link") or ""
                 pub = item.findtext("pubDate") or ""
-                published_at = None
+                published_at = pub
                 if pub:
                     try:
                         published_at = parsedate_to_datetime(pub).astimezone(timezone.utc).isoformat()
                     except Exception:
-                        published_at = pub
+                        pass
                 add_item(title, link, "Investing.com", published_at)
             if items:
                 break
         except Exception:
             continue
 
-    # 3) Yahoo Finance public search/news endpoint: targeted per currency.
+    # 3) Yahoo public search/news fallback.
     yahoo_queries = {
-        "USD": "USD dollar DXY Fed",
-        "EUR": "EURUSD euro ECB",
-        "GBP": "GBPUSD pound Bank England",
-        "JPY": "USDJPY yen Bank Japan",
-        "CHF": "USDCHF Swiss franc SNB",
-        "AUD": "AUDUSD Australian dollar RBA",
-        "CAD": "USDCAD Canadian dollar Bank Canada oil",
-        "NZD": "NZDUSD New Zealand dollar RBNZ",
-        "INR": "USDINR rupee RBI",
-        "CNY": "USDCNY yuan PBOC",
+        "USD": "USD dollar DXY Fed", "EUR": "EURUSD euro ECB", "GBP": "GBPUSD pound Bank England",
+        "JPY": "USDJPY yen Bank Japan", "CHF": "USDCHF Swiss franc SNB", "AUD": "AUDUSD Australian dollar RBA",
+        "CAD": "USDCAD Canadian dollar Bank Canada oil", "NZD": "NZDUSD New Zealand dollar RBNZ",
+        "INR": "USDINR rupee RBI", "CNY": "USDCNY yuan PBOC",
     }
     for currency, query in yahoo_queries.items():
         try:
-            params = urllib.parse.urlencode({
-                "q": query,
-                "quotesCount": "0",
-                "newsCount": "5",
-            })
+            params = urllib.parse.urlencode({"q": query, "quotesCount": "0", "newsCount": "6"})
             url = "https://query1.finance.yahoo.com/v1/finance/search?" + params
-            req = Request(url, headers={
-                "User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/1.0)"
-            })
+            req = Request(url, headers={"User-Agent": "Mozilla/5.0 (compatible; MarketIntelligenceDashboard/2.0)"})
             with urlopen(req, timeout=8) as r:
                 payload = json.loads(r.read().decode("utf-8", errors="replace"))
-            for story in (payload.get("news") or [])[:5]:
-                title = story.get("title") or ""
-                link = story.get("link") or story.get("url") or ""
-                source = story.get("publisher") or "Yahoo Finance"
+            for story in (payload.get("news") or [])[:6]:
                 ts = story.get("providerPublishTime")
                 published_at = None
                 if isinstance(ts, (int, float)):
@@ -438,22 +440,18 @@ def fetch_fx_news():
                         published_at = datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
                     except Exception:
                         pass
-                add_item(title, link, source, published_at, currency)
+                add_item(story.get("title"), story.get("link") or story.get("url"), story.get("publisher") or "Yahoo Finance", published_at, currency)
         except Exception:
             continue
 
-    # Prefer fresh stories, but keep older stories if a feed is sparse.
-    def sort_key(x):
-        return x.get("published_at") or ""
-
-    items.sort(key=sort_key, reverse=True)
+    # Highest decision value first, then freshness.  Hard cap keeps the UI compact.
+    items.sort(key=lambda x: (x.get("relevance_score", 0), x.get("published_at") or ""), reverse=True)
     return {
         "status": "live" if items else "unavailable",
-        "source": "yfinance Yahoo Finance news/search + Google News RSS + Investing.com Forex RSS + Yahoo Finance search/news",
+        "source": "Relevance-filtered yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        "items": items[:20],
+        "items": items[:12],
     }
-
 
 def fetch_news():
     """Fetch and rank recent market-relevant headlines.
@@ -913,14 +911,14 @@ def main():
         ("ndx", "^NDX"), ("dxy", "DX-Y.NYB"),
         ("eurusd", "EURUSD=X"), ("vix", "^VIX")
     ]:
-        v, ch, _ = snap(ticker)
+        v, ch = snap(ticker)
         if v is not None:
             d["prices"][key] = v
             d["prices"][key + "_change"] = ch
 
     # FX command-center layer: major pairs, relative currency strength and
     # cross-market commodity drivers. This is additive and does not alter GEX.
-    d["fx"] = fetch_fx_snapshot(d.get("fx") if isinstance(d.get("fx"), dict) else None)
+    d["fx"] = fetch_fx_snapshot()
     fx_pairs = d["fx"].get("pairs", {})
     for pair, payload in fx_pairs.items():
         if payload.get("value") is not None:
@@ -936,7 +934,7 @@ def main():
     for key, ticker in [
         ("y3m", "^IRX"), ("y10", "^TNX"), ("y30", "^TYX")
     ]:
-        v, _, _ = snap(ticker)
+        v, _ = snap(ticker)
         if v is not None:
             d["rates"][key] = v
 
