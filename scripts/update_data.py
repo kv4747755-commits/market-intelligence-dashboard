@@ -919,6 +919,11 @@ def build_market_regime(d):
     valid = [f for f in factors if f["score"] != 0]
     total = sum(f["score"] for f in valid)
     max_score = len(valid)
+    # Contribution is expressed in composite-score points so the individual
+    # factor impacts are auditable and sum back to the displayed score.
+    contribution_scale = (100.0 / max_score) if max_score else 0.0
+    for f in factors:
+        f["contribution"] = round(f["score"] * contribution_scale, 1)
     normalized = (total / max_score * 100.0) if max_score else None
     if normalized is None:
         regime_label = "UNAVAILABLE"
