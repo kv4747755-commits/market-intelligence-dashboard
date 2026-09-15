@@ -960,8 +960,8 @@ async function load(){
 
  document.getElementById('ndx1').textContent=fmt(p.ndx);
  document.getElementById('ndxchg1').textContent=pct(p.ndx_change);
- document.getElementById('eur').textContent=fmt(p.eurusd,5);
- document.getElementById('eurchg').textContent=pct(p.eurusd_change);
+ const eurTop=document.getElementById('eur'); if(eurTop) eurTop.textContent=fmt(p.eurusd,5);
+ const eurTopChg=document.getElementById('eurchg'); if(eurTopChg) eurTopChg.textContent=pct(p.eurusd_change);
  document.getElementById('dxy').textContent=fmt(p.dxy);
  document.getElementById('dxychg').textContent=pct(p.dxy_change);
  document.getElementById('vix').textContent=fmt(p.vix);
