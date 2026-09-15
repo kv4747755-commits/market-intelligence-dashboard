@@ -131,8 +131,10 @@ body:after{
 /* visual section separators */
 section:not(#home){border-top:1px solid #101f2c;margin-top:10px}
 section:not(#home)>.title{padding-top:4px}
-#nasdaq .card:first-child,#forex .card:first-child,#macro .card:first-child{position:relative}
-#nasdaq .card:first-child:before,#forex .card:first-child:before,#macro .card:first-child:before{content:"LIVE";position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7}
+#nasdaq .card:first-child,#macro .card:first-child{position:relative}
+#nasdaq .card:first-child:before,#macro .card:first-child:before{content:"LIVE";position:absolute;right:10px;top:9px;font-size:8px;letter-spacing:1px;color:#55d9a7}
+.fx-session-badge{display:inline-flex;align-items:center;gap:6px;margin-left:8px;padding:4px 8px;border-radius:999px;border:1px solid #304355;background:#0d1822;color:#aebdcb;font-size:10px;font-weight:700;letter-spacing:.05em;vertical-align:middle}.fx-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.fx-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.fx-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
+.fx-overview-grid{margin-top:10px}.compact-metric{padding:14px 16px}.compact-metric .big{font-size:29px}.compact-metric>span.small{display:block;margin-top:4px;color:#748496}.fx-pairs-card{padding-bottom:10px}.table-scroll{overflow-x:auto}.fx-pairs-table{min-width:620px;margin-top:10px}.fx-pairs-table th,.fx-pairs-table td{padding:8px 7px;font-size:12px}.fx-pairs-table td:nth-child(2){font-size:14px;font-weight:700}.fx-pair-edge{font-weight:700}.fx-state{font-size:10px;letter-spacing:.04em;color:#7f90a1}.fx-overview-grid .label{font-size:11px}
 .options-session-badge{position:absolute;right:10px;top:9px;padding:3px 7px;border-radius:999px;font-size:8px;font-weight:700;letter-spacing:.05em;border:1px solid #304355;background:#0d1822;color:#aebdcb}.options-session-badge.live{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.options-session-badge.premarket{border-color:#c9a43a;color:#f4c95d;background:#241f0b}.options-session-badge.closed{border-color:#6a7480;color:#9aa6b2;background:#151a20}
 
 /* responsive: turn sidebar back into compact top navigation */
@@ -426,18 +428,25 @@ section:not(#home)>.title{padding-top:4px}
 </section>
 
 <section id="forex">
-<div class="title">FOREX COMMAND CENTER <span class="small">FX pairs • relative strength • cross-market drivers • currency news</span></div>
-<div class="grid">
-<div class="card"><div class="label">EURUSD</div><div class="big" id="eur">—</div><div id="eurchg" class="small">—</div></div>
-<div class="card"><div class="label">USDJPY</div><div class="big" id="fx-usdjpy">—</div><div id="fx-usdjpy-chg" class="small">—</div></div>
-<div class="card"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div></div>
-<div class="card"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div></div>
+<div class="title">FOREX COMMAND CENTER <span id="fx-session-badge" class="fx-session-badge">US SESSION —</span> <span class="small">24/5 FX • relative strength • cross-market drivers • news</span></div>
+<div class="grid fx-overview-grid">
+<div class="card compact-metric"><div class="label">DXY</div><div class="big" id="dxy">—</div><div id="dxychg" class="small">—</div><span class="small">USD broad proxy</span></div>
+<div class="card compact-metric"><div class="label">VIX</div><div class="big" id="vix">—</div><div id="vixchg" class="small">—</div><span class="small">Risk backdrop</span></div>
+<div class="card compact-metric"><div class="label">FX LEADER</div><div class="big" id="fx-leader">—</div><div id="fx-leader-val" class="small">—</div><span class="small">Model strength</span></div>
+<div class="card compact-metric"><div class="label">FX LAGGARD</div><div class="big" id="fx-laggard">—</div><div id="fx-laggard-val" class="small">—</div><span class="small">Model strength</span></div>
 </div>
+
+<div class="card fx-pairs-card" style="margin-top:12px">
+<h3>FX PAIR MATRIX</h3>
+<div class="small">One compact table for live price, daily move and relative currency edge. No duplicate pair cards.</div>
+<div class="table-scroll"><table class="fx-pairs-table"><thead><tr><th>PAIR</th><th>LAST</th><th>1D</th><th>RELATIVE EDGE</th><th>STATE</th></tr></thead><tbody id="fx-pairs-table-body"><tr><td colspan="5">Waiting for FX snapshot…</td></tr></tbody></table></div>
+</div>
+
 <div class="grid2" style="margin-top:12px">
 <div class="card"><h3>Currency Strength</h3><div class="small">Model-derived from daily moves across tracked FX pairs; not a forecast or trade signal.</div><table><thead><tr><th>Rank</th><th>Currency</th><th>Strength</th></tr></thead><tbody id="fx-strength-body"><tr><td colspan="3">Waiting for FX data…</td></tr></tbody></table></div>
 <div class="card"><h3>Cross-Market Drivers</h3><table><thead><tr><th>Factor</th><th>Move</th><th>Context</th></tr></thead><tbody id="fx-drivers-body"><tr><td colspan="3">Waiting for driver data…</td></tr></tbody></table></div>
 </div>
-<div class="card" style="margin-top:12px"><h3>Major FX Pairs</h3><div class="grid2" id="fx-pairs-grid"><div class="small">Waiting for FX snapshot…</div></div></div>
+
 <div class="card" style="margin-top:12px"><h3>Currency-Specific News</h3><div class="small">Recent headlines grouped by currency. Headlines are context, not trading signals.</div><div class="grid2" id="fx-news-grid" style="margin-top:12px"><div class="small">Waiting for FX news…</div></div></div>
 </section>
 
@@ -901,20 +910,38 @@ function renderForex(fx,p,fxNews){
  const pct=x=>x==null||!Number.isFinite(Number(x))?'—':(Number(x)>=0?'+':'')+fmt(Number(x),2)+'%';
  const pairs=fx?.pairs||{};
  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
- const eur=pairs.EURUSD; const jpy=pairs.USDJPY;
- if(eur){set('eur',fmt(eur.value,5));set('eurchg',pct(eur.change_pct));}
- if(jpy){set('fx-usdjpy',fmt(jpy.value,3));set('fx-usdjpy-chg',pct(jpy.change_pct));}
+ const session=__currentNySession();
+ const sbEl=document.getElementById('fx-session-badge');
+ if(sbEl){
+   const label=session==='LIVE'?'US SESSION • LIVE':session==='PRE_MARKET'?'US SESSION • PRE-MARKET':session==='CLOSED'?'US SESSION • CLOSED':'US SESSION —';
+   sbEl.textContent=label; sbEl.className='fx-session-badge '+(session==='LIVE'?'live':session==='PRE_MARKET'?'premarket':session==='CLOSED'?'closed':'');
+ }
  set('dxy',fmt(p.dxy,2));set('dxychg',pct(p.dxy_change));set('vix',fmt(p.vix,2));set('vixchg',pct(p.vix_change));
  const sb=fx?.currency_strength||{};
- const body=document.getElementById('fx-strength-body');
  const entries=Object.entries(sb).filter(([k,v])=>Number.isFinite(Number(v))).sort((a,b)=>Number(b[1])-Number(a[1]));
+ const body=document.getElementById('fx-strength-body');
  if(body) body.innerHTML=entries.length?entries.map(([c,v],i)=>`<tr><td>${i+1}</td><td><b>${c}</b></td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td></tr>`).join(''):'<tr><td colspan="3">No strength data available.</td></tr>';
- const driverRows=[['DXY',p.dxy_change,'USD broad context'],['EURUSD',pairs.EURUSD?.change_pct,'EUR/USD'],['USDJPY',pairs.USDJPY?.change_pct,'JPY / yield sensitivity'],['WTI',fx?.drivers?.WTI?.change_pct,'Oil / CAD / inflation'],['GOLD',fx?.drivers?.GOLD?.change_pct,'Safe-haven / USD context'],['VIX',p.vix_change,'Risk appetite']];
+ const leader=entries[0], laggard=entries[entries.length-1];
+ set('fx-leader',leader?leader[0]:'—'); set('fx-leader-val',leader?pct(leader[1]):'—');
+ set('fx-laggard',laggard?laggard[0]:'—'); set('fx-laggard-val',laggard?pct(laggard[1]):'—');
+ const driverRows=[['DXY',p.dxy_change,'USD broad context'],['EURUSD',pairs.EURUSD?.change_pct,'EUR / USD'],['USDJPY',pairs.USDJPY?.change_pct,'JPY / yield sensitivity'],['WTI',fx?.drivers?.WTI?.change_pct,'Oil / CAD / inflation'],['GOLD',fx?.drivers?.GOLD?.change_pct,'Safe-haven / USD'],['VIX',p.vix_change,'Risk appetite']];
  const db=document.getElementById('fx-drivers-body'); if(db) db.innerHTML=driverRows.map(([n,v,c])=>`<tr><td>${n}</td><td class="${Number(v)>=0?'up':'down'}">${pct(v)}</td><td>${c}</td></tr>`).join('');
- const pg=document.getElementById('fx-pairs-grid'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
- if(pg) pg.innerHTML=wanted.map(k=>{const x=pairs[k];return `<div class="kpi"><span class="small">${k}</span><b>${x?fmt(x.value, k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5):'—'}</b><span class="small ${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</span></div>`}).join('');
- const ng=document.getElementById('fx-news-grid'); const news=Array.isArray(fxNews)?fxNews.slice(0,20):[];
- if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:15px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
+ const tb=document.getElementById('fx-pairs-table-body'); const wanted=['EURUSD','GBPUSD','USDJPY','USDCHF','USDCAD','AUDUSD','NZDUSD','EURJPY','GBPJPY','EURGBP','USDINR','USDCNY'];
+ const strengthMap=Object.fromEntries(entries);
+ const dec=k=>k.includes('JPY')?3:k==='USDINR'?2:k==='USDCNY'?4:5;
+ const pairRows=wanted.map(k=>{
+   const x=pairs[k];
+   const base=k.slice(0,3), quote=k.slice(3);
+   const edge=Number(strengthMap[base])-Number(strengthMap[quote]);
+   const edgeOk=Number.isFinite(edge);
+   const edgeTxt=edgeOk?(edge>0.05?`${base} +${fmt(edge,2)}%`:edge<-0.05?`${quote} +${fmt(Math.abs(edge),2)}%`:'Balanced'):'—';
+   const edgeCls=edgeOk?(edge>=0?'up':'down'):'';
+   const state=session==='LIVE'?'US LIVE':session==='PRE_MARKET'?'PRE-US':'US CLOSED';
+   return `<tr><td><b>${k}</b></td><td>${x?fmt(x.value,dec(k)):'—'}</td><td class="${x&&Number(x.change_pct)<0?'down':'up'}">${x?pct(x.change_pct):'—'}</td><td class="fx-pair-edge ${edgeCls}">${edgeTxt}</td><td class="fx-state">${state}</td></tr>`;
+ }).join('');
+ if(tb) tb.innerHTML=pairRows;
+ const ng=document.getElementById('fx-news-grid'); const raw=Array.isArray(fxNews)?fxNews:(Array.isArray(fxNews?.items)?fxNews.items:[]); const news=raw.slice(0,12);
+ if(ng) ng.innerHTML=news.length?news.map(x=>`<div class="kpi"><span class="small">${x.currency||'FX'} • ${x.source||'News'}</span><b style="font-size:14px;line-height:1.35">${x.title||'Untitled'}</b><span class="small">${x.published_at||''}</span></div>`).join(''):'<div class="small">No FX-specific headlines available.</div>';
 }
 
 async function load(){
