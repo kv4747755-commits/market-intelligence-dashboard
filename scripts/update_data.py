@@ -20,19 +20,21 @@ def sf(x):
 
 def snap(ticker):
     try:
-        h = yf.Ticker(ticker).history(period="5d", interval="1d", auto_adjust=False)
+        h = yf.Ticker(ticker).history(period="10d", interval="1d", auto_adjust=False)
         if h.empty:
             return None, None
         c = h["Close"].dropna()
         v = sf(c.iloc[-1])
-        p = sf(c.iloc[-2]) if len(c) >= 2 else None
-        ch = ((v / p) - 1) * 100 if v is not None and p else None
-        return v, ch
+        p1 = sf(c.iloc[-2]) if len(c) >= 2 else None
+        p5 = sf(c.iloc[-6]) if len(c) >= 6 else (sf(c.iloc[0]) if len(c) >= 2 else None)
+        ch1 = ((v / p1) - 1) * 100 if v is not None and p1 else None
+        ch5 = ((v / p5) - 1) * 100 if v is not None and p5 else None
+        return v, ch1, ch5
     except Exception:
-        return None, None
+        return None, None, None
 
 
-def fetch_fx_snapshot():
+def fetch_fx_snapshot(previous_fx=None):
     """Build the FX market data layer used by the Forex command center.
 
     Rates are indicative daily snapshots from Yahoo Finance/yfinance.
@@ -56,11 +58,12 @@ def fetch_fx_snapshot():
 
     pairs = {}
     for pair, ticker in pair_tickers.items():
-        value, change = snap(ticker)
+        value, change, change5 = snap(ticker)
         pairs[pair] = {
             "ticker": ticker,
             "value": value,
             "change_pct": change,
+            "change_5d_pct": change5,
         }
 
     # Each pair contributes its percentage move to the base currency and the
@@ -103,19 +106,74 @@ def fetch_fx_snapshot():
         "WTI": "CL=F",
         "GOLD": "GC=F",
     }.items():
-        value, change = snap(ticker)
-        drivers[key] = {"value": value, "change_pct": change, "ticker": ticker}
+        value, change, change5 = snap(ticker)
+        drivers[key] = {"value": value, "change_pct": change, "change_5d_pct": change5, "ticker": ticker}
+
+    # Five-day currency strength uses the same transparent pair-contribution model,
+    # but over a slower horizon. This prevents the dashboard from treating one
+    # noisy session as a full regime change.
+    contributions_5d = {}
+    for pair, (base, quote) in pair_currencies.items():
+        ch5 = sf(pairs.get(pair, {}).get("change_5d_pct"))
+        if ch5 is None:
+            continue
+        contributions_5d.setdefault(base, []).append(ch5)
+        contributions_5d.setdefault(quote, []).append(-ch5)
+    raw_strength_5d = {c: (sum(vals) / len(vals) if vals else None) for c, vals in contributions_5d.items()}
+    valid5 = [v for v in raw_strength_5d.values() if v is not None]
+    center5 = sum(valid5) / len(valid5) if valid5 else 0.0
+    strength_5d = {c: (round(v - center5, 3) if v is not None else None) for c, v in raw_strength_5d.items()}
+
+    # Rank change is compared with the previous saved FX snapshot when available.
+    previous_fx = previous_fx if isinstance(previous_fx, dict) else None
+    previous_rank = {}
+    if isinstance(previous_fx, dict):
+        for i, item in enumerate(previous_fx.get("strength_rank") or []):
+            if isinstance(item, dict) and item.get("currency"):
+                previous_rank[str(item["currency"])] = i + 1
+    rank_change = {}
+    for i, (c, _) in enumerate(ranked, 1):
+        rank_change[c] = (previous_rank[c] - i) if c in previous_rank else 0
+
+    leader = ranked[0] if ranked else (None, None)
+    laggard = ranked[-1] if ranked else (None, None)
+    spread = (leader[1] - laggard[1]) if leader[1] is not None and laggard[1] is not None else None
+    leader5 = max(((c, v) for c, v in strength_5d.items() if v is not None), key=lambda x: x[1], default=(None, None))
+    laggard5 = min(((c, v) for c, v in strength_5d.items() if v is not None), key=lambda x: x[1], default=(None, None))
+
+    # Pair-level relative edge plus a simple momentum regime. The edge is the
+    # current currency-strength spread; acceleration is 1D minus 1/5 of 5D.
+    for pair, payload in pairs.items():
+        base, quote = pair_currencies.get(pair, (pair[:3], pair[3:]))
+        b1, q1 = strength.get(base), strength.get(quote)
+        b5, q5 = strength_5d.get(base), strength_5d.get(quote)
+        edge = (b1 - q1) if b1 is not None and q1 is not None else None
+        edge5 = (b5 - q5) if b5 is not None and q5 is not None else None
+        acceleration = (edge - edge5 / 5.0) if edge is not None and edge5 is not None else None
+        payload["relative_edge_pct"] = round(edge, 3) if edge is not None else None
+        payload["relative_edge_5d_pct"] = round(edge5, 3) if edge5 is not None else None
+        payload["momentum_acceleration"] = round(acceleration, 3) if acceleration is not None else None
+        payload["regime"] = ("BULLISH" if edge is not None and edge > 0.05 and (acceleration is None or acceleration >= 0)
+                              else "BEARISH" if edge is not None and edge < -0.05 and (acceleration is None or acceleration <= 0)
+                              else "MIXED")
 
     return {
         "status": "live" if any(x.get("value") is not None for x in pairs.values()) else "unavailable",
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "pairs": pairs,
         "currency_strength": strength,
-        "strength_rank": [{"currency": c, "score": v} for c, v in ranked],
-        "strongest_currency": ranked[0][0] if ranked else None,
-        "weakest_currency": ranked[-1][0] if ranked else None,
+        "currency_strength_5d": strength_5d,
+        "strength_rank": [{"currency": c, "score": v, "score_5d": strength_5d.get(c), "rank_change": rank_change.get(c, 0)} for c, v in ranked],
+        "strongest_currency": leader[0],
+        "weakest_currency": laggard[0],
+        "strength_summary": {
+            "leader": leader[0], "leader_score": leader[1],
+            "laggard": laggard[0], "laggard_score": laggard[1],
+            "spread": round(spread, 3) if spread is not None else None,
+            "leader_5d": leader5[0], "laggard_5d": laggard5[0],
+        },
         "drivers": drivers,
-        "method": "Relative currency strength is model-derived from daily percentage changes across tracked FX pairs; not a forecast or trade signal.",
+        "method": "Relative currency strength is model-derived from 1D and 5D percentage changes across tracked FX pairs; not a forecast or trade signal.",
     }
 
 
@@ -911,14 +969,14 @@ def main():
         ("ndx", "^NDX"), ("dxy", "DX-Y.NYB"),
         ("eurusd", "EURUSD=X"), ("vix", "^VIX")
     ]:
-        v, ch = snap(ticker)
+        v, ch, _ = snap(ticker)
         if v is not None:
             d["prices"][key] = v
             d["prices"][key + "_change"] = ch
 
     # FX command-center layer: major pairs, relative currency strength and
     # cross-market commodity drivers. This is additive and does not alter GEX.
-    d["fx"] = fetch_fx_snapshot()
+    d["fx"] = fetch_fx_snapshot(d.get("fx") if isinstance(d.get("fx"), dict) else None)
     fx_pairs = d["fx"].get("pairs", {})
     for pair, payload in fx_pairs.items():
         if payload.get("value") is not None:
@@ -934,7 +992,7 @@ def main():
     for key, ticker in [
         ("y3m", "^IRX"), ("y10", "^TNX"), ("y30", "^TYX")
     ]:
-        v, _ = snap(ticker)
+        v, _, _ = snap(ticker)
         if v is not None:
             d["rates"][key] = v
 
@@ -1122,6 +1180,8 @@ def main():
         all_rows = []
         expiry_stats = []
         expiry_surfaces = []
+        expiry_errors = []
+        successful_expiries = []
         direct_iv_count = 0
         solved_iv_count = 0
         fitted_iv_count = 0
@@ -1129,7 +1189,21 @@ def main():
         for expiry, expiry_date in selected:
             try:
                 T, mode = expiry_time(expiry_date)
-                ch = t.option_chain(expiry)
+                ch = None
+                last_err = None
+                for attempt in range(3):
+                    try:
+                        ch = t.option_chain(expiry)
+                        break
+                    except Exception as exc:  # retry transient Yahoo/yfinance failures
+                        last_err = exc
+                        if attempt < 2:
+                            import time
+                            time.sleep(1.5 * (attempt + 1))
+                if ch is None:
+                    expiry_errors.append({"expiry": expiry, "error": str(last_err)[:300]})
+                    continue
+                successful_expiries.append(expiry)
                 c, p = ch.calls.copy(), ch.puts.copy()
                 if c.empty and p.empty:
                     continue
@@ -1258,7 +1332,8 @@ def main():
                 continue
 
         if not all_rows:
-            raise ValueError("No usable option rows")
+            detail = "; ".join(f"{x.get('expiry')}: {x.get('error')}" for x in expiry_errors[:4])
+            raise ValueError("No usable option rows" + (f" ({detail})" if detail else ""))
 
         by_strike = {}
         for row in all_rows:
@@ -1467,6 +1542,15 @@ def main():
 
         options.update({
             "status": "live",
+            "gex_refresh": {
+                "status": "LIVE",
+                "attempted_at": datetime.now(timezone.utc).isoformat(),
+                "source": "Yahoo Finance / yfinance NDX option chains",
+                "requested_expiries": len(selected),
+                "successful_expiries": len(successful_expiries),
+                "failed_expiries": len(expiry_errors),
+                "errors": expiry_errors[:6],
+            },
             "market_session": session_state,
             "market_session_et": now_ny.strftime("%Y-%m-%d %H:%M:%S %Z"),
             "regular_session_open_et": market_open.strftime("%H:%M"),
@@ -1530,9 +1614,15 @@ def main():
         })
 
     except Exception as exc:
-        # Never destroy a previously good options snapshot just because one
-        # free-data refresh is incomplete.
-        options.setdefault("model_error", str(exc)[:240])
+        # Preserve the last good GEX values, but explicitly mark the refresh as failed
+        # so the dashboard can never mistake stale GEX for a fresh calculation.
+        options["gex_refresh"] = {
+            "status": "FAILED",
+            "attempted_at": datetime.now(timezone.utc).isoformat(),
+            "source": "Yahoo Finance / yfinance NDX option chains",
+            "error": str(exc)[:500],
+        }
+        options["model_error"] = str(exc)[:500]
 
     # Refresh the macro layer without deleting an older good snapshot if a source is temporarily unavailable.
     try:
