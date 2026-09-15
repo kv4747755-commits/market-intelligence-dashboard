@@ -343,6 +343,33 @@ def fetch_fx_news():
 
     items = []
     seen_titles = set()
+    now_utc = datetime.now(timezone.utc)
+    # Do not let cached/archived headlines pollute the live FX command center.
+    # Seven days is long enough to survive a quiet weekend while still being
+    # materially fresher than the old multi-week/month-old feed.
+    NEWS_MAX_AGE_DAYS = 7
+    NEWS_FUTURE_TOLERANCE_HOURS = 2
+
+    def parse_news_datetime(value):
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            dt = value
+        else:
+            raw = str(value).strip()
+            if not raw:
+                return None
+            dt = None
+            try:
+                dt = parsedate_to_datetime(raw)
+            except Exception:
+                try:
+                    dt = datetime.fromisoformat(raw.replace('Z', '+00:00'))
+                except Exception:
+                    return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
 
     def classify(title, provided=None):
         text = re.sub(r"\s+", " ", str(title or "").strip().lower())
@@ -401,6 +428,18 @@ def fetch_fx_news():
         source = (source or "News").strip()
         if not title:
             return
+
+        # Freshness is a hard gate. This prevents Yahoo/Google/Investing RSS
+        # caches from resurfacing otherwise valid but stale headlines.
+        published_dt = parse_news_datetime(published_at)
+        if published_dt is None:
+            return
+        age_hours = (now_utc - published_dt).total_seconds() / 3600.0
+        if age_hours < -NEWS_FUTURE_TOLERANCE_HOURS:
+            return
+        if age_hours > NEWS_MAX_AGE_DAYS * 24:
+            return
+
         normalized = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
         key = " ".join(normalized.split()[:20])
         if not key or key in seen_titles:
@@ -410,13 +449,15 @@ def fetch_fx_news():
             return
         code, score, topic, impact = result
         seen_titles.add(key)
+        freshness_score = max(0.0, 100.0 - (age_hours / (NEWS_MAX_AGE_DAYS * 24)) * 100.0)
         items.append({
             "title": title,
             "link": link,
             "source": source,
-            "published_at": published_at,
+            "published_at": published_dt.isoformat(),
             "currency": code,
             "relevance_score": score,
+            "freshness_score": round(freshness_score, 1),
             "impact": impact,
             "topic": topic,
         })
@@ -502,13 +543,31 @@ def fetch_fx_news():
         except Exception:
             continue
 
-    # Highest decision value first, then freshness.  Hard cap keeps the UI compact.
-    items.sort(key=lambda x: (x.get("relevance_score", 0), x.get("published_at") or ""), reverse=True)
+    # Freshness first: the dashboard is a live command center, not an archive.
+    # Relevance still breaks ties between headlines published at similar times.
+    items.sort(
+        key=lambda x: (x.get("published_at") or "", x.get("relevance_score", 0)),
+        reverse=True,
+    )
+
+    # Keep the compact feed diverse: at most two headlines per currency.
+    selected = []
+    currency_counts = {}
+    for item in items:
+        code = item.get("currency") or ""
+        if currency_counts.get(code, 0) >= 2:
+            continue
+        selected.append(item)
+        currency_counts[code] = currency_counts.get(code, 0) + 1
+        if len(selected) >= 12:
+            break
+
     return {
-        "status": "live" if items else "unavailable",
-        "source": "Relevance-filtered yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
+        "status": "live" if selected else "unavailable",
+        "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
         "updated_at": datetime.now(timezone.utc).isoformat(),
-        "items": items[:12],
+        "freshness_window_days": NEWS_MAX_AGE_DAYS,
+        "items": selected,
     }
 
 def fetch_news():
