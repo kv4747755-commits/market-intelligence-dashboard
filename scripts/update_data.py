@@ -850,24 +850,34 @@ def yoy(obs, months=12):
 
 
 def build_market_regime(d):
-    """Synthesize the canonical snapshot into a transparent cross-asset regime.
+    """Weighted cross-asset regime engine (V2).
 
-    Scores are directional context, not forecasts or trading signals. Each
-    factor contributes at most +/-1 so a missing data source cannot silently
-    become a bullish/bearish vote.
+    Directional factors are weighted by their role in the cross-asset regime.
+    GEX is intentionally excluded from the directional vote and reported as
+    market structure/risk. The engine also measures directional breadth and
+    confirmation so confidence is not just a function of the raw score.
     """
     prices = d.get("prices") or {}
-    rates = d.get("rates") or {}
     fx = d.get("fx") or {}
     options = d.get("options") or {}
     macro = d.get("macro") or {}
     factors = []
 
+    # Higher weight = greater influence on the broad regime. These weights are
+    # transparent and are normalized over only the factors that are available.
+    weights = {"NDX": 1.40, "VIX": 1.30, "DXY": 0.90, "FX": 0.80, "MACRO": 1.20}
+
     def add(name, score, read, source):
         if score is None:
             return
         score = 1 if score > 0 else -1 if score < 0 else 0
-        factors.append({"factor": name, "score": score, "read": read, "source": source})
+        factors.append({
+            "factor": name,
+            "score": score,
+            "weight": weights.get(name, 1.0),
+            "read": read,
+            "source": source,
+        })
 
     ndx_ch = sf(prices.get("ndx_change"))
     if ndx_ch is not None:
@@ -881,17 +891,13 @@ def build_market_regime(d):
 
     dxy_ch = sf(prices.get("dxy_change"))
     if dxy_ch is not None:
-        # Rising USD is a defensive pressure input; falling USD is supportive.
         add("DXY", -1 if dxy_ch > 0.20 else 1 if dxy_ch < -0.20 else 0,
             f"DXY {dxy_ch:+.2f}%", "dollar")
 
     fx_summary = fx.get("strength_summary") or {}
-    usd_score = sf(fx_summary.get("leader_score")) if fx_summary.get("leader") == "USD" else None
     usd_is_leader = fx_summary.get("leader") == "USD"
     usd_is_laggard = fx_summary.get("laggard") == "USD"
     if usd_is_leader or usd_is_laggard:
-        # Strong USD is treated as defensive pressure only when it is not
-        # contradicted by a falling VIX. The standalone FX factor stays small.
         add("FX", -1 if usd_is_leader else 1,
             "USD leading" if usd_is_leader else "USD lagging", "FX strength")
 
@@ -907,32 +913,60 @@ def build_market_regime(d):
     elif liquidity == "TIGHTENING": macro_score -= 1; macro_parts.append("liquidity tightening")
     if "STRESS" in credit: macro_score -= 1; macro_parts.append("credit stress")
     if macro_score or macro_parts:
-        add("MACRO", macro_score, "; ".join(macro_parts) or "macro mixed", "macro regime")
+        add("MACRO", macro_score,
+            "; ".join(macro_parts) or "macro mixed", "macro regime")
 
-    valid = [f for f in factors if f["score"] != 0]
-    total = sum(f["score"] for f in factors)
-    max_score = len(factors)
-    # Contribution is expressed in composite-score points so the individual
-    # factor impacts are auditable and sum back to the displayed score.
-    contribution_scale = (100.0 / max_score) if max_score else 0.0
-    for f in factors:
-        f["contribution"] = round(f["score"] * contribution_scale, 1)
-    normalized = (total / max_score * 100.0) if max_score else None
+    # Weighted composite. Neutral factors remain visible but do not add weight
+    # to directional agreement; only available factors enter the denominator.
+    available = [f for f in factors]
+    weight_sum = sum(float(f.get("weight") or 0) for f in available)
+    weighted_total = sum(float(f["score"]) * float(f["weight"]) for f in available)
+    normalized = (weighted_total / weight_sum * 100.0) if weight_sum else None
+
+    # Breadth/confirmation: how many available factors actually agree with the
+    # composite direction. This prevents a large score from looking high-
+    # confidence when it comes from only one factor.
+    directional = [f for f in available if f["score"] != 0]
+    if normalized is None or not directional:
+        confirmation_ratio = 0.0
+        confirmation_label = "NO DIRECTIONAL CONFIRMATION"
+    else:
+        composite_sign = 1 if weighted_total > 0 else -1 if weighted_total < 0 else 0
+        same = sum(1 for f in directional if f["score"] == composite_sign) if composite_sign else 0
+        confirmation_ratio = same / len(directional) if directional else 0.0
+        confirmation_label = f"{same}/{len(directional)} directional factors aligned"
+
     if normalized is None:
         regime_label = "UNAVAILABLE"
-    elif normalized >= 45:
+    elif normalized >= 40:
         regime_label = "RISK-ON"
-    elif normalized <= -45:
+    elif normalized <= -40:
         regime_label = "RISK-OFF"
     else:
         regime_label = "MIXED"
 
-    agreement = abs(total) / max_score if max_score else 0.0
-    coverage = min(1.0, len(factors) / 6.0)
-    confidence = round(max(0.0, min(100.0, 45.0 + agreement * 40.0 + coverage * 15.0))) if max_score else 0
+    coverage = min(1.0, len(available) / len(weights)) if weights else 0.0
+    agreement = min(1.0, abs(normalized) / 100.0) if normalized is not None else 0.0
+    # Confidence blends score strength, source coverage and independent
+    # directional confirmation. It is intentionally capped below 100 unless
+    # the model has broad coverage and strong agreement.
+    confidence = round(max(0.0, min(100.0,
+        30.0 + agreement * 30.0 + coverage * 25.0 + confirmation_ratio * 15.0
+    ))) if available else 0
 
-    # Directional context is deliberately separated by asset rather than
-    # pretending the master regime is a trade recommendation.
+    # Convert each weighted vote into auditable composite-score points.
+    if weight_sum:
+        rounded_sum = 0.0
+        for i, f in enumerate(available):
+            raw = float(f["score"]) * float(f["weight"]) / weight_sum * 100.0
+            c = round(raw, 1)
+            # Reconcile the final row so displayed contributions add exactly to
+            # the displayed composite score despite one-decimal rounding.
+            if i == len(available) - 1 and normalized is not None:
+                c = round(float(normalized) - rounded_sum, 1)
+            f["contribution"] = c
+            rounded_sum += c
+
     equity_bias = "BULLISH" if regime_label == "RISK-ON" else "BEARISH" if regime_label == "RISK-OFF" else "NEUTRAL"
     usd_bias = "STRONG" if usd_is_leader else "WEAK" if usd_is_laggard else "MIXED"
     gold_ch = sf(prices.get("gold_change"))
@@ -946,7 +980,12 @@ def build_market_regime(d):
     now = datetime.now(timezone.utc).isoformat()
     changed = bool(previous and previous.get("regime") != regime_label)
     if not previous or changed:
-        history.append({"timestamp": now, "regime": regime_label, "score": round(normalized, 1) if normalized is not None else None, "confidence": confidence})
+        history.append({
+            "timestamp": now,
+            "regime": regime_label,
+            "score": round(normalized, 1) if normalized is not None else None,
+            "confidence": confidence,
+        })
     history = history[-10:]
 
     gex = sf(options.get("net_gex"))
@@ -976,8 +1015,14 @@ def build_market_regime(d):
         },
         "structure": {"gex": gex_structure},
         "factors": factors,
-        "history": history,
-        "method": "Rules-based directional synthesis of NDX, VIX, DXY, FX strength and macro regime. GEX is reported separately as market structure/risk, not a directional vote. Not a forecast or trade signal."
+        "confirmation": {
+            "ratio": round(confirmation_ratio, 3),
+            "label": confirmation_label,
+            "directional_count": len(directional),
+            "available_count": len(available),
+        },
+        "coverage": round(coverage, 3),
+        "method": "Regime Engine V2: weighted NDX/VIX/DXY/FX/MACRO directional synthesis with breadth/confirmation-aware confidence. Weights: NDX 1.4, VIX 1.3, MACRO 1.2, DXY 0.9, FX 0.8. GEX is market structure/risk only, never a directional vote. Not a forecast or trade signal."
     }
 
 def build_macro(previous_macro=None):
@@ -1234,6 +1279,19 @@ def main():
         spot = sf(d["prices"].get("ndx"))
         if not expiries or spot is None:
             raise ValueError("Missing NDX spot or option expiries")
+
+        # Normalize Yahoo's expiry strings once, before session selection.
+        # This was previously missing, which caused `parsed` to be undefined
+        # and made every live GEX refresh fail before the 0DTE chain was read.
+        parsed = []
+        for expiry in expiries:
+            try:
+                ed = datetime.strptime(str(expiry), "%Y-%m-%d").date()
+                parsed.append((str(expiry), ed))
+            except Exception:
+                continue
+        if not parsed:
+            raise ValueError("No parseable NDX option expiry dates")
 
         ny = ZoneInfo("America/New_York")
         now_ny = datetime.now(ny)
