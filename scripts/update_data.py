@@ -1724,8 +1724,15 @@ def main():
             if not ph:
                 return {"status": "unavailable", "label": label, "heatmap": []}
             ptotal = sum(x["net_gex"] for x in ph)
-            call_rows = [x for x in ph if x["call_gex"] > 0]
-            put_rows = [x for x in ph if x["put_gex"] < 0]
+            # Wall convention: call resistance is the strongest positive call
+            # gamma concentration ABOVE spot; put support is the strongest
+            # negative put gamma concentration BELOW spot.  The old logic
+            # searched both sides of spot, which could label an in-the-money
+            # call concentration below spot as the "call wall" (and vice versa).
+            # That is exactly the failure mode that made our walls disagree
+            # structurally with external GEX references.
+            call_rows = [x for x in ph if x["call_gex"] > 0 and x["strike"] >= spot]
+            put_rows = [x for x in ph if x["put_gex"] < 0 and x["strike"] <= spot]
             call_wall = max(call_rows, key=lambda x: x["call_gex"])["strike"] if call_rows else None
             put_wall = min(put_rows, key=lambda x: x["put_gex"])["strike"] if put_rows else None
             px = [spot * 0.90 + spot * 0.20 * i / 120 for i in range(121)]
@@ -1812,8 +1819,16 @@ def main():
             "spot": spot,
             "oi_heatmap": heat,
             "net_gex": total,
-            "call_wall": max(heat, key=lambda x: x["call_gex"])["strike"] if heat else None,
-            "put_wall": min(heat, key=lambda x: x["put_gex"])["strike"] if heat else None,
+            "call_wall": (
+                max((x for x in heat if x.get("call_gex", 0.0) > 0 and x["strike"] >= spot),
+                    key=lambda x: x["call_gex"])["strike"]
+                if any(x.get("call_gex", 0.0) > 0 and x["strike"] >= spot for x in heat) else None
+            ),
+            "put_wall": (
+                min((x for x in heat if x.get("put_gex", 0.0) < 0 and x["strike"] <= spot),
+                    key=lambda x: x["put_gex"])["strike"]
+                if any(x.get("put_gex", 0.0) < 0 and x["strike"] <= spot for x in heat) else None
+            ),
             "gamma_flip": gamma_flip,
             "gex_confidence": confidence,
             "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
