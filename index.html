@@ -452,7 +452,7 @@ section:not(#home)>.title{padding-top:4px}
 </div>
 <div class="grid2" style="margin-top:12px">
 <div class="card"><h3>Gamma Map</h3><div class="callout">Dealer gamma is a <b>model</b> derived from the option chain. It is not a direct view of dealer books.</div>
-<div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">GAMMA FLIP</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div>
+<div class="kpis" style="margin-top:12px"><div class="kpi"><span class="small">PUT WALL</span><b id="putwall">—</b></div><div class="kpi"><span class="small">ZERO GAMMA • LIVE MODEL</span><b id="flip">—</b></div><div class="kpi"><span class="small">CALL WALL</span><b id="callwall">—</b></div></div></div>
 <div class="card"><h3>Scenario Map</h3><table><tr><td>BULL</td><td>Reclaim gamma flip + rates stabilize</td></tr><tr><td>BEAR</td><td>Lose put wall + rates/DXY accelerate</td></tr><tr><td>BASE</td><td>Remain between major option walls</td></tr></table></div>
 </div>
 </section>
@@ -1211,7 +1211,11 @@ async function load(){
  const usdRegimeEl=document.getElementById('usdregime'); if(usdRegimeEl) usdRegimeEl.textContent=usdCanonical==='STRONG'?'STRONG USD':usdCanonical==='WEAK'?'WEAK USD':usdCanonical==='MIXED'?'MIXED USD':'—';
 
  // NASDAQ MARKET READ: rules-based synthesis of the canonical snapshot.
- const opt=d.options||{}, spot=Number(p.ndx), flip=Number(opt.gamma_flip), putWall=Number(opt.put_wall), callWall=Number(opt.call_wall);
+ const opt=d.options||{}, spot=Number(p.ndx);
+ const live0=opt.profiles?.['0DTE'];
+ const flip=Number((live0&&live0.status==='live'&&Number.isFinite(Number(live0.gamma_flip)))?live0.gamma_flip:opt.gamma_flip);
+ const putWall=Number((live0&&live0.status==='live'&&Number.isFinite(Number(live0.put_wall)))?live0.put_wall:opt.put_wall);
+ const callWall=Number((live0&&live0.status==='live'&&Number.isFinite(Number(live0.call_wall)))?live0.call_wall:opt.call_wall);
  const emPct=Number(opt.expected_move_pct);
  const vixCh=Number(p.vix_change);
  const gammaReg=String(opt.gamma_regime||opt.gamma_status||'').toLowerCase();
