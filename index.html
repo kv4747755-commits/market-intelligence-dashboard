@@ -317,6 +317,20 @@ section:not(#home)>.title{padding-top:4px}
 @media(max-width:600px){#options-gex-svg{height:420px}.options-interactive-note{display:block;line-height:1.6}}
 
 @media(max-width:600px){#options-gex-svg{height:380px}.options-chart-card,.options-side-card{padding:10px}.options-legend{gap:7px;font-size:9px}.option-level b{font-size:14px}}
+
+/* CBOE MM GEX — separate reconstructed model */
+.cboe-gex-card{margin-top:12px;padding:14px;background:linear-gradient(180deg,#08131d,#071019);border-color:#27485b}
+.cboe-gex-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.cboe-gex-title{font-size:13px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.cboe-gex-badge{display:inline-block;padding:3px 7px;border-radius:999px;border:1px solid #5d6570;color:#aeb8c2;background:#121820;font-size:8px;font-weight:800;letter-spacing:.6px}
+.cboe-gex-badge.ready{border-color:#2aa87a;color:#5ff0b6;background:#0b211b}.cboe-gex-badge.pending{border-color:#c9a43a;color:#f4c95d;background:#241f0b}
+.cboe-gex-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:11px}
+.cboe-gex-stat{padding:9px 10px;border:1px solid #1b3444;border-radius:8px;background:#091722}.cboe-gex-stat .k{font-size:8px;color:#708697;text-transform:uppercase;letter-spacing:.6px}.cboe-gex-stat .v{margin-top:4px;font-size:16px;font-weight:800}.cboe-gex-stat .s{margin-top:2px;font-size:8px;color:#71899a}
+.cboe-gex-note{margin-top:10px;padding:10px;border:1px dashed #294657;border-radius:8px;color:#8fa4b3;font-size:9px;line-height:1.5}
+.cboe-gex-table{margin-top:10px;overflow:auto}.cboe-gex-table table{width:100%;border-collapse:collapse;font-size:9px}.cboe-gex-table th,.cboe-gex-table td{padding:8px 9px;border-bottom:1px solid #142b39;text-align:left;white-space:nowrap}.cboe-gex-table th{color:#71899a;text-transform:uppercase;letter-spacing:.6px}
+@media(max-width:900px){.cboe-gex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.cboe-gex-grid{grid-template-columns:1fr 1fr}.cboe-gex-card{padding:10px}.cboe-gex-stat .v{font-size:14px}}
+
 /* V9 MODELED GEX QUALITY + SENSITIVITIES */
 .gex-model-card{margin-top:10px}.gex-model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}.gex-model-stat{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-model-stat .k{font-size:9px;color:#718295;letter-spacing:.8px;text-transform:uppercase}.gex-model-stat .v{font-size:14px;font-weight:800;margin-top:3px}.gex-model-stat .s{font-size:9px;color:#718295;margin-top:2px;line-height:1.35}.gex-expiry-wrap{margin-top:10px;overflow:auto}.gex-expiry-table{width:100%;border-collapse:collapse;font-size:9px}.gex-expiry-table th,.gex-expiry-table td{padding:6px 5px;border-bottom:1px solid #172634;text-align:right;white-space:nowrap}.gex-expiry-table th:first-child,.gex-expiry-table td:first-child{text-align:left}.gex-method-note{margin-top:9px;font-size:9px;line-height:1.45;color:#718295}.gex-method-note b{color:#a9b8c6}
 @media(max-width:600px){.gex-model-grid{grid-template-columns:repeat(2,1fr)}}
@@ -567,6 +581,26 @@ section:not(#home)>.title{padding-top:4px}
     </div>
   </div>
 </div>
+
+<div class="card cboe-gex-card">
+  <div class="cboe-gex-head">
+    <div><div class="cboe-gex-title">CBOE MARKET-MAKER GEX — RECONSTRUCTED</div><div class="small" id="cboe-gex-subtitle">Independent Cboe-derived model • does not replace the dashboard GEX above</div></div>
+    <span class="cboe-gex-badge pending" id="cboe-gex-status-badge">DATA FEED PENDING</span>
+  </div>
+  <div class="cboe-gex-grid">
+    <div class="cboe-gex-stat"><div class="k">Net MM GEX</div><div class="v" id="cboe-net-gex">—</div><div class="s">Reconstructed</div></div>
+    <div class="cboe-gex-stat"><div class="k">Zero Gamma</div><div class="v" id="cboe-zero-gamma">—</div><div class="s">Cboe MM model</div></div>
+    <div class="cboe-gex-stat"><div class="k">Call Wall</div><div class="v" id="cboe-call-wall">—</div><div class="s">MM gamma concentration</div></div>
+    <div class="cboe-gex-stat"><div class="k">Put Wall</div><div class="v" id="cboe-put-wall">—</div><div class="s">MM gamma concentration</div></div>
+    <div class="cboe-gex-stat"><div class="k">Flow</div><div class="v" id="cboe-flow">—</div><div class="s" id="cboe-flow-window">5m / 15m / 30m</div></div>
+  </div>
+  <div class="cboe-gex-note" id="cboe-gex-note">Cboe data is not connected yet. No Cboe values are fabricated. Once the licensed feed is connected, this section will consume Cboe market-maker open/close and buy/sell data and calculate an independent reconstructed GEX profile. The existing modeled GEX above remains unchanged.</div>
+  <div class="cboe-gex-table">
+    <table><thead><tr><th>Model</th><th>Source</th><th>Coverage</th><th>Interval</th><th>Last Update</th></tr></thead>
+    <tbody><tr><td id="cboe-model-name">Cboe MM GEX</td><td id="cboe-source">Cboe DataShop Open-Close</td><td id="cboe-coverage">NDX / NDXW — pending</td><td id="cboe-interval">1-minute / 10-minute</td><td id="cboe-updated">—</td></tr></tbody></table>
+  </div>
+</div>
+
 <div class="card options-detail"><h3>STRIKE DETAILS <span class="small">NEAR SPOT • OI + MODELED GEX</span></h3>
 <div class="strike-toolbar"><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><div class="strike-filter"><button class="active" data-strike-filter="near">NEAR SPOT</button><button data-strike-filter="all">ALL LOADED</button></div></div>
 <div class="strike-table-wrap"><table><thead><tr><th>Strike</th><th>Distance</th><th>Call OI</th><th>Put OI</th><th>Net GEX</th><th>Structure</th></tr></thead><tbody id="gex-detail-body"></tbody></table></div>
@@ -665,6 +699,27 @@ function setGexMode(mode){
  document.querySelectorAll('.gex-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.gexMode===mode));
 }
 function __currentNySession(){try{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());const get=k=>parts.find(x=>x.type===k)?.value||'';const wd=get('weekday');const mins=(Number(get('hour'))||0)*60+(Number(get('minute'))||0);if(wd==='Sat'||wd==='Sun')return 'CLOSED';if(mins<570)return 'PRE_MARKET';if(mins<960)return 'LIVE';return 'CLOSED';}catch(e){return 'UNKNOWN';}}
+
+function renderCboeGex(d){
+ const c=d?.cboe_gex||{};
+ const badge=document.getElementById('cboe-gex-status-badge');
+ const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=(v===null||v===undefined||v==='')?'—':String(v)};
+ const status=String(c.status||'NOT_CONNECTED').toUpperCase();
+ if(badge){badge.textContent=status==='LIVE'?'CBOE FEED LIVE':status==='UNAVAILABLE'?'DATA UNAVAILABLE':'DATA FEED PENDING';badge.className='cboe-gex-badge '+(status==='LIVE'?'ready':'pending')}
+ set('cboe-net-gex',c.net_gex!=null?fmtNum(c.net_gex):'—');
+ set('cboe-zero-gamma',c.zero_gamma!=null?fmtNum(c.zero_gamma):'—');
+ set('cboe-call-wall',c.call_wall!=null?fmtNum(c.call_wall):'—');
+ set('cboe-put-wall',c.put_wall!=null?fmtNum(c.put_wall):'—');
+ set('cboe-flow',c.flow_label||'—');
+ set('cboe-flow-window',c.flow_window||'5m / 15m / 30m');
+ set('cboe-source',c.source||'Cboe DataShop Open-Close');
+ set('cboe-coverage',c.coverage||'NDX / NDXW — pending');
+ set('cboe-interval',c.interval||'1-minute / 10-minute');
+ set('cboe-updated',c.updated_at||'—');
+ const note=document.getElementById('cboe-gex-note');
+ if(note){note.textContent=c.note||'Cboe data is not connected yet. No Cboe values are fabricated. Once the licensed feed is connected, this section will consume Cboe market-maker open/close and buy/sell data and calculate an independent reconstructed GEX profile. The existing modeled GEX above remains unchanged.';}
+}
+
 function renderGexProfile(o,p){
  const svg=document.getElementById('options-gex-svg'); if(!svg) return;
  const profiles=o.profiles||{};
@@ -948,7 +1003,7 @@ function renderGexProfile(o,p){
  levelInsight('Call wall',callWall); levelInsight('Put wall',putWall);
  if(Number.isFinite(total))ins.push(`<strong>${total<0?'Negative':'Positive'} net GEX</strong>Modeled ${selectedLabel.toLowerCase()} exposure is ${f(total,2)}; negative values can coincide with larger directional moves.`);
  document.getElementById('gex-insights').innerHTML=ins.map(x=>`<div class="options-insight">${x}</div>`).join('')||'<div class="options-insight">No valid GEX interpretation available.</div>';
- document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Zero Gamma: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma; live 0DTE zero gamma blends today's volume proxy with standing OI. This is not direct dealer inventory.</span></div>`;
+ document.getElementById('dealer').innerHTML=`<div class="callout"><b>${Number.isFinite(total)?(total<0?'Negative gamma':'Positive gamma'):'Gamma regime unavailable'}</b><br>Net GEX: ${Number.isFinite(total)?f(total,2):'—'}<br>Zero Gamma: ${Number.isFinite(flip)?f(flip,2):'—'}<br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma; live 0DTE zero gamma uses the available Volume-GEX strike interpolation; OI remains a separate model. This is not direct dealer inventory.</span></div>`;
  render();
 }
 
@@ -1150,7 +1205,7 @@ async function load(){
    const gexText=Number.isFinite(activeGex)?fmt(activeGex,2):'—';
    const flipText=Number.isFinite(activeFlip)?fmt(activeFlip):'—';
    document.getElementById('dealer').innerHTML=
-     `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Zero Gamma: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma; live 0DTE zero gamma blends today's volume proxy with standing OI. This is not direct dealer inventory.</span>`;
+     `<b>${regime}</b><br>Net GEX: <b>${gexText}</b><br>Zero Gamma: <b>${flipText}</b><br><span class="small">MODELED from listed OI, IV and Black-Scholes gamma; live 0DTE zero gamma uses the available Volume-GEX strike interpolation; OI remains a separate model. This is not direct dealer inventory.</span>`;
  }else{
    document.getElementById('dealer').textContent='Waiting for a valid option chain. No dealer-positioning number is fabricated.';
  }
@@ -1162,6 +1217,7 @@ async function load(){
    btn.title=(mode!=='ALL' && (!o.profiles?.[mode] || o.profiles?.[mode]?.status==='unavailable' || !o.profiles?.[mode]?.heatmap?.length))?`${mode} profile unavailable in this snapshot`:'';
  });
  setGexMode(selectedGexMode);
+ renderCboeGex(d);
  renderGexProfile(o,p);
  const gexRefresh=o.gex_refresh||{};
  const gexRefreshEl=document.getElementById('gex-chart-status');
