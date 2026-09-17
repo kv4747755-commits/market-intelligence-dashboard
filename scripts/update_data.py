@@ -1250,6 +1250,23 @@ def main():
     options.setdefault("net_gex", None)
     options.setdefault("model", "Estimated GEX; dealer-sign assumption, not direct dealer book.")
 
+    # Independent Cboe market-maker GEX slot. This is intentionally metadata-only
+    # until a licensed Cboe DataShop feed is connected; never fabricate values.
+    d.setdefault("cboe_gex", {
+        "status": "NOT_CONNECTED",
+        "source": "Cboe DataShop Open-Close Volume Summary",
+        "coverage": "NDX / NDXW — pending licensed feed",
+        "interval": "1-minute / 10-minute",
+        "net_gex": None,
+        "zero_gamma": None,
+        "call_wall": None,
+        "put_wall": None,
+        "flow_label": None,
+        "flow_window": "5m / 15m / 30m",
+        "updated_at": None,
+        "note": "Cboe data is not connected yet. No Cboe values are fabricated. Once the licensed feed is connected, this section will consume Cboe market-maker open/close and buy/sell data and calculate an independent reconstructed GEX profile. The existing modeled GEX above remains unchanged."
+    })
+
     # Preserve the last completed live 0DTE snapshot so pre-market can display
     # the previous session's final state without pretending stale quotes are live.
     previous_live_0dte = None
@@ -1670,96 +1687,42 @@ def main():
                 flips.append(xs[i] - ys[i] * (xs[i + 1] - xs[i]) / (ys[i + 1] - ys[i]))
         gamma_flip = min(flips, key=lambda x: abs(x - spot)) if flips else None
 
-        # Live intraday zero-gamma lens. GEXmon's public docs distinguish
-        # today's Volume model from standing OI and use the Volume lens for
-        # the live regime/zero-gamma engine. We cannot reproduce its private
-        # trade-direction logic from Yahoo aggregate volume, so use a
-        # volume-dominant NORMALIZED blend rather than raw OI + raw volume.
-        # Normalization is important: raw OI counts and daily volume counts
-        # are on different scales, so adding them directly makes OI dominate
-        # and leaves the live zero-gamma almost unchanged.
-        LIVE_VOLUME_WEIGHT = 0.75
-        LIVE_OI_WEIGHT = 0.25
+        # Live intraday zero-gamma lens. GEXmon documents its Volume model as
+        # the fast 0DTE lens. Yahoo gives us aggregate option volume, not trade
+        # direction, so do NOT manufacture a repriced 75/25 OI+volume root.
+        # Instead, estimate the volume zero-gamma boundary directly between the
+        # nearest negative-volume-gamma concentration below spot and positive
+        # concentration above spot. This keeps the boundary local to the live
+        # 0DTE structure and avoids the prior 29,300+ artifact.
 
-        def oi_surface_gex_at(rows_for_surface, test_spot):
-            total_g = 0.0
-            for row in rows_for_surface:
-                K = row["strike"]
-                iv = row.get("iv")
-                oi = row.get("call_oi", 0.0) + row.get("put_oi", 0.0)
-                if iv is None or oi <= 0 or K <= 0:
+        def volume_strike_zero_gamma(profile_rows, spot_value):
+            by_k = {}
+            for row in profile_rows:
+                if row.get("iv") is None:
                     continue
-                stat = next((x for x in expiry_stats if x["expiry"] == row["expiry"]), None)
-                if not stat:
-                    continue
-                exp_date = datetime.fromisoformat(row["expiry"]).date()
-                T, _ = expiry_time(exp_date)
-                F0 = stat.get("forward") or spot
-                carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
-                F_test = test_spot * math.exp(carry * T)
-                root = math.sqrt(T)
-                d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
-                pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
-                disc = math.exp(-r * T)
-                gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
-                signed_oi = row.get("call_oi", 0.0) - row.get("put_oi", 0.0)
-                total_g += gamma * signed_oi * MULT * test_spot * test_spot * 0.01
-            return total_g
-
-        def volume_surface_gex_at(rows_for_surface, test_spot):
-            total_g = 0.0
-            for row in rows_for_surface:
-                K = row["strike"]
-                iv = row.get("iv")
-                vol = row.get("call_volume", 0.0) + row.get("put_volume", 0.0)
-                if iv is None or vol <= 0 or K <= 0:
-                    continue
-                stat = next((x for x in expiry_stats if x["expiry"] == row["expiry"]), None)
-                if not stat:
-                    continue
-                exp_date = datetime.fromisoformat(row["expiry"]).date()
-                T, _ = expiry_time(exp_date)
-                F0 = stat.get("forward") or spot
-                carry = math.log(max(F0, 1e-9) / max(spot, 1e-9)) / max(T, 1e-9)
-                F_test = test_spot * math.exp(carry * T)
-                root = math.sqrt(T)
-                d1 = (math.log(F_test / K) + 0.5 * iv * iv * T) / (iv * root)
-                pdf = math.exp(-0.5 * d1 * d1) / math.sqrt(2 * math.pi)
-                disc = math.exp(-r * T)
-                gamma = disc * pdf * F_test / (test_spot * test_spot * iv * root)
-                signed_volume = row.get("call_volume", 0.0) - row.get("put_volume", 0.0)
-                total_g += gamma * signed_volume * MULT * test_spot * test_spot * 0.01
-            return total_g
-
-        def normalized_blended_flip(rows_for_surface, points=240):
-            if not rows_for_surface:
+                k = float(row.get("strike", 0.0) or 0.0)
+                vg = float(row.get("volume_gex", 0.0) or 0.0)
+                if k > 0 and math.isfinite(vg) and vg != 0.0:
+                    by_k[k] = by_k.get(k, 0.0) + vg
+            if not by_k:
                 return None
-            grid = [spot * 0.90 + spot * 0.20 * i / points for i in range(points + 1)]
-            oi_vals = [oi_surface_gex_at(rows_for_surface, x) for x in grid]
-            vol_vals = [volume_surface_gex_at(rows_for_surface, x) for x in grid]
-            oi_scale = sorted(abs(v) for v in oi_vals if math.isfinite(v))[len([v for v in oi_vals if math.isfinite(v)]) // 2] if any(math.isfinite(v) for v in oi_vals) else 0.0
-            vol_scale = sorted(abs(v) for v in vol_vals if math.isfinite(v))[len([v for v in vol_vals if math.isfinite(v)]) // 2] if any(math.isfinite(v) for v in vol_vals) else 0.0
-            if oi_scale <= 1e-12 and vol_scale <= 1e-12:
+            neg = [(k, v) for k, v in by_k.items() if k <= spot_value and v < 0]
+            pos = [(k, v) for k, v in by_k.items() if k >= spot_value and v > 0]
+            if not neg or not pos:
                 return None
-            if oi_scale <= 1e-12:
-                oi_scale = 1.0
-            if vol_scale <= 1e-12:
-                vol_scale = 1.0
-            blended = [LIVE_OI_WEIGHT * (o / oi_scale) + LIVE_VOLUME_WEIGHT * (v / vol_scale) for o, v in zip(oi_vals, vol_vals)]
-            roots = []
-            for i in range(len(grid) - 1):
-                if blended[i] == 0:
-                    roots.append(grid[i])
-                elif blended[i] * blended[i + 1] < 0:
-                    roots.append(grid[i] - blended[i] * (grid[i + 1] - grid[i]) / (blended[i + 1] - blended[i]))
-            return min(roots, key=lambda x: abs(x - spot)) if roots else None
+            # Prefer the closest opposing concentrations around spot.
+            k_neg, v_neg = max(neg, key=lambda x: x[0])
+            k_pos, v_pos = min(pos, key=lambda x: x[0])
+            if k_pos <= k_neg:
+                return None
+            # Linear interpolation through the signed strike-level volume GEX.
+            flip = k_neg + (0.0 - v_neg) * (k_pos - k_neg) / (v_pos - v_neg)
+            return flip if math.isfinite(flip) else None
 
         live_0dte_rows = [x for x in all_rows if x.get("expiry_mode") == "0DTE"]
         live_0dte_volume_flip = None
-        live_0dte_blended_flip = None
         if session_state == "LIVE" and live_0dte_rows:
-            live_0dte_volume_flip = normalized_blended_flip(live_0dte_rows)
-            live_0dte_blended_flip = live_0dte_volume_flip
+            live_0dte_volume_flip = volume_strike_zero_gamma(live_0dte_rows, spot)
 
         # Pure Volume remains a diagnostic. Aggregate call-minus-put volume
         # is not true trade direction, so a missing root is expected in some
@@ -1842,8 +1805,15 @@ def main():
             # structurally with external GEX references.
             call_rows = [x for x in ph if x["call_gex"] > 0 and x["strike"] >= spot]
             put_rows = [x for x in ph if x["put_gex"] < 0 and x["strike"] <= spot]
-            call_wall = max(call_rows, key=lambda x: x["call_gex"])["strike"] if call_rows else None
-            put_wall = min(put_rows, key=lambda x: x["put_gex"])["strike"] if put_rows else None
+            oi_call_wall = max(call_rows, key=lambda x: x["call_gex"])["strike"] if call_rows else None
+            oi_put_wall = min(put_rows, key=lambda x: x["put_gex"])["strike"] if put_rows else None
+            vol_call_rows = [x for x in ph if x.get("volume_gex", 0.0) > 0 and x["strike"] >= spot]
+            vol_put_rows = [x for x in ph if x.get("volume_gex", 0.0) < 0 and x["strike"] <= spot]
+            vol_call_wall = max(vol_call_rows, key=lambda x: x["volume_gex"])["strike"] if vol_call_rows else None
+            vol_put_wall = min(vol_put_rows, key=lambda x: x["volume_gex"])["strike"] if vol_put_rows else None
+            use_volume_walls = bool(vol_call_rows or vol_put_rows)
+            call_wall = vol_call_wall if vol_call_wall is not None else oi_call_wall
+            put_wall = vol_put_wall if vol_put_wall is not None else oi_put_wall
             px = [spot * 0.90 + spot * 0.20 * i / 120 for i in range(121)]
             py = [profile_gex_at(profile_rows, x) for x in px]
             flips = []
@@ -1853,11 +1823,11 @@ def main():
                 elif py[j] * py[j + 1] < 0:
                     flips.append(px[j] - py[j] * (px[j + 1] - px[j]) / (py[j + 1] - py[j]))
             pflip = min(flips, key=lambda x: abs(x - spot)) if flips else None
-            # Use the same normalized 75% Volume / 25% OI live lens as the
-            # headline model. This keeps the selected 0DTE profile consistent.
+            # Live 0DTE volume zero-gamma is estimated from the nearest
+            # opposing volume-GEX concentrations around spot.
             volume_profile_flip = None
             if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE":
-                volume_profile_flip = normalized_blended_flip(profile_rows, points=120)
+                volume_profile_flip = volume_strike_zero_gamma(profile_rows, spot)
             modes_here = sorted({x.get("expiry_mode") for x in profile_rows if x.get("expiry_mode")})
             return {
                 "status": "live", "label": label,
@@ -1866,10 +1836,13 @@ def main():
                 "expiry_count": len({x.get("expiry") for x in profile_rows}),
                 "heatmap": ph, "net_gex": ptotal,
                 "call_wall": call_wall, "put_wall": put_wall,
+                "oi_call_wall": oi_call_wall, "oi_put_wall": oi_put_wall,
+                "volume_call_wall": vol_call_wall, "volume_put_wall": vol_put_wall,
+                "wall_model": "VOLUME" if use_volume_walls else "OI_FALLBACK",
                 "gamma_flip": volume_profile_flip if volume_profile_flip is not None else pflip,
                 "oi_gamma_flip": pflip, "volume_gamma_flip": volume_profile_flip,
-                "zero_gamma_model": "LIVE_BLEND_75V_25OI_NORMALIZED" if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE" else "OI_REPRICED",
-                "zero_gamma_volume_weight": LIVE_VOLUME_WEIGHT if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE" else None,
+                "zero_gamma_model": "LIVE_0DTE_VOLUME_STRIKE_INTERPOLATION" if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE" else "OI_REPRICED",
+                "zero_gamma_volume_weight": 1.0 if profile_rows and profile_rows[0].get("expiry_mode") == "0DTE" and session_state == "LIVE" else None,
                 "call_oi": sum(x["call_oi"] for x in ph),
                 "put_oi": sum(x["put_oi"] for x in ph),
             }
@@ -1937,21 +1910,14 @@ def main():
             "spot": spot,
             "oi_heatmap": heat,
             "net_gex": total,
-            "call_wall": (
-                max((x for x in heat if x.get("call_gex", 0.0) > 0 and x["strike"] >= spot),
-                    key=lambda x: x["call_gex"])["strike"]
-                if any(x.get("call_gex", 0.0) > 0 and x["strike"] >= spot for x in heat) else None
-            ),
-            "put_wall": (
-                min((x for x in heat if x.get("put_gex", 0.0) < 0 and x["strike"] <= spot),
-                    key=lambda x: x["put_gex"])["strike"]
-                if any(x.get("put_gex", 0.0) < 0 and x["strike"] <= spot for x in heat) else None
-            ),
-            "gamma_flip": (profiles.get("0DTE", {}).get("volume_gamma_flip") if session_state == "LIVE" and profiles.get("0DTE", {}).get("volume_gamma_flip") is not None else gamma_flip),
+            "call_wall": (profiles.get("0DTE", {}).get("call_wall") if session_state == "LIVE" and profiles.get("0DTE", {}).get("call_wall") is not None else (max((x for x in heat if x.get("call_gex", 0.0) > 0 and x["strike"] >= spot), key=lambda x: x["call_gex"])["strike"] if any(x.get("call_gex", 0.0) > 0 and x["strike"] >= spot for x in heat) else None)),
+            "put_wall": (profiles.get("0DTE", {}).get("put_wall") if session_state == "LIVE" and profiles.get("0DTE", {}).get("put_wall") is not None else (min((x for x in heat if x.get("put_gex", 0.0) < 0 and x["strike"] <= spot), key=lambda x: x["put_gex"])["strike"] if any(x.get("put_gex", 0.0) < 0 and x["strike"] <= spot for x in heat) else None)),
+            "wall_model": profiles.get("0DTE", {}).get("wall_model") if session_state == "LIVE" else "OI",
+            "gamma_flip": (profiles.get("0DTE", {}).get("gamma_flip") if session_state == "LIVE" and profiles.get("0DTE", {}).get("gamma_flip") is not None else gamma_flip),
             "oi_gamma_flip": gamma_flip,
             "volume_gamma_flip": volume_gamma_flip,
             "gex_confidence": confidence,
-            "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
+            "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion. Live 0DTE zero-gamma/walls use the dashboard's aggregate Volume-GEX lens with local strike interpolation; dealer sign is assumed from call/put structure, not observed.",
             "gex_model_version": "GEX v2 surface-aware",
             "expiry_count": len(expiry_stats),
             "expiry_dates": [x["expiry"] for x in expiry_stats],
@@ -1992,7 +1958,7 @@ def main():
                 "A weighted quadratic smile fills gaps in the per-expiry volatility surface.",
                 "Black-76 gamma is converted consistently to spot gamma using the inferred forward and discount factor.",
                 "OI gamma flip is found by revaluing standing OI gamma across a dense hypothetical spot grid.",
-                "Live 0DTE canonical zero-gamma uses a normalized 75% Volume / 25% OI blend; pure Volume and OI flips remain separately available.",
+                "Live 0DTE canonical zero-gamma uses the available Volume-GEX strike interpolation; OI flip remains separately available.",
                 "Call-positive / put-negative dealer sign is a conventional assumption; public OI cannot reveal actual dealer inventory.",
                 "GEX magnitude is best compared within this dashboard's methodology, not treated as an absolute cross-provider number.",
             ],
