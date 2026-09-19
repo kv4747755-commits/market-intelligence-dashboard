@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-09-19T03:53:02.579384+00:00",
+  "generated_at": "2026-09-19T04:02:39.102670+00:00",
   "prices": {
-    "ndx": 29644.16796875,
-    "ndx_change": 0.6696357210861148,
-    "dxy": 100.21499633789062,
-    "dxy_change": -0.00499389617993895,
+    "ndx": 29644.169921875,
+    "ndx_change": 0.6696423537695617,
+    "dxy": 100.22000122070312,
+    "dxy_change": 0.0,
     "eurusd": 1.1488970518112183,
     "eurusd_change": 0.16659360203241658,
     "vix": 14.8100004196167,
@@ -15,10 +15,10 @@
     "gbpusd_change": 0.07901002135675128,
     "usdcn": 6.70704984664917,
     "usdcn_change": null,
-    "wti": 95.47000122070312,
-    "wti_change": -6.31930351289024,
-    "gold": 4415.89990234375,
-    "gold_change": 0.3682002480193791,
+    "wti": 100.30000305175781,
+    "wti_change": -1.5798258782225627,
+    "gold": 4424.89990234375,
+    "gold_change": 0.5727596407159252,
     "copper": 6.547999858856201,
     "copper_change": 1.2525104550989319,
     "natgas": 2.8310000896453857,
@@ -60,9 +60,9 @@
     "ticker": "^NDX",
     "expiry": "2026-09-17",
     "spot": 29445.10546875,
-    "atm_iv": 13.292139991827021,
-    "expected_move_pct": 1.1372164896903867,
-    "expected_move_points": 337.1183663721407,
+    "atm_iv": 13.292514600161557,
+    "expected_move_pct": 1.135956564662639,
+    "expected_move_points": 336.74489426728655,
     "pcr_oi": 0.936267071320182,
     "gamma_flip": 29380.916004079394,
     "put_wall": 29000.0,
@@ -2740,7 +2740,7 @@
     "model": "Estimated GEX using listed option OI and modeled gamma; not direct dealer book.",
     "expiry_mode": "0DTE",
     "expiry_label": "0DTE",
-    "time_to_expiry_hours": 64.12104472416667,
+    "time_to_expiry_hours": 63.9754376425,
     "gex_confidence": "HIGH",
     "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
     "expiry_count": 12,
@@ -9763,7 +9763,7 @@
     "model_error": "name 'volume_surface_gex_at' is not defined",
     "gex_refresh": {
       "status": "FAILED",
-      "attempted_at": "2026-09-19T03:52:45.849270+00:00",
+      "attempted_at": "2026-09-19T04:01:30.357587+00:00",
       "source": "Yahoo Finance / yfinance NDX option chains",
       "error": "name 'volume_surface_gex_at' is not defined"
     },
@@ -12085,8 +12085,16 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-19T03:53:02.578841+00:00",
+    "updated_at": "2026-09-19T04:02:39.102049+00:00",
     "items": [
+      {
+        "title": "2-year Treasury yield reaches multi-year high after Fed rate hike - qz.com",
+        "source": "qz.com",
+        "published_at": "2026-09-18T17:32:33+00:00",
+        "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9FLUg3bDRYSmRZQW82TDlfazRORExJT0ZvVEZBNUpIODNyNDlCQWhyVDdXaUpxeTBGdkI4UTNzZFRVV0JkMlJOWkg1Zm9sSi1hUjY1VzNPdnEtMnVSaG15VWtBQUNiUFhBNFgtdnd1bXc0bkdYcTBBbUZEeVViZw?oc=5",
+        "relevance_score": 21,
+        "impact": "HIGH"
+      },
       {
         "title": "Global shares fall, Treasury yields rise as central banks double down on inflation fight - TradingView",
         "source": "TradingView",
@@ -12109,14 +12117,6 @@
         "published_at": "2026-09-18T15:33:50+00:00",
         "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxPV19IM09VeURsTUJLRWt6eDl1T1I2MmFrUXpMNUp2eWFHYy02bm5hZXZGenF5a0FYNDFKMUd6SDFReFl1d1FJem1MakIwaHJTdEVPV0sxaXVSVHEzdlR3bUdjY0lVbDJNQVM3ZUJwYl9wd3N5RWRjNjJfNWktVzJuWllVZFdVYzBvWWlDeHRMVDl6a1BwMWdna1RIMXo?oc=5",
         "relevance_score": 23,
-        "impact": "HIGH"
-      },
-      {
-        "title": "Gold Holds Gain as Lower Oil and Fed Hike Temper Inflation Fears - Bloomberg.com",
-        "source": "Bloomberg.com",
-        "published_at": "2026-09-18T15:31:16+00:00",
-        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNRXA0T0RVa3FhR3N3MmVldzhfM1dNcTlQMjl2M2hzY1gweUdjcFFfMGJvRFQxMC11UWlITEt0TFY2TjdRbHdGTVBDR251bjZPUi0tRmF3U1pPNHlIcDctaGhXYWtIWWFiNHNGR19QdTh5VjlFOUdoRmJGb0NvV1pyekJKZVJJWmRyaEY1RDdFdEdIdFlCZkowZ2gyd1VVeXJoUVNkYVZLaDg5YTBNWVpxcnlibjZvUQ?oc=5",
-        "relevance_score": 20,
         "impact": "HIGH"
       },
       {
@@ -12187,48 +12187,20 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-09-19T03:52:49.472821+00:00",
+    "updated_at": "2026-09-19T04:02:23.099453+00:00",
     "series": {
-      "cpi": {
-        "series_id": "CPIAUCSL",
-        "value": 334.131,
-        "date": "2026-08-01",
-        "previous": 332.813,
-        "previous_date": "2026-07-01"
-      },
-      "pce": {
-        "series_id": "PCEPI",
-        "value": 131.659,
-        "date": "2026-07-01",
-        "previous": 131.454,
-        "previous_date": "2026-06-01"
-      },
-      "breakeven_10y": {
-        "series_id": "T10YIE",
-        "value": 2.33,
-        "date": "2026-09-18",
-        "previous": 2.33,
-        "previous_date": "2026-09-17"
-      },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.61,
-        "date": "2026-09-17",
-        "previous": 2.68,
-        "previous_date": "2026-09-16"
-      },
-      "sofr": {
-        "series_id": "SOFR",
-        "value": 3.85,
-        "date": "2026-09-17",
-        "previous": 3.62,
-        "previous_date": "2026-09-16"
-      },
       "core_cpi": {
         "series_id": "CPILFESL",
         "value": 337.765,
         "date": "2026-08-01",
         "previous": 336.789,
+        "previous_date": "2026-07-01"
+      },
+      "cpi": {
+        "series_id": "CPIAUCSL",
+        "value": 334.131,
+        "date": "2026-08-01",
+        "previous": 332.813,
         "previous_date": "2026-07-01"
       },
       "core_pce": {
@@ -12245,18 +12217,25 @@
         "previous": 3.63,
         "previous_date": "2026-09-16"
       },
-      "payrolls": {
-        "series_id": "PAYEMS",
-        "value": 159075.0,
-        "date": "2026-08-01",
-        "previous": 158913.0,
-        "previous_date": "2026-07-01"
+      "pce": {
+        "series_id": "PCEPI",
+        "value": 131.659,
+        "date": "2026-07-01",
+        "previous": 131.454,
+        "previous_date": "2026-06-01"
       },
       "unemployment": {
         "series_id": "UNRATE",
         "value": 4.1,
         "date": "2026-08-01",
         "previous": 4.1,
+        "previous_date": "2026-07-01"
+      },
+      "payrolls": {
+        "series_id": "PAYEMS",
+        "value": 159075.0,
+        "date": "2026-08-01",
+        "previous": 158913.0,
         "previous_date": "2026-07-01"
       },
       "avg_hourly_earnings": {
@@ -12266,12 +12245,33 @@
         "previous": 37.65,
         "previous_date": "2026-07-01"
       },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.6,
-        "date": "2026-08-01",
-        "previous": 61.4,
-        "previous_date": "2026-07-01"
+      "jolts": {
+        "series_id": "JTSJOL",
+        "value": 7271.0,
+        "date": "2026-07-01",
+        "previous": 7182.0,
+        "previous_date": "2026-06-01"
+      },
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.61,
+        "date": "2026-09-17",
+        "previous": 2.68,
+        "previous_date": "2026-09-16"
+      },
+      "sofr": {
+        "series_id": "SOFR",
+        "value": 3.85,
+        "date": "2026-09-17",
+        "previous": 3.62,
+        "previous_date": "2026-09-16"
+      },
+      "breakeven_10y": {
+        "series_id": "T10YIE",
+        "value": 2.33,
+        "date": "2026-09-18",
+        "previous": 2.33,
+        "previous_date": "2026-09-17"
       },
       "ppi": {
         "series_id": "PPIACO",
@@ -12280,12 +12280,26 @@
         "previous": 285.181,
         "previous_date": "2026-07-01"
       },
-      "jolts": {
-        "series_id": "JTSJOL",
-        "value": 7271.0,
-        "date": "2026-07-01",
-        "previous": 7182.0,
-        "previous_date": "2026-06-01"
+      "gdp": {
+        "series_id": "GDPC1",
+        "value": 24269.613,
+        "date": "2026-04-01",
+        "previous": 24180.419,
+        "previous_date": "2026-01-01"
+      },
+      "retail_sales": {
+        "series_id": "RSAFS",
+        "value": 773947.0,
+        "date": "2026-08-01",
+        "previous": 764462.0,
+        "previous_date": "2026-07-01"
+      },
+      "industrial_production": {
+        "series_id": "INDPRO",
+        "value": 103.0682,
+        "date": "2026-08-01",
+        "previous": 103.0454,
+        "previous_date": "2026-07-01"
       },
       "initial_claims": {
         "series_id": "ICSA",
@@ -12301,54 +12315,12 @@
         "previous": 1769000.0,
         "previous_date": "2026-08-29"
       },
-      "gdp_growth": {
-        "series_id": "A191RL1Q225SBEA",
-        "value": 1.5,
-        "date": "2026-04-01",
-        "previous": 2.1,
-        "previous_date": "2026-01-01"
-      },
-      "gdp": {
-        "series_id": "GDPC1",
-        "value": 24269.613,
-        "date": "2026-04-01",
-        "previous": 24180.419,
-        "previous_date": "2026-01-01"
-      },
-      "industrial_production": {
-        "series_id": "INDPRO",
-        "value": 103.0682,
-        "date": "2026-08-01",
-        "previous": 103.0454,
-        "previous_date": "2026-07-01"
-      },
       "consumer_sentiment": {
         "series_id": "UMCSENT",
         "value": 55.2,
         "date": "2026-07-01",
         "previous": 49.5,
         "previous_date": "2026-06-01"
-      },
-      "housing_starts": {
-        "series_id": "HOUST",
-        "value": 1275.0,
-        "date": "2026-08-01",
-        "previous": 1309.0,
-        "previous_date": "2026-07-01"
-      },
-      "retail_sales": {
-        "series_id": "RSAFS",
-        "value": 773947.0,
-        "date": "2026-08-01",
-        "previous": 764462.0,
-        "previous_date": "2026-07-01"
-      },
-      "building_permits": {
-        "series_id": "PERMIT",
-        "value": 1394.0,
-        "date": "2026-08-01",
-        "previous": 1433.0,
-        "previous_date": "2026-07-01"
       },
       "fed_balance_sheet": {
         "series_id": "WALCL",
@@ -12357,19 +12329,26 @@
         "previous": 6740619.0,
         "previous_date": "2026-09-09"
       },
-      "m2": {
-        "series_id": "M2SL",
-        "value": 23218.0,
-        "date": "2026-07-01",
-        "previous": 23115.2,
-        "previous_date": "2026-06-01"
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.6,
+        "date": "2026-08-01",
+        "previous": 61.4,
+        "previous_date": "2026-07-01"
       },
-      "rrp": {
-        "series_id": "RRPONTSYD",
-        "value": 0.576,
-        "date": "2026-09-18",
-        "previous": 0.276,
-        "previous_date": "2026-09-17"
+      "gdp_growth": {
+        "series_id": "A191RL1Q225SBEA",
+        "value": 1.5,
+        "date": "2026-04-01",
+        "previous": 2.1,
+        "previous_date": "2026-01-01"
+      },
+      "housing_starts": {
+        "series_id": "HOUST",
+        "value": 1275.0,
+        "date": "2026-08-01",
+        "previous": 1309.0,
+        "previous_date": "2026-07-01"
       },
       "financial_conditions": {
         "series_id": "NFCI",
@@ -12378,13 +12357,6 @@
         "previous": -0.558,
         "previous_date": "2026-09-04"
       },
-      "hy_spread": {
-        "series_id": "BAMLH0A0HYM2",
-        "value": 2.7,
-        "date": "2026-09-17",
-        "previous": 2.7,
-        "previous_date": "2026-09-16"
-      },
       "ig_spread": {
         "series_id": "BAMLC0A0CM",
         "value": 0.78,
@@ -12392,12 +12364,40 @@
         "previous": 0.78,
         "previous_date": "2026-09-16"
       },
+      "m2": {
+        "series_id": "M2SL",
+        "value": 23218.0,
+        "date": "2026-07-01",
+        "previous": 23115.2,
+        "previous_date": "2026-06-01"
+      },
+      "building_permits": {
+        "series_id": "PERMIT",
+        "value": 1394.0,
+        "date": "2026-08-01",
+        "previous": 1433.0,
+        "previous_date": "2026-07-01"
+      },
+      "rrp": {
+        "series_id": "RRPONTSYD",
+        "value": 0.576,
+        "date": "2026-09-18",
+        "previous": 0.276,
+        "previous_date": "2026-09-17"
+      },
       "tga": {
         "series_id": "WTREGEN",
         "value": 877028.0,
         "date": "2026-09-16",
         "previous": 883335.0,
         "previous_date": "2026-09-09"
+      },
+      "hy_spread": {
+        "series_id": "BAMLH0A0HYM2",
+        "value": 2.7,
+        "date": "2026-09-17",
+        "previous": 2.7,
+        "previous_date": "2026-09-16"
       }
     },
     "regime": {
@@ -12449,7 +12449,7 @@
   },
   "fx": {
     "status": "live",
-    "updated_at": "2026-09-19T03:52:43.853927+00:00",
+    "updated_at": "2026-09-19T04:01:27.849474+00:00",
     "pairs": {
       "EURUSD": {
         "ticker": "EURUSD=X",
@@ -12671,15 +12671,15 @@
     },
     "drivers": {
       "WTI": {
-        "value": 95.47000122070312,
-        "change_pct": -6.31930351289024,
-        "change_5d_pct": -4.577712834936509,
+        "value": 100.30000305175781,
+        "change_pct": -1.5798258782225627,
+        "change_5d_pct": 0.24987505484699302,
         "ticker": "CL=F"
       },
       "GOLD": {
-        "value": 4415.89990234375,
-        "change_pct": 0.3682002480193791,
-        "change_5d_pct": 0.15876976468163218,
+        "value": 4424.89990234375,
+        "change_pct": 0.5727596407159252,
+        "change_5d_pct": 0.362902319272318,
         "ticker": "GC=F"
       }
     },
@@ -12688,20 +12688,9 @@
   "fx_news": {
     "status": "live",
     "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
-    "updated_at": "2026-09-19T03:52:59.308512+00:00",
+    "updated_at": "2026-09-19T04:02:35.345799+00:00",
     "freshness_window_days": 7,
     "items": [
-      {
-        "title": "USD/JPY Analysis: Is the Yen Still Weak Despite the BOJ Rate Hike? - FOREX.com",
-        "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPQ3NWSklZcWhiVmxMdHdId1FaWUlmcGthaVRhOE0ySXBrOTVDZVhTRU5oZ3Nuc2VHVEpxS1Rxc2JHQUNBTjlxT0hHZGFsdGNNUThxVWh6em92bGZ0YTR1dW1HSU5sU04tTWlQSFpod0F2YkgxRHhtNThtczlKaDFoNDNDOHBCNHJScGcyQ1BZLXdTZlVqNHZUNFRxQ3pqdTB5TVVHd3RJSW94STJUdjR2cNIBvAFBVV95cUxQQU0zUVpMcXBIWUZXTm5jNW95RmFXMEZKRkJWdjVWbEdxYnV2QnpmWjNaN1BFem5xV01DSDZJUkNTOFpEUnI2c3FIcnFKQm1vVkRwQmxsVUltS2txYVJ2eDVNQUdmT0gtUFRMcDhiZ0JOUVd2bTJhVE02STNDZ0N4UThHYTViU2E4THR6ZVZkMFo3bEpiYjFHUzdsTEcxWXZjby10dXRVckR4VXFlYUhEOEo1RHJ3MnhkV1ViSg?oc=5",
-        "source": "FOREX.com",
-        "published_at": "2026-09-18T21:15:38+00:00",
-        "currency": "JPY",
-        "relevance_score": 7,
-        "freshness_score": 96.1,
-        "impact": "HIGH",
-        "topic": "MONETARY_POLICY"
-      },
       {
         "title": "Yen set for worst week since Oct 2025 as BoJ\u2019s hike seen as not aggressive enough",
         "link": "https://in.investing.com/news/forex-news/asia-fx-mixed-as-yen-slides-despite-boj-rate-hike-5597721",
@@ -12709,7 +12698,7 @@
         "published_at": "2026-09-18T20:08:08+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 95.4,
+        "freshness_score": 95.3,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12720,7 +12709,7 @@
         "published_at": "2026-09-18T16:30:11+00:00",
         "currency": "CAD",
         "relevance_score": 7,
-        "freshness_score": 93.2,
+        "freshness_score": 93.1,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12731,9 +12720,20 @@
         "published_at": "2026-09-18T15:24:42+00:00",
         "currency": "USD",
         "relevance_score": 12,
-        "freshness_score": 92.6,
+        "freshness_score": 92.5,
         "impact": "HIGH",
         "topic": "FX_MARKET"
+      },
+      {
+        "title": "AUD Strongest, Yen Weakest as RBA and BoJ Deliver Opposite Policy Surprises - Action Forex",
+        "link": "https://news.google.com/rss/articles/CBMi2AFBVV95cUxQTmJRdi1hUFJIelB2XzBObnBsVTljYTlTWWN2MlJzM2JYMGwyRVVOMmlrZjBMVlZwOVNHVUZrUFhlUnl6S0diT0RFbDhHSjhJTlpiMUdycmxFMWY4MEZBUENDcXFrR0ZUbDJFdVI5cG8xUDJnSHhQWkQzaHBwTS1fXzB0VzNaRGNOQV8xQTFaNHAyTW5Ca2RRTjU1TTRiT3pNTVNaY0NlWGpOekxoem85ZmdyQkstWU9JZ1pmNFl1ZDlVTWtFeno2ZTJJOVBZYmZUZ0FyckFEdEk?oc=5",
+        "source": "Action Forex",
+        "published_at": "2026-09-18T13:05:33+00:00",
+        "currency": "JPY",
+        "relevance_score": 7,
+        "freshness_score": 91.1,
+        "impact": "HIGH",
+        "topic": "MONETARY_POLICY"
       },
       {
         "title": "Here\u2019s what BoE tightening means for EUR/GBP",
@@ -12742,7 +12742,7 @@
         "published_at": "2026-09-18T09:02:11+00:00",
         "currency": "GBP",
         "relevance_score": 5,
-        "freshness_score": 88.8,
+        "freshness_score": 88.7,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12753,7 +12753,7 @@
         "published_at": "2026-09-18T08:20:13+00:00",
         "currency": "GBP",
         "relevance_score": 9,
-        "freshness_score": 88.4,
+        "freshness_score": 88.3,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12764,29 +12764,29 @@
         "published_at": "2026-09-18T04:14:08+00:00",
         "currency": "CNY",
         "relevance_score": 7,
-        "freshness_score": 85.9,
+        "freshness_score": 85.8,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
       {
-        "title": "Dollar halts six-day rally after Fed hike, sterling slips after BoE stands pat",
-        "link": "https://in.investing.com/news/forex-news/asian-currencies-mixed-as-dollar-holds-sevenweek-high-yen-steadies-5596119",
-        "source": "Investing.com",
-        "published_at": "2026-09-17T19:26:08+00:00",
+        "title": "Canadian Dollar bears retain control near August 7 low amid US-Canada rate gap/trade war - tmgm.com",
+        "link": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNeC13aFFiN25RX2ZMOWVIakJxaF9PZEQ0TjFPTUt2ekkzWTlZYmlqQlczM2JVR0NUMElnVWs1NkRhVW5uUmhsWEFaYXFiUzRnS0hYZjBpNHlURDBKeWhJakJwd0RBbnpBa2tjcHgtamhCX1JPRGRCLWxXdm8zMUYwUl9tSzhoY200N3cwQUN3VkoyeHNBY2haZF9DaUlGd1ZsS3l2ZDBSeWt6dHhBSWxYSDloWHpLaEZEeDFqa01tbDZ1VThSZTUxcDh2U3NSTjRLYnZwUFBiT0djb3d0MkpDSHNuWDByT3pYUGc?oc=5",
+        "source": "tmgm.com",
+        "published_at": "2026-09-18T03:13:49+00:00",
         "currency": "USD",
-        "relevance_score": 7,
-        "freshness_score": 80.7,
+        "relevance_score": 10,
+        "freshness_score": 85.2,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
       {
-        "title": "New Zealand Dollar: Growth risks temper RBNZ pricing \u2013 ING - TradingKey",
+        "title": "New Zealand Dollar: Growth risks temper RBNZ pricing \u2013 ING - tradingkey.com",
         "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE1tUEZkV01uMlZ5RFdrd0dWcU9ma003R2lDWDhEX2sxdzlqd25UdHluNjV2MW5sS01QcVVkMzZ5cFNDN0Y1RWloUkplZFYxdGZDMk1OQ0JMRXpTT0JhcHgwRk5FSQ?oc=5",
-        "source": "TradingKey",
+        "source": "tradingkey.com",
         "published_at": "2026-09-16T11:30:58+00:00",
         "currency": "NZD",
         "relevance_score": 9,
-        "freshness_score": 61.7,
+        "freshness_score": 61.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12797,7 +12797,7 @@
         "published_at": "2026-09-15T10:27:47+00:00",
         "currency": "INR",
         "relevance_score": 14,
-        "freshness_score": 46.8,
+        "freshness_score": 46.7,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12808,33 +12808,33 @@
         "published_at": "2026-09-15T06:19:29+00:00",
         "currency": "INR",
         "relevance_score": 11,
-        "freshness_score": 44.3,
+        "freshness_score": 44.2,
         "impact": "HIGH",
         "topic": "FX_MARKET"
       },
       {
-        "title": "New Zealand Dollar weakens below 0.5800 on RBNZ dovish signals - TradingKey",
-        "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTFByVlhmR1VmT3dKVHcxNHdWUnpnazhiTFBtZ003NEpWbHNBQ2tPbVN6SklGWXpVMXRBMkFLa1NmV0p1MFRqSHdGX3c0c1Y1UUY4eUV1SEh3ZkdBRmpOYWxqM1kyMA?oc=5",
-        "source": "TradingKey",
-        "published_at": "2026-09-14T02:57:21+00:00",
-        "currency": "NZD",
-        "relevance_score": 9,
-        "freshness_score": 28.0,
-        "impact": "HIGH",
-        "topic": "MONETARY_POLICY"
+        "title": "Euro falls as higher Oil prices support Canadian Dollar amid mixed inflation data - tradingkey.com",
+        "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9IT0RSM0VJTXU1M3lwRkpGS0NZcnpCMms4bkdZR1I3aDROVnZ3YTJPZ3hQUm9EU0tMczdBNUpfVWZZX1MyMEtPbTRMWVluSW5qMlUyTlpxMGc3R1lUUS1FSE1rWQ?oc=5",
+        "source": "tradingkey.com",
+        "published_at": "2026-09-14T16:37:20+00:00",
+        "currency": "CAD",
+        "relevance_score": 10,
+        "freshness_score": 36.1,
+        "impact": "MEDIUM",
+        "topic": "FX_MARKET"
+      },
+      {
+        "title": "2-year Treasury yield reaches multi-year high after Fed rate hike - qz.com",
+        "link": "",
+        "source": "qz.com",
+        "published_at": "2026-09-18T17:32:33+00:00",
+        "currency": "USD"
       },
       {
         "title": "Dow Slides as Treasury Yields Near 5% After Fed Rate Hike - Yahoo Finance",
         "link": "",
         "source": "Yahoo Finance",
         "published_at": "2026-09-18T15:33:50+00:00",
-        "currency": "USD"
-      },
-      {
-        "title": "Gold Holds Gain as Lower Oil and Fed Hike Temper Inflation Fears - Bloomberg.com",
-        "link": "",
-        "source": "Bloomberg.com",
-        "published_at": "2026-09-18T15:31:16+00:00",
         "currency": "USD"
       },
       {
@@ -12876,7 +12876,7 @@
   },
   "market_regime": {
     "status": "live",
-    "updated_at": "2026-09-19T03:52:49.472932+00:00",
+    "updated_at": "2026-09-19T04:02:23.099554+00:00",
     "regime": "RISK-ON",
     "score": 81.3,
     "confidence": 89,
@@ -12885,7 +12885,7 @@
     "asset_bias": {
       "equities": "BULLISH",
       "usd": "MIXED",
-      "gold": "NEUTRAL",
+      "gold": "BULLISH",
       "fx": "MIXED",
       "volatility": "FALLING RISK"
     },
@@ -12918,7 +12918,7 @@
         "factor": "DXY",
         "score": 0,
         "weight": 0.9,
-        "read": "DXY -0.00%",
+        "read": "DXY +0.00%",
         "source": "dollar",
         "contribution": 0.0
       },
