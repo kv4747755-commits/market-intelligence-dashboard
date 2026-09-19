@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-19T08:51:52.659685+00:00",
+  "generated_at": "2026-09-19T09:01:36.170276+00:00",
   "prices": {
     "ndx": 29644.169921875,
     "ndx_change": 0.6696423537695617,
@@ -60,9 +60,9 @@
     "ticker": "^NDX",
     "expiry": "2026-09-17",
     "spot": 29445.10546875,
-    "atm_iv": 13.305730103863878,
-    "expected_move_pct": 1.0932807405749898,
-    "expected_move_points": 324.0940004591834,
+    "atm_iv": 13.306156177348836,
+    "expected_move_pct": 1.091959782040989,
+    "expected_move_points": 323.70241326676665,
     "pcr_oi": 0.936267071320182,
     "gamma_flip": 29380.916004079394,
     "put_wall": 29000.0,
@@ -2740,7 +2740,7 @@
     "model": "Estimated GEX using listed option OI and modeled gamma; not direct dealer book.",
     "expiry_mode": "0DTE",
     "expiry_label": "0DTE",
-    "time_to_expiry_hours": 59.14119308694444,
+    "time_to_expiry_hours": 58.994586220833334,
     "gex_confidence": "HIGH",
     "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
     "expiry_count": 12,
@@ -9763,7 +9763,7 @@
     "model_error": "name 'volume_surface_gex_at' is not defined",
     "gex_refresh": {
       "status": "FAILED",
-      "attempted_at": "2026-09-19T08:51:33.547393+00:00",
+      "attempted_at": "2026-09-19T09:00:21.066328+00:00",
       "source": "Yahoo Finance / yfinance NDX option chains",
       "error": "name 'volume_surface_gex_at' is not defined"
     },
@@ -12085,7 +12085,7 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-19T08:51:52.659108+00:00",
+    "updated_at": "2026-09-19T09:01:36.169755+00:00",
     "items": [
       {
         "title": "US dollar forecast: USD/JPY surged on BoJ while Crude Oil rebounds to boost USD - FOREX.com",
@@ -12136,8 +12136,8 @@
         "impact": "HIGH"
       },
       {
-        "title": "World stocks rebound, Treasury yields retreat after Fed, BoE decisions - Reuters",
-        "source": "Reuters",
+        "title": "World stocks rebound, Treasury yields retreat after Fed, BoE decisions - reuters.com",
+        "source": "reuters.com",
         "published_at": "2026-09-17T02:05:00+00:00",
         "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQUnBManB6Nl9tbnMzaXhPbHh4RmJVX0xWNmdaeENoNW50NGxxanVfMHFMaWVENklmQ09OSzdDVnFtSFhiXzJ0YTE5RVgzSHYtekRVZHU2QXE0LVNWeS1nalgyNldtV3l1X3FUc3NudktmOWZJVVZORXFNbWloZzlOZkdRWQ?oc=5",
         "relevance_score": 21,
@@ -12187,8 +12187,22 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-09-19T08:51:37.305812+00:00",
+    "updated_at": "2026-09-19T09:01:23.838911+00:00",
     "series": {
+      "core_pce": {
+        "series_id": "PCEPILFE",
+        "value": 130.658,
+        "date": "2026-07-01",
+        "previous": 130.338,
+        "previous_date": "2026-06-01"
+      },
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.61,
+        "date": "2026-09-17",
+        "previous": 2.68,
+        "previous_date": "2026-09-16"
+      },
       "core_cpi": {
         "series_id": "CPILFESL",
         "value": 337.765,
@@ -12196,11 +12210,18 @@
         "previous": 336.789,
         "previous_date": "2026-07-01"
       },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.61,
+      "breakeven_10y": {
+        "series_id": "T10YIE",
+        "value": 2.33,
+        "date": "2026-09-18",
+        "previous": 2.33,
+        "previous_date": "2026-09-17"
+      },
+      "fed_funds": {
+        "series_id": "DFF",
+        "value": 3.88,
         "date": "2026-09-17",
-        "previous": 2.68,
+        "previous": 3.63,
         "previous_date": "2026-09-16"
       },
       "cpi": {
@@ -12217,47 +12238,12 @@
         "previous": 3.62,
         "previous_date": "2026-09-16"
       },
-      "fed_funds": {
-        "series_id": "DFF",
-        "value": 3.88,
-        "date": "2026-09-17",
-        "previous": 3.63,
-        "previous_date": "2026-09-16"
-      },
-      "breakeven_10y": {
-        "series_id": "T10YIE",
-        "value": 2.33,
-        "date": "2026-09-18",
-        "previous": 2.33,
-        "previous_date": "2026-09-17"
-      },
       "pce": {
         "series_id": "PCEPI",
         "value": 131.659,
         "date": "2026-07-01",
         "previous": 131.454,
         "previous_date": "2026-06-01"
-      },
-      "core_pce": {
-        "series_id": "PCEPILFE",
-        "value": 130.658,
-        "date": "2026-07-01",
-        "previous": 130.338,
-        "previous_date": "2026-06-01"
-      },
-      "ppi": {
-        "series_id": "PPIACO",
-        "value": 287.928,
-        "date": "2026-08-01",
-        "previous": 285.181,
-        "previous_date": "2026-07-01"
-      },
-      "continuing_claims": {
-        "series_id": "CCSA",
-        "value": 1730000.0,
-        "date": "2026-09-05",
-        "previous": 1769000.0,
-        "previous_date": "2026-08-29"
       },
       "initial_claims": {
         "series_id": "ICSA",
@@ -12266,18 +12252,18 @@
         "previous": 206000.0,
         "previous_date": "2026-09-05"
       },
-      "avg_hourly_earnings": {
-        "series_id": "CES0500000003",
-        "value": 37.75,
-        "date": "2026-08-01",
-        "previous": 37.65,
-        "previous_date": "2026-07-01"
-      },
       "payrolls": {
         "series_id": "PAYEMS",
         "value": 159075.0,
         "date": "2026-08-01",
         "previous": 158913.0,
+        "previous_date": "2026-07-01"
+      },
+      "ppi": {
+        "series_id": "PPIACO",
+        "value": 287.928,
+        "date": "2026-08-01",
+        "previous": 285.181,
         "previous_date": "2026-07-01"
       },
       "unemployment": {
@@ -12287,12 +12273,12 @@
         "previous": 4.1,
         "previous_date": "2026-07-01"
       },
-      "jolts": {
-        "series_id": "JTSJOL",
-        "value": 7271.0,
-        "date": "2026-07-01",
-        "previous": 7182.0,
-        "previous_date": "2026-06-01"
+      "gdp_growth": {
+        "series_id": "A191RL1Q225SBEA",
+        "value": 1.5,
+        "date": "2026-04-01",
+        "previous": 2.1,
+        "previous_date": "2026-01-01"
       },
       "labor_participation": {
         "series_id": "CIVPART",
@@ -12301,12 +12287,47 @@
         "previous": 61.4,
         "previous_date": "2026-07-01"
       },
+      "avg_hourly_earnings": {
+        "series_id": "CES0500000003",
+        "value": 37.75,
+        "date": "2026-08-01",
+        "previous": 37.65,
+        "previous_date": "2026-07-01"
+      },
+      "continuing_claims": {
+        "series_id": "CCSA",
+        "value": 1730000.0,
+        "date": "2026-09-05",
+        "previous": 1769000.0,
+        "previous_date": "2026-08-29"
+      },
+      "building_permits": {
+        "series_id": "PERMIT",
+        "value": 1394.0,
+        "date": "2026-08-01",
+        "previous": 1433.0,
+        "previous_date": "2026-07-01"
+      },
+      "jolts": {
+        "series_id": "JTSJOL",
+        "value": 7271.0,
+        "date": "2026-07-01",
+        "previous": 7182.0,
+        "previous_date": "2026-06-01"
+      },
       "gdp": {
         "series_id": "GDPC1",
         "value": 24269.613,
         "date": "2026-04-01",
         "previous": 24180.419,
         "previous_date": "2026-01-01"
+      },
+      "m2": {
+        "series_id": "M2SL",
+        "value": 23218.0,
+        "date": "2026-07-01",
+        "previous": 23115.2,
+        "previous_date": "2026-06-01"
       },
       "industrial_production": {
         "series_id": "INDPRO",
@@ -12320,13 +12341,6 @@
         "value": 773947.0,
         "date": "2026-08-01",
         "previous": 764462.0,
-        "previous_date": "2026-07-01"
-      },
-      "building_permits": {
-        "series_id": "PERMIT",
-        "value": 1394.0,
-        "date": "2026-08-01",
-        "previous": 1433.0,
         "previous_date": "2026-07-01"
       },
       "housing_starts": {
@@ -12350,19 +12364,12 @@
         "previous": 6740619.0,
         "previous_date": "2026-09-09"
       },
-      "gdp_growth": {
-        "series_id": "A191RL1Q225SBEA",
-        "value": 1.5,
-        "date": "2026-04-01",
-        "previous": 2.1,
-        "previous_date": "2026-01-01"
-      },
-      "m2": {
-        "series_id": "M2SL",
-        "value": 23218.0,
-        "date": "2026-07-01",
-        "previous": 23115.2,
-        "previous_date": "2026-06-01"
+      "hy_spread": {
+        "series_id": "BAMLH0A0HYM2",
+        "value": 2.7,
+        "date": "2026-09-17",
+        "previous": 2.7,
+        "previous_date": "2026-09-16"
       },
       "rrp": {
         "series_id": "RRPONTSYD",
@@ -12370,6 +12377,13 @@
         "date": "2026-09-18",
         "previous": 0.276,
         "previous_date": "2026-09-17"
+      },
+      "financial_conditions": {
+        "series_id": "NFCI",
+        "value": -0.56,
+        "date": "2026-09-11",
+        "previous": -0.558,
+        "previous_date": "2026-09-04"
       },
       "tga": {
         "series_id": "WTREGEN",
@@ -12383,20 +12397,6 @@
         "value": 0.78,
         "date": "2026-09-17",
         "previous": 0.78,
-        "previous_date": "2026-09-16"
-      },
-      "financial_conditions": {
-        "series_id": "NFCI",
-        "value": -0.56,
-        "date": "2026-09-11",
-        "previous": -0.558,
-        "previous_date": "2026-09-04"
-      },
-      "hy_spread": {
-        "series_id": "BAMLH0A0HYM2",
-        "value": 2.7,
-        "date": "2026-09-17",
-        "previous": 2.7,
         "previous_date": "2026-09-16"
       }
     },
@@ -12449,7 +12449,7 @@
   },
   "fx": {
     "status": "live",
-    "updated_at": "2026-09-19T08:51:31.204649+00:00",
+    "updated_at": "2026-09-19T09:00:19.220945+00:00",
     "pairs": {
       "EURUSD": {
         "ticker": "EURUSD=X",
@@ -12688,7 +12688,7 @@
   "fx_news": {
     "status": "live",
     "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
-    "updated_at": "2026-09-19T08:51:49.044701+00:00",
+    "updated_at": "2026-09-19T09:01:32.947423+00:00",
     "freshness_window_days": 7,
     "items": [
       {
@@ -12698,7 +12698,7 @@
         "published_at": "2026-09-19T07:00:00+00:00",
         "currency": "USD",
         "relevance_score": 12,
-        "freshness_score": 98.9,
+        "freshness_score": 98.8,
         "impact": "HIGH",
         "topic": "FX_MARKET"
       },
@@ -12709,7 +12709,7 @@
         "published_at": "2026-09-18T21:15:38+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 93.1,
+        "freshness_score": 93.0,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12720,7 +12720,7 @@
         "published_at": "2026-09-18T20:08:08+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 92.4,
+        "freshness_score": 92.3,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12731,7 +12731,7 @@
         "published_at": "2026-09-18T16:30:11+00:00",
         "currency": "CAD",
         "relevance_score": 7,
-        "freshness_score": 90.3,
+        "freshness_score": 90.2,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12742,7 +12742,7 @@
         "published_at": "2026-09-18T09:02:11+00:00",
         "currency": "GBP",
         "relevance_score": 5,
-        "freshness_score": 85.8,
+        "freshness_score": 85.7,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12753,7 +12753,7 @@
         "published_at": "2026-09-18T08:20:13+00:00",
         "currency": "GBP",
         "relevance_score": 9,
-        "freshness_score": 85.4,
+        "freshness_score": 85.3,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12764,31 +12764,20 @@
         "published_at": "2026-09-18T04:14:08+00:00",
         "currency": "CNY",
         "relevance_score": 7,
-        "freshness_score": 83.0,
+        "freshness_score": 82.9,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
       {
-        "title": "Canadian Dollar bears retain control near August 7 low amid US-Canada rate gap/trade war - tmgm.com",
-        "link": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNeC13aFFiN25RX2ZMOWVIakJxaF9PZEQ0TjFPTUt2ekkzWTlZYmlqQlczM2JVR0NUMElnVWs1NkRhVW5uUmhsWEFaYXFiUzRnS0hYZjBpNHlURDBKeWhJakJwd0RBbnpBa2tjcHgtamhCX1JPRGRCLWxXdm8zMUYwUl9tSzhoY200N3cwQUN3VkoyeHNBY2haZF9DaUlGd1ZsS3l2ZDBSeWt6dHhBSWxYSDloWHpLaEZEeDFqa01tbDZ1VThSZTUxcDh2U3NSTjRLYnZwUFBiT0djb3d0MkpDSHNuWDByT3pYUGc?oc=5",
-        "source": "tmgm.com",
-        "published_at": "2026-09-18T03:13:49+00:00",
+        "title": "Dollar halts six-day rally after Fed hike, sterling slips after BoE stands pat",
+        "link": "https://in.investing.com/news/forex-news/asian-currencies-mixed-as-dollar-holds-sevenweek-high-yen-steadies-5596119",
+        "source": "Investing.com",
+        "published_at": "2026-09-17T19:26:08+00:00",
         "currency": "USD",
-        "relevance_score": 10,
-        "freshness_score": 82.4,
+        "relevance_score": 7,
+        "freshness_score": 77.6,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
-      },
-      {
-        "title": "PBOC sets USD/ CNY reference rate for today at 6.7521 (vs. estimate at 6.7065) - investingLive",
-        "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxNLXNDeXEtV2dVekFqTEtXZGhNUXpEUldtUDhudEtTMUFNcjMzMEhJTXVHWE5LZGwtMU5VZmJvbUZRUnpMTDJlZnZ2aUlDYzdnUnBqSlR3Wkpha2QyWFM0NlM2LWtqdkNEVFF4S2RjOW9CWVZNUHlSRWJUdHd4ZnhKQ3FuRzM1WGhjNjZIVU42dkJwWDdNYnctUTJGYzNnc2R4bnd2Mg?oc=5",
-        "source": "investingLive",
-        "published_at": "2026-09-18T01:14:56+00:00",
-        "currency": "CNY",
-        "relevance_score": 5,
-        "freshness_score": 81.2,
-        "impact": "HIGH",
-        "topic": "MONETARY_POLICY"
       },
       {
         "title": "New Zealand Dollar: Growth risks temper RBNZ pricing \u2013 ING - TradingKey",
@@ -12797,7 +12786,7 @@
         "published_at": "2026-09-16T11:30:58+00:00",
         "currency": "NZD",
         "relevance_score": 9,
-        "freshness_score": 58.7,
+        "freshness_score": 58.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12808,7 +12797,7 @@
         "published_at": "2026-09-15T10:27:47+00:00",
         "currency": "INR",
         "relevance_score": 14,
-        "freshness_score": 43.8,
+        "freshness_score": 43.7,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12822,6 +12811,17 @@
         "freshness_score": 41.3,
         "impact": "HIGH",
         "topic": "FX_MARKET"
+      },
+      {
+        "title": "PBOC is expected to set the USD/CNY reference rate at 6.7051 \u2013 Reuters estimate - investingLive",
+        "link": "https://news.google.com/rss/articles/CBMirwFBVV95cUxPaVRKVFd6eVoxUjhNcEJ0WEFWazFjTmx6ZVVsXzhGRFZIaVZvV3V0Q3ZjZnJCVDBhUXF6THJPTC1lVzRJTmFrS0lXV1pZblZYcjdxOHUxWWxDcHJzVmpxRGc0a2ZJbGxRaGRBazV2dmJCcjlyb2tUazRCNVhwZHVLYXpGb1RZdWVWb3lfVE1ZOVpUVWlZdGxMdWlzZVBqZm54dnBWSkEtczdnalFMYV80?oc=5",
+        "source": "investingLive",
+        "published_at": "2026-09-15T00:33:00+00:00",
+        "currency": "CNY",
+        "relevance_score": 5,
+        "freshness_score": 37.8,
+        "impact": "HIGH",
+        "topic": "MONETARY_POLICY"
       },
       {
         "title": "Dow Slides as Treasury Yields Near 5% After Fed Rate Hike - Yahoo Finance",
@@ -12859,9 +12859,9 @@
         "currency": "USD"
       },
       {
-        "title": "World stocks rebound, Treasury yields retreat after Fed, BoE decisions - Reuters",
+        "title": "World stocks rebound, Treasury yields retreat after Fed, BoE decisions - reuters.com",
         "link": "",
-        "source": "Reuters",
+        "source": "reuters.com",
         "published_at": "2026-09-17T02:05:00+00:00",
         "currency": "USD"
       },
@@ -12883,7 +12883,7 @@
   },
   "market_regime": {
     "status": "live",
-    "updated_at": "2026-09-19T08:51:37.305922+00:00",
+    "updated_at": "2026-09-19T09:01:23.839015+00:00",
     "regime": "RISK-ON",
     "score": 81.3,
     "confidence": 89,
