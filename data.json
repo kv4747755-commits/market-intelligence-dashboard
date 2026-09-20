@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T17:37:20.716816+00:00",
+  "generated_at": "2026-09-20T17:45:23.292608+00:00",
   "prices": {
     "ndx": 29644.169921875,
     "ndx_change": 0.6696423537695617,
@@ -60,9 +60,9 @@
     "ticker": "^NDX",
     "expiry": "2026-09-17",
     "spot": 29445.10546875,
-    "atm_iv": 16.177612275969746,
-    "expected_move_pct": 0.8878401183689819,
-    "expected_move_points": 263.19283332387715,
+    "atm_iv": 16.17806166347336,
+    "expected_move_pct": 0.8855868393571782,
+    "expected_move_points": 262.5248674648041,
     "pcr_oi": 1.3647502356267671,
     "gamma_flip": 29380.916004079394,
     "put_wall": 29000.0,
@@ -2740,7 +2740,7 @@
     "model": "Estimated GEX using listed option OI and modeled gamma; not direct dealer book.",
     "expiry_mode": "0DTE",
     "expiry_label": "0DTE",
-    "time_to_expiry_hours": 26.38425232694444,
+    "time_to_expiry_hours": 26.24904099416667,
     "gex_confidence": "HIGH",
     "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
     "expiry_count": 12,
@@ -9763,7 +9763,7 @@
     "model_error": "name 'volume_surface_gex_at' is not defined",
     "gex_refresh": {
       "status": "FAILED",
-      "attempted_at": "2026-09-20T17:36:59.053504+00:00",
+      "attempted_at": "2026-09-20T17:45:05.889050+00:00",
       "source": "Yahoo Finance / yfinance NDX option chains",
       "error": "name 'volume_surface_gex_at' is not defined"
     },
@@ -12085,11 +12085,11 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-20T17:37:20.716325+00:00",
+    "updated_at": "2026-09-20T17:45:23.292145+00:00",
     "items": [
       {
-        "title": "Federal Reserve rate hike reflects new world of sticky inflation and faster growth - AP News",
-        "source": "AP News",
+        "title": "Federal Reserve rate hike reflects new world of sticky inflation and faster growth - apnews.com",
+        "source": "apnews.com",
         "published_at": "2026-09-20T13:45:00+00:00",
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxPeUxpb0hhaEY4MGl0T21yM2ZObndRRlBrc0owTWxDM1FKMlFrWmF5Q21aNGFXdFh2QW5RRTJMMkVZSnJkdnpJMEdTWEFzTjFLQ2RCUWNqWXdlVVJoalBTLUxTMFJHN3pQVlAyLTdGLXBDdnlWbFlzMEJRTlowcklrY2NOaXEyOUE0cG4zQS1oRkxFR1JORWFBNHdJUXRnSGpILWc?oc=5",
         "relevance_score": 21,
@@ -12187,13 +12187,20 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-09-20T17:37:04.079580+00:00",
+    "updated_at": "2026-09-20T17:45:09.646283+00:00",
     "series": {
-      "core_cpi": {
-        "series_id": "CPILFESL",
-        "value": 337.765,
+      "breakeven_10y": {
+        "series_id": "T10YIE",
+        "value": 2.33,
+        "date": "2026-09-18",
+        "previous": 2.33,
+        "previous_date": "2026-09-17"
+      },
+      "cpi": {
+        "series_id": "CPIAUCSL",
+        "value": 334.131,
         "date": "2026-08-01",
-        "previous": 336.789,
+        "previous": 332.813,
         "previous_date": "2026-07-01"
       },
       "pce": {
@@ -12203,46 +12210,18 @@
         "previous": 131.454,
         "previous_date": "2026-06-01"
       },
-      "sofr": {
-        "series_id": "SOFR",
-        "value": 3.85,
-        "date": "2026-09-17",
-        "previous": 3.62,
-        "previous_date": "2026-09-16"
-      },
-      "breakeven_10y": {
-        "series_id": "T10YIE",
-        "value": 2.33,
-        "date": "2026-09-18",
-        "previous": 2.33,
-        "previous_date": "2026-09-17"
-      },
-      "core_pce": {
-        "series_id": "PCEPILFE",
-        "value": 130.658,
-        "date": "2026-07-01",
-        "previous": 130.338,
-        "previous_date": "2026-06-01"
-      },
-      "cpi": {
-        "series_id": "CPIAUCSL",
-        "value": 334.131,
-        "date": "2026-08-01",
-        "previous": 332.813,
-        "previous_date": "2026-07-01"
-      },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.61,
-        "date": "2026-09-17",
-        "previous": 2.68,
-        "previous_date": "2026-09-16"
-      },
       "fed_funds": {
         "series_id": "DFF",
         "value": 3.88,
         "date": "2026-09-17",
         "previous": 3.63,
+        "previous_date": "2026-09-16"
+      },
+      "sofr": {
+        "series_id": "SOFR",
+        "value": 3.85,
+        "date": "2026-09-17",
+        "previous": 3.62,
         "previous_date": "2026-09-16"
       },
       "unemployment": {
@@ -12252,26 +12231,26 @@
         "previous": 4.1,
         "previous_date": "2026-07-01"
       },
-      "continuing_claims": {
-        "series_id": "CCSA",
-        "value": 1730000.0,
-        "date": "2026-09-05",
-        "previous": 1769000.0,
-        "previous_date": "2026-08-29"
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.61,
+        "date": "2026-09-17",
+        "previous": 2.68,
+        "previous_date": "2026-09-16"
       },
-      "initial_claims": {
-        "series_id": "ICSA",
-        "value": 196000.0,
-        "date": "2026-09-12",
-        "previous": 206000.0,
-        "previous_date": "2026-09-05"
-      },
-      "avg_hourly_earnings": {
-        "series_id": "CES0500000003",
-        "value": 37.75,
+      "core_cpi": {
+        "series_id": "CPILFESL",
+        "value": 337.765,
         "date": "2026-08-01",
-        "previous": 37.65,
+        "previous": 336.789,
         "previous_date": "2026-07-01"
+      },
+      "core_pce": {
+        "series_id": "PCEPILFE",
+        "value": 130.658,
+        "date": "2026-07-01",
+        "previous": 130.338,
+        "previous_date": "2026-06-01"
       },
       "ppi": {
         "series_id": "PPIACO",
@@ -12280,26 +12259,26 @@
         "previous": 285.181,
         "previous_date": "2026-07-01"
       },
+      "avg_hourly_earnings": {
+        "series_id": "CES0500000003",
+        "value": 37.75,
+        "date": "2026-08-01",
+        "previous": 37.65,
+        "previous_date": "2026-07-01"
+      },
+      "initial_claims": {
+        "series_id": "ICSA",
+        "value": 196000.0,
+        "date": "2026-09-12",
+        "previous": 206000.0,
+        "previous_date": "2026-09-05"
+      },
       "payrolls": {
         "series_id": "PAYEMS",
         "value": 159075.0,
         "date": "2026-08-01",
         "previous": 158913.0,
         "previous_date": "2026-07-01"
-      },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.6,
-        "date": "2026-08-01",
-        "previous": 61.4,
-        "previous_date": "2026-07-01"
-      },
-      "jolts": {
-        "series_id": "JTSJOL",
-        "value": 7271.0,
-        "date": "2026-07-01",
-        "previous": 7182.0,
-        "previous_date": "2026-06-01"
       },
       "gdp": {
         "series_id": "GDPC1",
@@ -12308,12 +12287,26 @@
         "previous": 24180.419,
         "previous_date": "2026-01-01"
       },
-      "gdp_growth": {
-        "series_id": "A191RL1Q225SBEA",
-        "value": 1.5,
-        "date": "2026-04-01",
-        "previous": 2.1,
-        "previous_date": "2026-01-01"
+      "continuing_claims": {
+        "series_id": "CCSA",
+        "value": 1730000.0,
+        "date": "2026-09-05",
+        "previous": 1769000.0,
+        "previous_date": "2026-08-29"
+      },
+      "jolts": {
+        "series_id": "JTSJOL",
+        "value": 7271.0,
+        "date": "2026-07-01",
+        "previous": 7182.0,
+        "previous_date": "2026-06-01"
+      },
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.6,
+        "date": "2026-08-01",
+        "previous": 61.4,
+        "previous_date": "2026-07-01"
       },
       "industrial_production": {
         "series_id": "INDPRO",
@@ -12321,6 +12314,13 @@
         "date": "2026-08-01",
         "previous": 103.0454,
         "previous_date": "2026-07-01"
+      },
+      "gdp_growth": {
+        "series_id": "A191RL1Q225SBEA",
+        "value": 1.5,
+        "date": "2026-04-01",
+        "previous": 2.1,
+        "previous_date": "2026-01-01"
       },
       "retail_sales": {
         "series_id": "RSAFS",
@@ -12336,19 +12336,19 @@
         "previous": 1309.0,
         "previous_date": "2026-07-01"
       },
-      "building_permits": {
-        "series_id": "PERMIT",
-        "value": 1394.0,
-        "date": "2026-08-01",
-        "previous": 1433.0,
-        "previous_date": "2026-07-01"
-      },
-      "consumer_sentiment": {
-        "series_id": "UMCSENT",
-        "value": 55.2,
+      "m2": {
+        "series_id": "M2SL",
+        "value": 23218.0,
         "date": "2026-07-01",
-        "previous": 49.5,
+        "previous": 23115.2,
         "previous_date": "2026-06-01"
+      },
+      "rrp": {
+        "series_id": "RRPONTSYD",
+        "value": 0.576,
+        "date": "2026-09-18",
+        "previous": 0.276,
+        "previous_date": "2026-09-17"
       },
       "fed_balance_sheet": {
         "series_id": "WALCL",
@@ -12364,26 +12364,12 @@
         "previous": -0.558,
         "previous_date": "2026-09-04"
       },
-      "tga": {
-        "series_id": "WTREGEN",
-        "value": 877028.0,
-        "date": "2026-09-16",
-        "previous": 883335.0,
-        "previous_date": "2026-09-09"
-      },
-      "m2": {
-        "series_id": "M2SL",
-        "value": 23218.0,
-        "date": "2026-07-01",
-        "previous": 23115.2,
-        "previous_date": "2026-06-01"
-      },
-      "rrp": {
-        "series_id": "RRPONTSYD",
-        "value": 0.576,
-        "date": "2026-09-18",
-        "previous": 0.276,
-        "previous_date": "2026-09-17"
+      "building_permits": {
+        "series_id": "PERMIT",
+        "value": 1394.0,
+        "date": "2026-08-01",
+        "previous": 1433.0,
+        "previous_date": "2026-07-01"
       },
       "ig_spread": {
         "series_id": "BAMLC0A0CM",
@@ -12392,12 +12378,26 @@
         "previous": 0.78,
         "previous_date": "2026-09-16"
       },
+      "consumer_sentiment": {
+        "series_id": "UMCSENT",
+        "value": 55.2,
+        "date": "2026-07-01",
+        "previous": 49.5,
+        "previous_date": "2026-06-01"
+      },
       "hy_spread": {
         "series_id": "BAMLH0A0HYM2",
         "value": 2.7,
         "date": "2026-09-17",
         "previous": 2.7,
         "previous_date": "2026-09-16"
+      },
+      "tga": {
+        "series_id": "WTREGEN",
+        "value": 877028.0,
+        "date": "2026-09-16",
+        "previous": 883335.0,
+        "previous_date": "2026-09-09"
       }
     },
     "regime": {
@@ -12449,7 +12449,7 @@
   },
   "fx": {
     "status": "live",
-    "updated_at": "2026-09-20T17:36:55.854274+00:00",
+    "updated_at": "2026-09-20T17:45:03.089162+00:00",
     "pairs": {
       "EURUSD": {
         "ticker": "EURUSD=X",
@@ -12688,7 +12688,7 @@
   "fx_news": {
     "status": "live",
     "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
-    "updated_at": "2026-09-20T17:37:16.392729+00:00",
+    "updated_at": "2026-09-20T17:45:19.632894+00:00",
     "freshness_window_days": 7,
     "items": [
       {
@@ -12709,7 +12709,7 @@
         "published_at": "2026-09-20T04:28:19+00:00",
         "currency": "AUD",
         "relevance_score": 9,
-        "freshness_score": 92.2,
+        "freshness_score": 92.1,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12725,13 +12725,24 @@
         "topic": "FX_MARKET"
       },
       {
+        "title": "USD/JPY, GBP/JPY Outlook: US Dollar Slides Despite Fed Dissent, BOJ Up Next - stonex.com",
+        "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPTzVURHZfazU4T3lFeHFuYVhHWG5nTDhYVFRrbjJjaEFYUDlaM0VKTlBXZGl3SkY1QmNfampFaFhPVDIxSjFQUTNtX1JEMmZ2QlYxNzR2c3RpZkc0MDNzVTE5Z2pGdGxQQ0Z6WUc4YTJTSUFYQWx3YUJhRFRaNVZXcXRNVjNiZTJaYjEtaDRBTUFFM0pQNUptcWtoN0syMXFtakVmQVVfNzVlTll4SXl1V3phYUZPX0hhTDkyNA?oc=5",
+        "source": "stonex.com",
+        "published_at": "2026-09-19T08:25:37+00:00",
+        "currency": "USD",
+        "relevance_score": 11,
+        "freshness_score": 80.2,
+        "impact": "HIGH",
+        "topic": "MONETARY_POLICY"
+      },
+      {
         "title": "USD/JPY Analysis: Is the Yen Still Weak Despite the BOJ Rate Hike? - FOREX.com",
         "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPQ3NWSklZcWhiVmxMdHdId1FaWUlmcGthaVRhOE0ySXBrOTVDZVhTRU5oZ3Nuc2VHVEpxS1Rxc2JHQUNBTjlxT0hHZGFsdGNNUThxVWh6em92bGZ0YTR1dW1HSU5sU04tTWlQSFpod0F2YkgxRHhtNThtczlKaDFoNDNDOHBCNHJScGcyQ1BZLXdTZlVqNHZUNFRxQ3pqdTB5TVVHd3RJSW94STJUdjR2cNIBvAFBVV95cUxQQU0zUVpMcXBIWUZXTm5jNW95RmFXMEZKRkJWdjVWbEdxYnV2QnpmWjNaN1BFem5xV01DSDZJUkNTOFpEUnI2c3FIcnFKQm1vVkRwQmxsVUltS2txYVJ2eDVNQUdmT0gtUFRMcDhiZ0JOUVd2bTJhVE02STNDZ0N4UThHYTViU2E4THR6ZVZkMFo3bEpiYjFHUzdsTEcxWXZjby10dXRVckR4VXFlYUhEOEo1RHJ3MnhkV1ViSg?oc=5",
         "source": "FOREX.com",
         "published_at": "2026-09-18T21:15:38+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 73.6,
+        "freshness_score": 73.5,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12742,7 +12753,7 @@
         "published_at": "2026-09-18T20:08:08+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 72.9,
+        "freshness_score": 72.8,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12753,7 +12764,7 @@
         "published_at": "2026-09-18T16:30:11+00:00",
         "currency": "CAD",
         "relevance_score": 7,
-        "freshness_score": 70.8,
+        "freshness_score": 70.7,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12764,7 +12775,7 @@
         "published_at": "2026-09-18T09:02:11+00:00",
         "currency": "GBP",
         "relevance_score": 5,
-        "freshness_score": 66.3,
+        "freshness_score": 66.2,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12775,7 +12786,7 @@
         "published_at": "2026-09-18T08:20:13+00:00",
         "currency": "GBP",
         "relevance_score": 9,
-        "freshness_score": 65.9,
+        "freshness_score": 65.8,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12786,7 +12797,7 @@
         "published_at": "2026-09-18T04:14:08+00:00",
         "currency": "CNY",
         "relevance_score": 7,
-        "freshness_score": 63.5,
+        "freshness_score": 63.4,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12797,36 +12808,25 @@
         "published_at": "2026-09-18T01:14:56+00:00",
         "currency": "CNY",
         "relevance_score": 5,
-        "freshness_score": 61.7,
+        "freshness_score": 61.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
       {
-        "title": "Dollar halts six-day rally after Fed hike, sterling slips after BoE stands pat",
-        "link": "https://in.investing.com/news/forex-news/asian-currencies-mixed-as-dollar-holds-sevenweek-high-yen-steadies-5596119",
-        "source": "Investing.com",
-        "published_at": "2026-09-17T19:26:08+00:00",
-        "currency": "USD",
-        "relevance_score": 7,
-        "freshness_score": 58.2,
-        "impact": "MEDIUM",
-        "topic": "FX_MARKET"
-      },
-      {
-        "title": "Massive selloff: Swiss Franc plunges 2% in five days amid growing SNB-Fed divergence - tmgm.com",
-        "link": "https://news.google.com/rss/articles/CBMi5gFBVV95cUxOSk8wdk9aTE5wa25kMHR2cUJDT1JmbkZXM1FMVnlSbV9WNFQtNFlwR3VZelNyM0tTWlNlRERFc1pnX0tzcGVfVkoyLTJ5VTl0UWkzb0c3aFNmZkMzMmJnQ0JXTTQ3dGlVZXduNk14aUFQREcyal8xTzU4a2ZtS1RWT2dqcmVmMGJJWUc0RE9OdUlQZ1VueDFTVGdSVEtsTjdLSEVVM3RqVTRfRWRBYVRoR0lnMFVpaEduUjBVRXZaM0hzYjRJQWsxbDZkTVo3LWVzajJYemFubzZnVEI3bDN5R0FWOUZPQQ?oc=5",
-        "source": "tmgm.com",
-        "published_at": "2026-09-17T07:00:00+00:00",
-        "currency": "CHF",
+        "title": "New Zealand Dollar: Growth risks temper RBNZ pricing \u2013 ING - TradingKey",
+        "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE1tUEZkV01uMlZ5RFdrd0dWcU9ma003R2lDWDhEX2sxdzlqd25UdHluNjV2MW5sS01QcVVkMzZ5cFNDN0Y1RWloUkplZFYxdGZDMk1OQ0JMRXpTT0JhcHgwRk5FSQ?oc=5",
+        "source": "TradingKey",
+        "published_at": "2026-09-16T11:30:58+00:00",
+        "currency": "NZD",
         "relevance_score": 9,
-        "freshness_score": 50.8,
+        "freshness_score": 39.1,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
       {
-        "title": "Federal Reserve rate hike reflects new world of sticky inflation and faster growth - AP News",
+        "title": "Federal Reserve rate hike reflects new world of sticky inflation and faster growth - apnews.com",
         "link": "",
-        "source": "AP News",
+        "source": "apnews.com",
         "published_at": "2026-09-20T13:45:00+00:00",
         "currency": "USD"
       },
@@ -12876,7 +12876,7 @@
   },
   "market_regime": {
     "status": "live",
-    "updated_at": "2026-09-20T17:37:04.079684+00:00",
+    "updated_at": "2026-09-20T17:45:09.646387+00:00",
     "regime": "RISK-ON",
     "score": 81.3,
     "confidence": 89,
