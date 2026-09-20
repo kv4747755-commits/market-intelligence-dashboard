@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T13:34:10.021567+00:00",
+  "generated_at": "2026-09-20T13:44:05.099472+00:00",
   "prices": {
     "ndx": 29644.169921875,
     "ndx_change": 0.6696423537695617,
@@ -29,18 +29,18 @@
     "nzdusd_change": -0.07154808580775995,
     "usdchf": 0.8218100070953369,
     "usdchf_change": -0.42528937848299586,
-    "usdcad": 1.3986999988555908,
-    "usdcad_change": -0.023585721572261242,
+    "usdcad": 1.3982000350952148,
+    "usdcad_change": -0.059322179763754423,
     "eurjpy": 179.52999877929688,
     "eurjpy_change": 0.1852703356289842,
     "gbpjpy": 210.13600158691406,
     "gbpjpy_change": 0.7658040514495923,
     "eurgbp": 0.8573099970817566,
     "eurgbp_change": 0.0326736088000823,
-    "usdinr": 95.87999725341797,
-    "usdinr_change": 0.08433816402266814,
-    "usdcny": 6.697400093078613,
-    "usdcny_change": -0.149085372507618
+    "usdinr": 95.86299896240234,
+    "usdinr_change": 0.0665944974086452,
+    "usdcny": 6.697000026702881,
+    "usdcny_change": -0.15504992486725655
   },
   "rates": {
     "y3m": 4.14,
@@ -60,9 +60,9 @@
     "ticker": "^NDX",
     "expiry": "2026-09-17",
     "spot": 29445.10546875,
-    "atm_iv": 16.35365145228587,
-    "expected_move_pct": 0.9639623256686521,
-    "expected_move_points": 285.7586298040733,
+    "atm_iv": 16.354964666220916,
+    "expected_move_pct": 0.961406548264995,
+    "expected_move_points": 285.0009908077083,
     "pcr_oi": 0.936267071320182,
     "gamma_flip": 29380.916004079394,
     "put_wall": 29000.0,
@@ -2740,7 +2740,7 @@
     "model": "Estimated GEX using listed option OI and modeled gamma; not direct dealer book.",
     "expiry_mode": "0DTE",
     "expiry_label": "0DTE",
-    "time_to_expiry_hours": 30.436503025555556,
+    "time_to_expiry_hours": 30.270461168055554,
     "gex_confidence": "HIGH",
     "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
     "expiry_count": 12,
@@ -9763,7 +9763,7 @@
     "model_error": "name 'volume_surface_gex_at' is not defined",
     "gex_refresh": {
       "status": "FAILED",
-      "attempted_at": "2026-09-20T13:33:49.989840+00:00",
+      "attempted_at": "2026-09-20T13:43:48.040030+00:00",
       "source": "Yahoo Finance / yfinance NDX option chains",
       "error": "name 'volume_surface_gex_at' is not defined"
     },
@@ -12085,7 +12085,7 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-20T13:34:10.021166+00:00",
+    "updated_at": "2026-09-20T13:44:05.098965+00:00",
     "items": [
       {
         "title": "Federal Reserve rate hike reflects new world of sticky inflation and faster growth - The Killeen Daily Herald",
@@ -12096,8 +12096,8 @@
         "impact": "HIGH"
       },
       {
-        "title": "Wall Street holds steady ahead of the Fed's decision as oil prices and bond yields ease - abcnews.com",
-        "source": "abcnews.com",
+        "title": "Wall Street holds steady ahead of the Fed's decision as oil prices and bond yields ease - ABC News - Breaking News, Latest News and Videos",
+        "source": "ABC News - Breaking News, Latest News and Videos",
         "published_at": "2026-09-19T19:08:11+00:00",
         "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxQeHJpNEk1VHdXb0dkdEdqb3MwTU90Z0dHZTlrTWNXeHhyWXFySUlnWFRJUGZKSHE5QW1xSHhNb1NPWUdiZUtnaWVqMW5BUVhNVlg2b05SUmNVYkFuV1lYT3UtbF9FVURmSGlxZ1JFSUZSWGJ6Z0dlX25KYTRNTzFvWVFnbVRLeFBWSTNidTQxbE9oc3hqMDBPYXVxLVjSAaIBQVVfeXFMTkJ6WjR2SlR1anVkUi1WMmpXcGtXa3pXZjZqZ0xrdmNEUXhtOHM0RjFRYmF6ZkJtN3JhMTQ4VUU4RTdsOHEwY3poRl9ZZXZjb1lUWkRkUWlINGdQT2pWaV84WDZ3UGtkRTZFS2w3Y3kwa042LXNzQ0oxQnpfZC1sWWpCNjZ1WXJQS29nZzE4anczMnpWU2IzSzRSTWhMTWZPa0hB?oc=5",
         "relevance_score": 22,
@@ -12187,15 +12187,8 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-09-20T13:33:53.808139+00:00",
+    "updated_at": "2026-09-20T13:43:51.443650+00:00",
     "series": {
-      "cpi": {
-        "series_id": "CPIAUCSL",
-        "value": 334.131,
-        "date": "2026-08-01",
-        "previous": 332.813,
-        "previous_date": "2026-07-01"
-      },
       "core_pce": {
         "series_id": "PCEPILFE",
         "value": 130.658,
@@ -12203,26 +12196,12 @@
         "previous": 130.338,
         "previous_date": "2026-06-01"
       },
-      "sofr": {
-        "series_id": "SOFR",
-        "value": 3.85,
-        "date": "2026-09-17",
-        "previous": 3.62,
-        "previous_date": "2026-09-16"
-      },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.61,
-        "date": "2026-09-17",
-        "previous": 2.68,
-        "previous_date": "2026-09-16"
-      },
-      "pce": {
-        "series_id": "PCEPI",
-        "value": 131.659,
-        "date": "2026-07-01",
-        "previous": 131.454,
-        "previous_date": "2026-06-01"
+      "cpi": {
+        "series_id": "CPIAUCSL",
+        "value": 334.131,
+        "date": "2026-08-01",
+        "previous": 332.813,
+        "previous_date": "2026-07-01"
       },
       "core_cpi": {
         "series_id": "CPILFESL",
@@ -12231,11 +12210,18 @@
         "previous": 336.789,
         "previous_date": "2026-07-01"
       },
-      "fed_funds": {
-        "series_id": "DFF",
-        "value": 3.88,
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.61,
         "date": "2026-09-17",
-        "previous": 3.63,
+        "previous": 2.68,
+        "previous_date": "2026-09-16"
+      },
+      "sofr": {
+        "series_id": "SOFR",
+        "value": 3.85,
+        "date": "2026-09-17",
+        "previous": 3.62,
         "previous_date": "2026-09-16"
       },
       "breakeven_10y": {
@@ -12245,11 +12231,53 @@
         "previous": 2.33,
         "previous_date": "2026-09-17"
       },
+      "pce": {
+        "series_id": "PCEPI",
+        "value": 131.659,
+        "date": "2026-07-01",
+        "previous": 131.454,
+        "previous_date": "2026-06-01"
+      },
+      "fed_funds": {
+        "series_id": "DFF",
+        "value": 3.88,
+        "date": "2026-09-17",
+        "previous": 3.63,
+        "previous_date": "2026-09-16"
+      },
       "unemployment": {
         "series_id": "UNRATE",
         "value": 4.1,
         "date": "2026-08-01",
         "previous": 4.1,
+        "previous_date": "2026-07-01"
+      },
+      "ppi": {
+        "series_id": "PPIACO",
+        "value": 287.928,
+        "date": "2026-08-01",
+        "previous": 285.181,
+        "previous_date": "2026-07-01"
+      },
+      "avg_hourly_earnings": {
+        "series_id": "CES0500000003",
+        "value": 37.75,
+        "date": "2026-08-01",
+        "previous": 37.65,
+        "previous_date": "2026-07-01"
+      },
+      "jolts": {
+        "series_id": "JTSJOL",
+        "value": 7271.0,
+        "date": "2026-07-01",
+        "previous": 7182.0,
+        "previous_date": "2026-06-01"
+      },
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.6,
+        "date": "2026-08-01",
+        "previous": 61.4,
         "previous_date": "2026-07-01"
       },
       "continuing_claims": {
@@ -12266,47 +12294,19 @@
         "previous": 158913.0,
         "previous_date": "2026-07-01"
       },
-      "initial_claims": {
-        "series_id": "ICSA",
-        "value": 196000.0,
-        "date": "2026-09-12",
-        "previous": 206000.0,
-        "previous_date": "2026-09-05"
-      },
-      "jolts": {
-        "series_id": "JTSJOL",
-        "value": 7271.0,
-        "date": "2026-07-01",
-        "previous": 7182.0,
-        "previous_date": "2026-06-01"
-      },
-      "avg_hourly_earnings": {
-        "series_id": "CES0500000003",
-        "value": 37.75,
-        "date": "2026-08-01",
-        "previous": 37.65,
-        "previous_date": "2026-07-01"
-      },
-      "ppi": {
-        "series_id": "PPIACO",
-        "value": 287.928,
-        "date": "2026-08-01",
-        "previous": 285.181,
-        "previous_date": "2026-07-01"
-      },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.6,
-        "date": "2026-08-01",
-        "previous": 61.4,
-        "previous_date": "2026-07-01"
-      },
       "gdp_growth": {
         "series_id": "A191RL1Q225SBEA",
         "value": 1.5,
         "date": "2026-04-01",
         "previous": 2.1,
         "previous_date": "2026-01-01"
+      },
+      "initial_claims": {
+        "series_id": "ICSA",
+        "value": 196000.0,
+        "date": "2026-09-12",
+        "previous": 206000.0,
+        "previous_date": "2026-09-05"
       },
       "industrial_production": {
         "series_id": "INDPRO",
@@ -12322,33 +12322,12 @@
         "previous": 24180.419,
         "previous_date": "2026-01-01"
       },
-      "building_permits": {
-        "series_id": "PERMIT",
-        "value": 1394.0,
+      "housing_starts": {
+        "series_id": "HOUST",
+        "value": 1275.0,
         "date": "2026-08-01",
-        "previous": 1433.0,
+        "previous": 1309.0,
         "previous_date": "2026-07-01"
-      },
-      "m2": {
-        "series_id": "M2SL",
-        "value": 23218.0,
-        "date": "2026-07-01",
-        "previous": 23115.2,
-        "previous_date": "2026-06-01"
-      },
-      "rrp": {
-        "series_id": "RRPONTSYD",
-        "value": 0.576,
-        "date": "2026-09-18",
-        "previous": 0.276,
-        "previous_date": "2026-09-17"
-      },
-      "tga": {
-        "series_id": "WTREGEN",
-        "value": 877028.0,
-        "date": "2026-09-16",
-        "previous": 883335.0,
-        "previous_date": "2026-09-09"
       },
       "retail_sales": {
         "series_id": "RSAFS",
@@ -12357,12 +12336,12 @@
         "previous": 764462.0,
         "previous_date": "2026-07-01"
       },
-      "financial_conditions": {
-        "series_id": "NFCI",
-        "value": -0.56,
-        "date": "2026-09-11",
-        "previous": -0.558,
-        "previous_date": "2026-09-04"
+      "consumer_sentiment": {
+        "series_id": "UMCSENT",
+        "value": 55.2,
+        "date": "2026-07-01",
+        "previous": 49.5,
+        "previous_date": "2026-06-01"
       },
       "fed_balance_sheet": {
         "series_id": "WALCL",
@@ -12371,19 +12350,33 @@
         "previous": 6740619.0,
         "previous_date": "2026-09-09"
       },
-      "consumer_sentiment": {
-        "series_id": "UMCSENT",
-        "value": 55.2,
+      "rrp": {
+        "series_id": "RRPONTSYD",
+        "value": 0.576,
+        "date": "2026-09-18",
+        "previous": 0.276,
+        "previous_date": "2026-09-17"
+      },
+      "m2": {
+        "series_id": "M2SL",
+        "value": 23218.0,
         "date": "2026-07-01",
-        "previous": 49.5,
+        "previous": 23115.2,
         "previous_date": "2026-06-01"
       },
-      "housing_starts": {
-        "series_id": "HOUST",
-        "value": 1275.0,
-        "date": "2026-08-01",
-        "previous": 1309.0,
-        "previous_date": "2026-07-01"
+      "financial_conditions": {
+        "series_id": "NFCI",
+        "value": -0.56,
+        "date": "2026-09-11",
+        "previous": -0.558,
+        "previous_date": "2026-09-04"
+      },
+      "tga": {
+        "series_id": "WTREGEN",
+        "value": 877028.0,
+        "date": "2026-09-16",
+        "previous": 883335.0,
+        "previous_date": "2026-09-09"
       },
       "ig_spread": {
         "series_id": "BAMLC0A0CM",
@@ -12398,6 +12391,13 @@
         "date": "2026-09-17",
         "previous": 2.7,
         "previous_date": "2026-09-16"
+      },
+      "building_permits": {
+        "series_id": "PERMIT",
+        "value": 1394.0,
+        "date": "2026-08-01",
+        "previous": 1433.0,
+        "previous_date": "2026-07-01"
       }
     },
     "regime": {
@@ -12449,16 +12449,16 @@
   },
   "fx": {
     "status": "live",
-    "updated_at": "2026-09-20T13:33:48.069793+00:00",
+    "updated_at": "2026-09-20T13:43:45.992364+00:00",
     "pairs": {
       "EURUSD": {
         "ticker": "EURUSD=X",
         "value": 1.1490291357040405,
         "change_pct": 0.1781093367040798,
         "change_5d_pct": -1.0306768548415057,
-        "relative_edge_pct": 0.188,
-        "relative_edge_5d_pct": -1.096,
-        "momentum_acceleration": 0.407,
+        "relative_edge_pct": 0.195,
+        "relative_edge_5d_pct": -1.09,
+        "momentum_acceleration": 0.413,
         "regime": "BULLISH"
       },
       "GBPUSD": {
@@ -12466,9 +12466,9 @@
         "value": 1.3392797708511353,
         "change_pct": 0.26049700758636885,
         "change_5d_pct": -0.9830313681284397,
-        "relative_edge_pct": 0.387,
-        "relative_edge_5d_pct": -0.808,
-        "momentum_acceleration": 0.549,
+        "relative_edge_pct": 0.394,
+        "relative_edge_5d_pct": -0.802,
+        "momentum_acceleration": 0.554,
         "regime": "BULLISH"
       },
       "USDJPY": {
@@ -12476,9 +12476,9 @@
         "value": 156.85499572753906,
         "change_pct": 0.46499877346422025,
         "change_5d_pct": 2.2362862693869,
-        "relative_edge_pct": 0.416,
-        "relative_edge_5d_pct": 2.459,
-        "momentum_acceleration": -0.076,
+        "relative_edge_pct": 0.41,
+        "relative_edge_5d_pct": 2.452,
+        "momentum_acceleration": -0.08,
         "regime": "MIXED"
       },
       "AUDUSD": {
@@ -12486,9 +12486,9 @@
         "value": 0.7121492624282837,
         "change_pct": 0.08424482684241674,
         "change_5d_pct": -0.42657483285991615,
-        "relative_edge_pct": 0.14,
-        "relative_edge_5d_pct": -1.409,
-        "momentum_acceleration": 0.422,
+        "relative_edge_pct": 0.147,
+        "relative_edge_5d_pct": -1.402,
+        "momentum_acceleration": 0.427,
         "regime": "BULLISH"
       },
       "NZDUSD": {
@@ -12496,9 +12496,9 @@
         "value": 0.5724098682403564,
         "change_pct": -0.07154808580775995,
         "change_5d_pct": -1.5123003429322046,
-        "relative_edge_pct": -0.016,
-        "relative_edge_5d_pct": -2.495,
-        "momentum_acceleration": 0.483,
+        "relative_edge_pct": -0.009,
+        "relative_edge_5d_pct": -2.488,
+        "momentum_acceleration": 0.489,
         "regime": "MIXED"
       },
       "USDCHF": {
@@ -12506,19 +12506,19 @@
         "value": 0.8218100070953369,
         "change_pct": -0.42528937848299586,
         "change_5d_pct": 1.0562926061569833,
-        "relative_edge_pct": -0.481,
-        "relative_edge_5d_pct": 2.038,
-        "momentum_acceleration": -0.889,
+        "relative_edge_pct": -0.488,
+        "relative_edge_5d_pct": 2.032,
+        "momentum_acceleration": -0.894,
         "regime": "BEARISH"
       },
       "USDCAD": {
         "ticker": "CAD=X",
-        "value": 1.3986999988555908,
-        "change_pct": -0.023585721572261242,
-        "change_5d_pct": 0.8653612474653904,
-        "relative_edge_pct": -0.079,
-        "relative_edge_5d_pct": 1.848,
-        "momentum_acceleration": -0.449,
+        "value": 1.3982000350952148,
+        "change_pct": -0.059322179763754423,
+        "change_5d_pct": 0.8293070361675925,
+        "relative_edge_pct": -0.122,
+        "relative_edge_5d_pct": 1.805,
+        "momentum_acceleration": -0.483,
         "regime": "BEARISH"
       },
       "EURJPY": {
@@ -12526,9 +12526,9 @@
         "value": 179.52999877929688,
         "change_pct": 0.1852703356289842,
         "change_5d_pct": 0.9292937749901364,
-        "relative_edge_pct": 0.604,
-        "relative_edge_5d_pct": 1.363,
-        "momentum_acceleration": 0.331,
+        "relative_edge_pct": 0.605,
+        "relative_edge_5d_pct": 1.362,
+        "momentum_acceleration": 0.333,
         "regime": "BULLISH"
       },
       "GBPJPY": {
@@ -12536,9 +12536,9 @@
         "value": 210.13600158691406,
         "change_pct": 0.7658040514495923,
         "change_5d_pct": 1.2640177205576864,
-        "relative_edge_pct": 0.803,
-        "relative_edge_5d_pct": 1.651,
-        "momentum_acceleration": 0.473,
+        "relative_edge_pct": 0.804,
+        "relative_edge_5d_pct": 1.65,
+        "momentum_acceleration": 0.474,
         "regime": "BULLISH"
       },
       "EURGBP": {
@@ -12553,108 +12553,108 @@
       },
       "USDINR": {
         "ticker": "INR=X",
-        "value": 95.87999725341797,
-        "change_pct": 0.08433816402266814,
-        "change_5d_pct": 0.8914800966816516,
-        "relative_edge_pct": 0.029,
-        "relative_edge_5d_pct": 1.874,
-        "momentum_acceleration": -0.346,
+        "value": 95.86299896240234,
+        "change_pct": 0.0665944974086452,
+        "change_5d_pct": 0.8735933341784241,
+        "relative_edge_pct": 0.004,
+        "relative_edge_5d_pct": 1.849,
+        "momentum_acceleration": -0.366,
         "regime": "MIXED"
       },
       "USDCNY": {
         "ticker": "CNY=X",
-        "value": 6.697400093078613,
-        "change_pct": -0.149085372507618,
-        "change_5d_pct": -0.15802161206781573,
-        "relative_edge_pct": -0.205,
-        "relative_edge_5d_pct": 0.824,
-        "momentum_acceleration": -0.37,
+        "value": 6.697000026702881,
+        "change_pct": -0.15504992486725655,
+        "change_5d_pct": -0.16398563062494098,
+        "relative_edge_pct": -0.218,
+        "relative_edge_5d_pct": 0.812,
+        "momentum_acceleration": -0.38,
         "regime": "BEARISH"
       }
     },
     "currency_strength": {
-      "EUR": 0.086,
-      "USD": -0.102,
-      "GBP": 0.285,
-      "JPY": -0.518,
-      "AUD": 0.038,
-      "NZD": -0.118,
-      "CHF": 0.379,
-      "CAD": -0.023,
-      "INR": -0.131,
-      "CNY": 0.103
+      "EUR": 0.081,
+      "USD": -0.114,
+      "GBP": 0.28,
+      "JPY": -0.524,
+      "AUD": 0.033,
+      "NZD": -0.123,
+      "CHF": 0.374,
+      "CAD": 0.008,
+      "INR": -0.118,
+      "CNY": 0.104
     },
     "currency_strength_5d": {
-      "EUR": 0.389,
-      "USD": 1.485,
-      "GBP": 0.677,
-      "JPY": -0.974,
-      "AUD": 0.076,
-      "NZD": -1.01,
-      "CHF": -0.553,
-      "CAD": -0.363,
-      "INR": -0.389,
+      "EUR": 0.383,
+      "USD": 1.473,
+      "GBP": 0.671,
+      "JPY": -0.979,
+      "AUD": 0.071,
+      "NZD": -1.015,
+      "CHF": -0.559,
+      "CAD": -0.332,
+      "INR": -0.376,
       "CNY": 0.661
     },
     "strength_rank": [
       {
         "currency": "CHF",
-        "score": 0.379,
-        "score_5d": -0.553,
+        "score": 0.374,
+        "score_5d": -0.559,
         "rank_change": 0
       },
       {
         "currency": "GBP",
-        "score": 0.285,
-        "score_5d": 0.677,
+        "score": 0.28,
+        "score_5d": 0.671,
         "rank_change": 0
       },
       {
         "currency": "CNY",
-        "score": 0.103,
+        "score": 0.104,
         "score_5d": 0.661,
         "rank_change": 0
       },
       {
         "currency": "EUR",
-        "score": 0.086,
-        "score_5d": 0.389,
+        "score": 0.081,
+        "score_5d": 0.383,
         "rank_change": 0
       },
       {
         "currency": "AUD",
-        "score": 0.038,
-        "score_5d": 0.076,
+        "score": 0.033,
+        "score_5d": 0.071,
         "rank_change": 0
       },
       {
         "currency": "CAD",
-        "score": -0.023,
-        "score_5d": -0.363,
+        "score": 0.008,
+        "score_5d": -0.332,
         "rank_change": 0
       },
       {
         "currency": "USD",
-        "score": -0.102,
-        "score_5d": 1.485,
-        "rank_change": 0
-      },
-      {
-        "currency": "NZD",
-        "score": -0.118,
-        "score_5d": -1.01,
+        "score": -0.114,
+        "score_5d": 1.473,
         "rank_change": 0
       },
       {
         "currency": "INR",
-        "score": -0.131,
-        "score_5d": -0.389,
-        "rank_change": 0
+        "score": -0.118,
+        "score_5d": -0.376,
+        "rank_change": 1
+      },
+      {
+        "currency": "NZD",
+        "score": -0.123,
+        "score_5d": -1.015,
+        "rank_change": -1
       },
       {
         "currency": "JPY",
-        "score": -0.518,
-        "score_5d": -0.974,
+        "score": -0.524,
+        "score_5d": -0.979,
         "rank_change": 0
       }
     ],
@@ -12662,10 +12662,10 @@
     "weakest_currency": "JPY",
     "strength_summary": {
       "leader": "CHF",
-      "leader_score": 0.379,
+      "leader_score": 0.374,
       "laggard": "JPY",
-      "laggard_score": -0.518,
-      "spread": 0.897,
+      "laggard_score": -0.524,
+      "spread": 0.898,
       "leader_5d": "USD",
       "laggard_5d": "NZD"
     },
@@ -12688,19 +12688,19 @@
   "fx_news": {
     "status": "live",
     "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
-    "updated_at": "2026-09-20T13:34:06.035541+00:00",
+    "updated_at": "2026-09-20T13:44:01.603346+00:00",
     "freshness_window_days": 7,
     "items": [
       {
-        "title": "Australian Dollar Soars on US Dollar Weakness While RBA Faces Review. Higher AUD/USD? - Forex Factory",
-        "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxNU2hzc0E0OXdFXzYwRUV3cGdlRGl1LW45ZjQ1cmxmeEFSY1ZJYl9YT1JuXzJjbVYza1AxMnJyY1FpR3Jxb1RXQ2VUdUM3R3djT1BPYTBKRDN6TXNaY19MbjhRc25HQUtXbHYtenc1UV9lQ0YyZE9MQ3J1UFRrRVI3bFpRWVRZZlRkNVJqZTVKMzlWdkIxdWNNaElPUEZISng1WVh2MmtxaHprLVYxM0hSYUpTRzEzd1pnN3fSAZ4BQVVfeXFMTlRPTWhseW9ZajNUUlNKeEpQU080Qkc5TjRtSXhGenB0RktYTkRKR0xZVFFTWVJZeVktZUsxZFkyQVh0S3VuYWNpZzdibmlkWDAwb05XaUJYSTlmQlFrQkEwb0ZvTERtbGFJcG50d1VNQ0dVTDE1UDlxdklERG84RmVucXE1Nm5vMnYtUDZaNEZDc196cjRsSm1ickhrMkE?oc=5",
+        "title": "Australian Dollar Outlook: Commodities Weigh on AUD/USD. Eyes on FOMC, RBA Minutes - Forex Factory",
+        "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQX2Y2ckk2VmVVOFYwODF1VERGajUtZlNTT1c2VEhicGNFM1VneV9tZ21mTzJIOWR1a0NyQjZHRmtfRk0tZjUxNl9ZVnRfRGRRZFl5Zk5nUFBpbFctUDFBYmtoczBVamZ6YmVzLXBwVi0zLVJSZ1Zuem1nQm9kM1dQaGxYMUNRdnlLbGJNZy1rRDFVT3RSYy01LTVVYWlKQUlzMlRKc3B0Y0hQOGcweEZFRG9MMElGTjFR0gGnAUFVX3lxTE9haUNMV18tSlc3UkpzYUJFUjJzalF0U2FtTjhUZW5uZ255bzFENjVRSHlzZXg4b3pVdGtQak1jZVJodUtZV1Z0MWZEV3lZLV9TRmFoMGZaU0pkSG9hLTc0ckNCZ2VxQmJMTGlORTItQllsVWxwajNBT3dtM2RSZ0hXMFRNekk4WU0zYnNBY2c5ck5jSFBTUUh5OWpFVkwyVjNPTmRZYl9z?oc=5",
         "source": "Forex Factory",
-        "published_at": "2026-09-19T22:32:24+00:00",
-        "currency": "USD",
+        "published_at": "2026-09-20T07:37:36+00:00",
+        "currency": "AUD",
         "relevance_score": 12,
-        "freshness_score": 91.1,
+        "freshness_score": 96.4,
         "impact": "HIGH",
-        "topic": "FX_MARKET"
+        "topic": "MONETARY_POLICY"
       },
       {
         "title": "USD/JPY, GBP/JPY Outlook: US Dollar Slides Despite Fed Dissent, BOJ Up Next - stonex.com",
@@ -12709,7 +12709,7 @@
         "published_at": "2026-09-19T08:25:37+00:00",
         "currency": "USD",
         "relevance_score": 11,
-        "freshness_score": 82.7,
+        "freshness_score": 82.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12720,7 +12720,18 @@
         "published_at": "2026-09-18T21:15:38+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 76.0,
+        "freshness_score": 75.9,
+        "impact": "HIGH",
+        "topic": "MONETARY_POLICY"
+      },
+      {
+        "title": "Australian Dollar Broadly Lower as Soft CPI Reverses RBA Hike Bets - stonex.com",
+        "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNWDFNS0U4N0doamowVnVScWx6b2hJTFhWemlCZ2dCRDQ3UDBxT0o4LW0tSlg4UVc5SnlqVGk4cGpRdWhuR0RMbnBIU0Q4NUU5WERRbUNQSmpVQXV1ZDdHYUhDQmdRY0FUYi1WX0FOd21fcTRhMkJzRklDOXlkendpQzlaU0pXT3p6UzFJdkNKNXY3dEN6UVhlc21ud3MxUEs4Q1Q1RzVHc0JmREZXUUZpdG8yTkc?oc=5",
+        "source": "stonex.com",
+        "published_at": "2026-09-18T20:59:05+00:00",
+        "currency": "AUD",
+        "relevance_score": 12,
+        "freshness_score": 75.7,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12731,7 +12742,7 @@
         "published_at": "2026-09-18T20:08:08+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 75.3,
+        "freshness_score": 75.2,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12742,7 +12753,7 @@
         "published_at": "2026-09-18T18:55:48+00:00",
         "currency": "INR",
         "relevance_score": 5,
-        "freshness_score": 74.6,
+        "freshness_score": 74.5,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12753,7 +12764,7 @@
         "published_at": "2026-09-18T16:30:11+00:00",
         "currency": "CAD",
         "relevance_score": 7,
-        "freshness_score": 73.2,
+        "freshness_score": 73.1,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12764,7 +12775,7 @@
         "published_at": "2026-09-18T09:02:11+00:00",
         "currency": "GBP",
         "relevance_score": 5,
-        "freshness_score": 68.7,
+        "freshness_score": 68.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12775,7 +12786,7 @@
         "published_at": "2026-09-18T08:20:13+00:00",
         "currency": "GBP",
         "relevance_score": 9,
-        "freshness_score": 68.3,
+        "freshness_score": 68.2,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12786,7 +12797,18 @@
         "published_at": "2026-09-18T04:14:08+00:00",
         "currency": "CNY",
         "relevance_score": 7,
-        "freshness_score": 65.9,
+        "freshness_score": 65.8,
+        "impact": "MEDIUM",
+        "topic": "FX_MARKET"
+      },
+      {
+        "title": "Canadian Dollar bears retain control near August 7 low amid US-Canada rate gap/trade war - tmgm.com",
+        "link": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxNeC13aFFiN25RX2ZMOWVIakJxaF9PZEQ0TjFPTUt2ekkzWTlZYmlqQlczM2JVR0NUMElnVWs1NkRhVW5uUmhsWEFaYXFiUzRnS0hYZjBpNHlURDBKeWhJakJwd0RBbnpBa2tjcHgtamhCX1JPRGRCLWxXdm8zMUYwUl9tSzhoY200N3cwQUN3VkoyeHNBY2haZF9DaUlGd1ZsS3l2ZDBSeWt6dHhBSWxYSDloWHpLaEZEeDFqa01tbDZ1VThSZTUxcDh2U3NSTjRLYnZwUFBiT0djb3d0MkpDSHNuWDByT3pYUGc?oc=5",
+        "source": "tmgm.com",
+        "published_at": "2026-09-18T03:13:49+00:00",
+        "currency": "USD",
+        "relevance_score": 10,
+        "freshness_score": 65.2,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12797,29 +12819,7 @@
         "published_at": "2026-09-17T07:00:00+00:00",
         "currency": "CHF",
         "relevance_score": 9,
-        "freshness_score": 53.2,
-        "impact": "HIGH",
-        "topic": "MONETARY_POLICY"
-      },
-      {
-        "title": "New Zealand Dollar: Growth risks temper RBNZ pricing \u2013 ING - TradingKey",
-        "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE1tUEZkV01uMlZ5RFdrd0dWcU9ma003R2lDWDhEX2sxdzlqd25UdHluNjV2MW5sS01QcVVkMzZ5cFNDN0Y1RWloUkplZFYxdGZDMk1OQ0JMRXpTT0JhcHgwRk5FSQ?oc=5",
-        "source": "TradingKey",
-        "published_at": "2026-09-16T11:30:58+00:00",
-        "currency": "NZD",
-        "relevance_score": 9,
-        "freshness_score": 41.6,
-        "impact": "HIGH",
-        "topic": "MONETARY_POLICY"
-      },
-      {
-        "title": "PBOC sets USD/ CNY central rate at 6.7628 (vs. estimate at 6.7148) - investinglive.com",
-        "link": "https://news.google.com/rss/articles/CBMilwFBVV95cUxPcnJqeVFtSlhNNmluN0pmZFh6NlZWYjBBVGZHSml6WTVHRjhwOUJXX1pZX19laXpRRVVlWFVUTE5RenJ4N3l5dzlCQnZ6UmpJTmE3c0J3SzkyZEJxU1YwLU9DWG1LY1dPd0syM092SHdHNUtZT0RZcUg3MTNwVVlXeFZvSHd4bjhIUVcxNk1Wbk91aDRZODdV?oc=5",
-        "source": "investinglive.com",
-        "published_at": "2026-09-16T01:44:11+00:00",
-        "currency": "CNY",
-        "relevance_score": 5,
-        "freshness_score": 35.8,
+        "freshness_score": 53.1,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12831,9 +12831,9 @@
         "currency": "USD"
       },
       {
-        "title": "Wall Street holds steady ahead of the Fed's decision as oil prices and bond yields ease - abcnews.com",
+        "title": "Wall Street holds steady ahead of the Fed's decision as oil prices and bond yields ease - ABC News - Breaking News, Latest News and Videos",
         "link": "",
-        "source": "abcnews.com",
+        "source": "ABC News - Breaking News, Latest News and Videos",
         "published_at": "2026-09-19T19:08:11+00:00",
         "currency": "USD"
       },
@@ -12883,7 +12883,7 @@
   },
   "market_regime": {
     "status": "live",
-    "updated_at": "2026-09-20T13:33:53.808239+00:00",
+    "updated_at": "2026-09-20T13:43:51.443759+00:00",
     "regime": "RISK-ON",
     "score": 81.3,
     "confidence": 89,
