@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26T11:01:54.511636+00:00",
+  "generated_at": "2026-09-26T11:16:25.471223+00:00",
   "prices": {
     "ndx": 30608.130859375,
     "ndx_change": 0.4241349152358076,
@@ -61,8 +61,8 @@
     "expiry": "2026-09-17",
     "spot": 29445.10546875,
     "atm_iv": 14.554441717404584,
-    "expected_move_pct": 1.1738517146519047,
-    "expected_move_points": 359.2940689156722,
+    "expected_move_pct": 1.1712647760536117,
+    "expected_move_points": 358.502255364255,
     "pcr_oi": 1.1019455252918289,
     "gamma_flip": 29380.916004079394,
     "put_wall": 29000.0,
@@ -2740,7 +2740,7 @@
     "model": "Estimated GEX using listed option OI and modeled gamma; not direct dealer book.",
     "expiry_mode": "0DTE",
     "expiry_label": "0DTE",
-    "time_to_expiry_hours": 56.982235182500006,
+    "time_to_expiry_hours": 56.731356624444444,
     "gex_confidence": "HIGH",
     "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
     "expiry_count": 12,
@@ -9763,7 +9763,7 @@
     "model_error": "name 'volume_surface_gex_at' is not defined",
     "gex_refresh": {
       "status": "FAILED",
-      "attempted_at": "2026-09-26T11:01:06.052509+00:00",
+      "attempted_at": "2026-09-26T11:16:09.315249+00:00",
       "source": "Yahoo Finance / yfinance NDX option chains",
       "error": "name 'volume_surface_gex_at' is not defined"
     },
@@ -12085,11 +12085,11 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-09-26T11:01:54.511203+00:00",
+    "updated_at": "2026-09-26T11:16:25.470702+00:00",
     "items": [
       {
-        "title": "How S&P 500, Dow, Nasdaq Futures Are Moving Amid Rising Bond Yields, Trump-Xi Summit - stocktwits.com",
-        "source": "stocktwits.com",
+        "title": "How S&P 500, Dow, Nasdaq Futures Are Moving Amid Rising Bond Yields, Trump-Xi Summit - Stocktwits",
+        "source": "Stocktwits",
         "published_at": "2026-09-26T06:49:23+00:00",
         "url": "https://news.google.com/rss/articles/CBMi_AFBVV95cUxObVpiQ1FnYU9GQ3pvMXhRa0I0YmxKdkFOUWZQT01aMFBIaU5ocUktZ2U5Z01xUWgwVlJET1dZbGU5QThycEE5dUlUTmJ1WjFIT0V0YWhGUTh5V1dkSWxaWmZ4MzRkOTd2XzUtMHFFS1hrcW45c2FFZzJ6bG1fdGh0bmJ6TTJPRHZYRlF1bHF5U3Y4SVk3ZzNUYlFEbEhVVXdTcWl4UWxjb04yak4xNktNRFpNbXliWTF5Sy1zTDI0d0lBM1FRdlVGa0JScndoRk5QQkc1UkFpam5zeFNHOWR6R0RjTzY0SFQ3OVdxRDdDelBvNU5jVTJlZFAwUjQ?oc=5",
         "relevance_score": 23,
@@ -12104,8 +12104,8 @@
         "impact": "HIGH"
       },
       {
-        "title": "S&P 500, Dow, Nasdaq Futures Ease As Treasury Yields Continue To Spike \u2014 ORCL, META, AKAM, GOOGL, MGM In Focus - stocktwits.com",
-        "source": "stocktwits.com",
+        "title": "S&P 500, Dow, Nasdaq Futures Ease As Treasury Yields Continue To Spike \u2014 ORCL, META, AKAM, GOOGL, MGM In Focus - Stocktwits",
+        "source": "Stocktwits",
         "published_at": "2026-09-26T05:17:53+00:00",
         "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNRnFfWmo3cUVQR2Frd0hJLTBKRVo4RTlaV0VJT09QMmRzbGJfT0pFNjd2UjRXSUNhRWxiS0JRLWR4ZkVnMHUxZjNnMnpnRmU0THltRWVFTjNVOUtPSU1xVkFRQ0QzcVhQRGxidU1Zck9nYUFWOEdCZzBUeUdnb0Y5ZzVHZy1GNjRoeFJ0SXIwU0JqMlp4YjNMaGQ3UE1DUmlobjhUc0U2Q3pxZGdfNndac0hjM29ndzNkaWFiSUtkdU5kcFVfNlE?oc=5",
         "relevance_score": 24,
@@ -12187,28 +12187,21 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-09-26T11:01:39.837469+00:00",
+    "updated_at": "2026-09-26T11:16:12.561794+00:00",
     "series": {
+      "core_cpi": {
+        "series_id": "CPILFESL",
+        "value": 337.765,
+        "date": "2026-08-01",
+        "previous": 336.789,
+        "previous_date": "2026-07-01"
+      },
       "pce": {
         "series_id": "PCEPI",
         "value": 131.659,
         "date": "2026-07-01",
         "previous": 131.454,
         "previous_date": "2026-06-01"
-      },
-      "fed_funds": {
-        "series_id": "DFF",
-        "value": 3.88,
-        "date": "2026-09-24",
-        "previous": 3.88,
-        "previous_date": "2026-09-23"
-      },
-      "sofr": {
-        "series_id": "SOFR",
-        "value": 3.88,
-        "date": "2026-09-24",
-        "previous": 3.87,
-        "previous_date": "2026-09-23"
       },
       "core_pce": {
         "series_id": "PCEPILFE",
@@ -12217,11 +12210,11 @@
         "previous": 130.338,
         "previous_date": "2026-06-01"
       },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.85,
+      "sofr": {
+        "series_id": "SOFR",
+        "value": 3.88,
         "date": "2026-09-24",
-        "previous": 2.76,
+        "previous": 3.87,
         "previous_date": "2026-09-23"
       },
       "cpi": {
@@ -12231,11 +12224,39 @@
         "previous": 332.813,
         "previous_date": "2026-07-01"
       },
-      "payrolls": {
-        "series_id": "PAYEMS",
-        "value": 159075.0,
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.85,
+        "date": "2026-09-24",
+        "previous": 2.76,
+        "previous_date": "2026-09-23"
+      },
+      "breakeven_10y": {
+        "series_id": "T10YIE",
+        "value": 2.34,
+        "date": "2026-09-25",
+        "previous": 2.33,
+        "previous_date": "2026-09-24"
+      },
+      "fed_funds": {
+        "series_id": "DFF",
+        "value": 3.88,
+        "date": "2026-09-24",
+        "previous": 3.88,
+        "previous_date": "2026-09-23"
+      },
+      "ppi": {
+        "series_id": "PPIACO",
+        "value": 287.928,
         "date": "2026-08-01",
-        "previous": 158913.0,
+        "previous": 285.181,
+        "previous_date": "2026-07-01"
+      },
+      "unemployment": {
+        "series_id": "UNRATE",
+        "value": 4.1,
+        "date": "2026-08-01",
+        "previous": 4.1,
         "previous_date": "2026-07-01"
       },
       "avg_hourly_earnings": {
@@ -12243,6 +12264,27 @@
         "value": 37.75,
         "date": "2026-08-01",
         "previous": 37.65,
+        "previous_date": "2026-07-01"
+      },
+      "jolts": {
+        "series_id": "JTSJOL",
+        "value": 7271.0,
+        "date": "2026-07-01",
+        "previous": 7182.0,
+        "previous_date": "2026-06-01"
+      },
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.6,
+        "date": "2026-08-01",
+        "previous": 61.4,
+        "previous_date": "2026-07-01"
+      },
+      "payrolls": {
+        "series_id": "PAYEMS",
+        "value": 159075.0,
+        "date": "2026-08-01",
+        "previous": 158913.0,
         "previous_date": "2026-07-01"
       },
       "initial_claims": {
@@ -12259,34 +12301,6 @@
         "previous": 1717000.0,
         "previous_date": "2026-09-05"
       },
-      "breakeven_10y": {
-        "series_id": "T10YIE",
-        "value": 2.34,
-        "date": "2026-09-25",
-        "previous": 2.33,
-        "previous_date": "2026-09-24"
-      },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.6,
-        "date": "2026-08-01",
-        "previous": 61.4,
-        "previous_date": "2026-07-01"
-      },
-      "jolts": {
-        "series_id": "JTSJOL",
-        "value": 7271.0,
-        "date": "2026-07-01",
-        "previous": 7182.0,
-        "previous_date": "2026-06-01"
-      },
-      "core_cpi": {
-        "series_id": "CPILFESL",
-        "value": 337.765,
-        "date": "2026-08-01",
-        "previous": 336.789,
-        "previous_date": "2026-07-01"
-      },
       "gdp_growth": {
         "series_id": "A191RL1Q225SBEA",
         "value": 1.5,
@@ -12294,11 +12308,25 @@
         "previous": 2.1,
         "previous_date": "2026-01-01"
       },
-      "housing_starts": {
-        "series_id": "HOUST",
-        "value": 1275.0,
+      "industrial_production": {
+        "series_id": "INDPRO",
+        "value": 103.0682,
         "date": "2026-08-01",
-        "previous": 1309.0,
+        "previous": 103.0454,
+        "previous_date": "2026-07-01"
+      },
+      "gdp": {
+        "series_id": "GDPC1",
+        "value": 24269.613,
+        "date": "2026-04-01",
+        "previous": 24180.419,
+        "previous_date": "2026-01-01"
+      },
+      "consumer_sentiment": {
+        "series_id": "UMCSENT",
+        "value": 51.7,
+        "date": "2026-08-01",
+        "previous": 55.2,
         "previous_date": "2026-07-01"
       },
       "building_permits": {
@@ -12308,32 +12336,32 @@
         "previous": 1433.0,
         "previous_date": "2026-07-01"
       },
-      "unemployment": {
-        "series_id": "UNRATE",
-        "value": 4.1,
+      "housing_starts": {
+        "series_id": "HOUST",
+        "value": 1275.0,
         "date": "2026-08-01",
-        "previous": 4.1,
+        "previous": 1309.0,
         "previous_date": "2026-07-01"
       },
-      "industrial_production": {
-        "series_id": "INDPRO",
-        "value": 103.0682,
+      "fed_balance_sheet": {
+        "series_id": "WALCL",
+        "value": 6747704.0,
+        "date": "2026-09-23",
+        "previous": 6746548.0,
+        "previous_date": "2026-09-16"
+      },
+      "retail_sales": {
+        "series_id": "RSAFS",
+        "value": 773947.0,
         "date": "2026-08-01",
-        "previous": 103.0454,
+        "previous": 764462.0,
         "previous_date": "2026-07-01"
       },
-      "ppi": {
-        "series_id": "PPIACO",
-        "value": 287.928,
+      "m2": {
+        "series_id": "M2SL",
+        "value": 23342.8,
         "date": "2026-08-01",
-        "previous": 285.181,
-        "previous_date": "2026-07-01"
-      },
-      "consumer_sentiment": {
-        "series_id": "UMCSENT",
-        "value": 51.7,
-        "date": "2026-08-01",
-        "previous": 55.2,
+        "previous": 23217.9,
         "previous_date": "2026-07-01"
       },
       "tga": {
@@ -12343,26 +12371,19 @@
         "previous": 877028.0,
         "previous_date": "2026-09-16"
       },
-      "fed_balance_sheet": {
-        "series_id": "WALCL",
-        "value": 6747704.0,
-        "date": "2026-09-23",
-        "previous": 6746548.0,
-        "previous_date": "2026-09-16"
+      "financial_conditions": {
+        "series_id": "NFCI",
+        "value": -0.555,
+        "date": "2026-09-18",
+        "previous": -0.557,
+        "previous_date": "2026-09-11"
       },
-      "m2": {
-        "series_id": "M2SL",
-        "value": 23342.8,
-        "date": "2026-08-01",
-        "previous": 23217.9,
-        "previous_date": "2026-07-01"
-      },
-      "retail_sales": {
-        "series_id": "RSAFS",
-        "value": 773947.0,
-        "date": "2026-08-01",
-        "previous": 764462.0,
-        "previous_date": "2026-07-01"
+      "rrp": {
+        "series_id": "RRPONTSYD",
+        "value": 0.576,
+        "date": "2026-09-25",
+        "previous": 0.63,
+        "previous_date": "2026-09-24"
       },
       "ig_spread": {
         "series_id": "BAMLC0A0CM",
@@ -12377,27 +12398,6 @@
         "date": "2026-09-24",
         "previous": 2.73,
         "previous_date": "2026-09-23"
-      },
-      "financial_conditions": {
-        "series_id": "NFCI",
-        "value": -0.555,
-        "date": "2026-09-18",
-        "previous": -0.557,
-        "previous_date": "2026-09-11"
-      },
-      "gdp": {
-        "series_id": "GDPC1",
-        "value": 24269.613,
-        "date": "2026-04-01",
-        "previous": 24180.419,
-        "previous_date": "2026-01-01"
-      },
-      "rrp": {
-        "series_id": "RRPONTSYD",
-        "value": 0.576,
-        "date": "2026-09-25",
-        "previous": 0.63,
-        "previous_date": "2026-09-24"
       }
     },
     "regime": {
@@ -12449,7 +12449,7 @@
   },
   "fx": {
     "status": "live",
-    "updated_at": "2026-09-26T11:01:03.211374+00:00",
+    "updated_at": "2026-09-26T11:16:06.755560+00:00",
     "pairs": {
       "EURUSD": {
         "ticker": "EURUSD=X",
@@ -12688,9 +12688,20 @@
   "fx_news": {
     "status": "live",
     "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
-    "updated_at": "2026-09-26T11:01:51.078524+00:00",
+    "updated_at": "2026-09-26T11:16:22.148520+00:00",
     "freshness_window_days": 7,
     "items": [
+      {
+        "title": "Australian Dollar: RBA hike expectations shape outlook \u2013 ING - tmgm.com",
+        "link": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPMzBQZGg0THg0eTVlQVYwTUZZWGtkY1pZd0hQNkpYeC1ySzNZQ0JvOXBSajNlQ3VTS2ZpQm10ZWFvUEVHYllQMU9IbEhmQnpSdEM5MF8xUmNqUUM0QmQ3TDBoU3YzQk9rMVBDdkxCdHI5ZzVBSXdGeGZVNXBCQjFLaEhMNnd0cnQtSV9qMlVFMENDVlQ3MmNHOHA4bmoyWWlqbnVWMDkwSzFHRmphM3gxcHBhaGlkRXA2Y3V0djNaa09pZw?oc=5",
+        "source": "tmgm.com",
+        "published_at": "2026-09-26T05:03:01+00:00",
+        "currency": "AUD",
+        "relevance_score": 9,
+        "freshness_score": 96.3,
+        "impact": "HIGH",
+        "topic": "MONETARY_POLICY"
+      },
       {
         "title": "Yen jumps as Trump shows concern over its weakness, dollar halts daily win streak",
         "link": "https://in.investing.com/news/forex-news/asian-currencies-weaken-as-dollar-hits-twomonth-high-yen-nears-160-5605929",
@@ -12698,7 +12709,7 @@
         "published_at": "2026-09-25T20:06:08+00:00",
         "currency": "USD",
         "relevance_score": 5,
-        "freshness_score": 91.1,
+        "freshness_score": 91.0,
         "impact": "LOW",
         "topic": "FX_MARKET"
       },
@@ -12709,7 +12720,7 @@
         "published_at": "2026-09-25T19:52:10+00:00",
         "currency": "CAD",
         "relevance_score": 10,
-        "freshness_score": 91.0,
+        "freshness_score": 90.8,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12720,7 +12731,7 @@
         "published_at": "2026-09-25T18:21:15+00:00",
         "currency": "EUR",
         "relevance_score": 7,
-        "freshness_score": 90.1,
+        "freshness_score": 89.9,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12731,7 +12742,7 @@
         "published_at": "2026-09-25T14:24:01+00:00",
         "currency": "INR",
         "relevance_score": 5,
-        "freshness_score": 87.7,
+        "freshness_score": 87.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12742,7 +12753,7 @@
         "published_at": "2026-09-25T14:06:09+00:00",
         "currency": "CAD",
         "relevance_score": 7,
-        "freshness_score": 87.5,
+        "freshness_score": 87.4,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12753,7 +12764,7 @@
         "published_at": "2026-09-25T09:02:11+00:00",
         "currency": "GBP",
         "relevance_score": 7,
-        "freshness_score": 84.5,
+        "freshness_score": 84.4,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12764,7 +12775,7 @@
         "published_at": "2026-09-25T08:45:40+00:00",
         "currency": "AUD",
         "relevance_score": 5,
-        "freshness_score": 84.4,
+        "freshness_score": 84.2,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12775,7 +12786,7 @@
         "published_at": "2026-09-25T05:33:16+00:00",
         "currency": "USD",
         "relevance_score": 14,
-        "freshness_score": 82.5,
+        "freshness_score": 82.3,
         "impact": "HIGH",
         "topic": "FX_MARKET"
       },
@@ -12786,7 +12797,7 @@
         "published_at": "2026-09-25T00:00:01+00:00",
         "currency": "INR",
         "relevance_score": 5,
-        "freshness_score": 79.2,
+        "freshness_score": 79.0,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12797,7 +12808,7 @@
         "published_at": "2026-09-24T13:59:59+00:00",
         "currency": "CHF",
         "relevance_score": 12,
-        "freshness_score": 73.2,
+        "freshness_score": 73.1,
         "impact": "HIGH",
         "topic": "FX_MARKET"
       },
@@ -12808,20 +12819,9 @@
         "published_at": "2026-09-24T12:39:36+00:00",
         "currency": "CHF",
         "relevance_score": 5,
-        "freshness_score": 72.4,
+        "freshness_score": 72.3,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
-      },
-      {
-        "title": "Sterling today: Pound heads for lowest close since June as dollar rally holds",
-        "link": "https://in.investing.com/news/forex-news/sterling-today-pound-steadies-as-stretched-dollar-rally-meets-treasury-yield-peak-5604253",
-        "source": "Investing.com",
-        "published_at": "2026-09-24T12:36:09+00:00",
-        "currency": "GBP",
-        "relevance_score": 7,
-        "freshness_score": 72.4,
-        "impact": "MEDIUM",
-        "topic": "FX_MARKET"
       },
       {
         "title": "Fed's Hammack says bond yield surge not about lost inflation confidence - Reuters",
@@ -12848,7 +12848,7 @@
   },
   "market_regime": {
     "status": "live",
-    "updated_at": "2026-09-26T11:01:39.837569+00:00",
+    "updated_at": "2026-09-26T11:16:12.561926+00:00",
     "regime": "RISK-ON",
     "score": 100.0,
     "confidence": 95,
