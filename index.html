@@ -1116,6 +1116,10 @@ function renderCrypto(c){
 }
 
 // Binance USD-M microstructure: one deduplicated trade store feeds footprint and CVD.
+// Start the core snapshot loader before optional BTC microstructure initialization.
+refreshDashboard();
+setInterval(refreshDashboard,60000);
+
 (function initBtcMicrostructure(){
  const $=id=>document.getElementById(id),fmt=x=>Number(x).toLocaleString(undefined,{maximumFractionDigits:2});
  let activeInterval='1m',chart=null,candleSeries=null,cvdWindow=300,bookHistory=[],lastBook=null,wsTrade=null,wsDepth=null,wsKline=null,cvdDrawPending=false;
@@ -1605,8 +1609,6 @@ async function refreshDashboard(){
  try{ await load();setDataLayerStatus(true); }catch(e){ console.warn('Dashboard refresh failed:',e);setDataLayerStatus(false,e?.message||e); }
  finally{ __mi_refresh_busy=false; }
 }
-refreshDashboard();
-setInterval(refreshDashboard,60000);
 const showSection=id=>{document.querySelectorAll('main>section').forEach(s=>s.style.display=s.id===id?'block':'none');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.target===id));history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:'smooth'});};document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showSection(b.dataset.target));const initial=(location.hash||'#home').slice(1);showSection(document.getElementById(initial)?initial:'home');
 
 function initGexModeSwitch(){
