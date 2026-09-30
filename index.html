@@ -1116,11 +1116,7 @@ function renderCrypto(c){
 }
 
 // Binance USD-M microstructure: one deduplicated trade store feeds footprint and CVD.
-// Start the core snapshot loader before optional BTC microstructure initialization.
-refreshDashboard();
-setInterval(refreshDashboard,60000);
-
-(function initBtcMicrostructure(){
+function initBtcMicrostructure(){
  const $=id=>document.getElementById(id),fmt=x=>Number(x).toLocaleString(undefined,{maximumFractionDigits:2});
  let activeInterval='1m',chart=null,candleSeries=null,cvdWindow=300,bookHistory=[],lastBook=null,wsTrade=null,wsDepth=null,wsKline=null,cvdDrawPending=false;
  let footInterval=1,footStep=25,footBars=new Map(),rawTrades=new Map(),pendingTrades=[],historyReady=false,visibleBars=30,barOffset=0,flowCvd=0,flowBuy=0,flowSell=0,cvdPoints=[];
@@ -1173,22 +1169,11 @@ setInterval(refreshDashboard,60000);
  const zoomIn=$('btc-foot-zoom-in'),zoomOut=$('btc-foot-zoom-out'),liveBtn=$('btc-foot-live');if(zoomIn)zoomIn.addEventListener('click',()=>zoomFoot(1));if(zoomOut)zoomOut.addEventListener('click',()=>zoomFoot(-1));if(liveBtn)liveBtn.addEventListener('click',()=>{barOffset=0;liveBtn.classList.add('active');drawFootprint();});
  const fc=$('btc-footprint');if(fc){const pointers=new Map();let dragX=null,pinchStart=0,pinchBars=0;fc.style.touchAction='none';fc.addEventListener('pointerdown',e=>{pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});fc.setPointerCapture?.(e.pointerId);if(pointers.size===1)dragX=e.clientX;if(pointers.size===2){const a=[...pointers.values()];pinchStart=Math.abs(a[0].x-a[1].x);pinchBars=visibleBars;dragX=null;}});fc.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){const a=[...pointers.values()],dist=Math.abs(a[0].x-a[1].x);if(pinchStart>0){const ratio=pinchStart/Math.max(1,dist);visibleBars=Math.max(4,Math.min(240,Math.round(pinchBars*ratio)));barOffset=Math.min(barOffset,Math.max(0,footBars.size-visibleBars));drawFootprint();}}});const endPointer=e=>{const old=pointers.get(e.pointerId);if(old&&pointers.size===1&&dragX!==null){const dx=e.clientX-dragX;if(Math.abs(dx)>12){const barsPerPx=Math.max(1,visibleBars)/Math.max(1,fc.clientWidth-76);barOffset=Math.max(0,Math.min(Math.max(0,footBars.size-visibleBars),barOffset-Math.round(dx*barsPerPx)));if(liveBtn)liveBtn.classList.toggle('active',barOffset===0);drawFootprint();}}pointers.delete(e.pointerId);dragX=pointers.size===1?[...pointers.values()][0].x:null;pinchStart=0;};fc.addEventListener('pointerup',endPointer);fc.addEventListener('pointercancel',endPointer);fc.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>0){e.preventDefault();zoomFoot(e.deltaY<0?1:-1);}},{passive:false});}
  initChart();startTrade();bootstrapTrades();startDepth();window.addEventListener('resize',()=>{drawCvd();drawHeatmap();drawFootprint();});
-})();
+}
 
 async function load(){
- setDataLayerStatus(false,'loading data.json…');
- const controller=typeof AbortController!=='undefined'?new AbortController():null;
- let timeoutId=null;
- try{
-  const request=fetch('./data.json?ts='+Date.now(),{cache:'no-store',...(controller?{signal:controller.signal}:{})});
-  const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>{if(controller)controller.abort();reject(new Error('data.json request timed out after 15 seconds'));},15000);});
-  const response=await Promise.race([request,timeout]);
-  if(!response.ok)throw new Error('data.json HTTP '+response.status);
-  const d=await response.json();
-  if(!d||typeof d!=='object'||!d.prices||typeof d.prices!=='object')throw new Error('data.json has an invalid snapshot structure');
-  window.__MI_DATA__=d;
-  setDataLayerStatus(true);
-  const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
+ const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
+ const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
  const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
  const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
  const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
@@ -1599,7 +1584,6 @@ async function load(){
      <div class="small">${newsFmtTime(x.published_at)} • Market relevance ${fmt(x.relevance_score,0)}/10+</div>
    </div>`;
  }).join('') || '<div class="callout">No current market headlines available.</div>';
- }finally{if(timeoutId!==null)clearTimeout(timeoutId);}
 }
 let __mi_refresh_busy=false;
 function setDataLayerStatus(ok,message){const el=document.getElementById('data-layer-status');if(!el)return;el.textContent=ok?'SNAPSHOT LOADED • data.json':'SNAPSHOT ERROR • '+String(message||'data.json unavailable').slice(0,120);el.style.color=ok?'#31e0a2':'#ff617b';}
@@ -1609,6 +1593,10 @@ async function refreshDashboard(){
  try{ await load();setDataLayerStatus(true); }catch(e){ console.warn('Dashboard refresh failed:',e);setDataLayerStatus(false,e?.message||e); }
  finally{ __mi_refresh_busy=false; }
 }
+refreshDashboard();
+// Keep optional BTC widgets from blocking the core market snapshot loader.
+try{initBtcMicrostructure();}catch(e){console.warn('BTC microstructure initialization failed:',e);}
+setInterval(refreshDashboard,60000);
 const showSection=id=>{document.querySelectorAll('main>section').forEach(s=>s.style.display=s.id===id?'block':'none');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.target===id));history.replaceState(null,'','#'+id);window.scrollTo({top:0,behavior:'smooth'});};document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showSection(b.dataset.target));const initial=(location.hash||'#home').slice(1);showSection(document.getElementById(initial)?initial:'home');
 
 function initGexModeSwitch(){
