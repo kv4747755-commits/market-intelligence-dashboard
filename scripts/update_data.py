@@ -1183,6 +1183,103 @@ def build_macro(previous_macro=None):
     return macro
 
 
+
+def fetch_delta_crypto():
+    """Fetch public BTC perpetual data from Delta; no API key required.
+
+    Candle-derived volume profile is an approximation (OHLCV, not tick-level
+    volume-at-price). Trade-side CVD and cross-exchange/on-chain data are left
+    explicitly unavailable rather than inferred from candle direction.
+    """
+    base = "https://api.india.delta.exchange"
+    out = {
+        "status": "unavailable", "source": "Delta Exchange India public API",
+        "symbol": "BTCUSD", "updated_at": datetime.now(timezone.utc).isoformat(),
+        "ticker": {}, "candles": [], "volume_profile": [],
+        "order_flow": {"status": "unavailable", "note": "Trade-side CVD requires classified trade flow; not inferred from candles."},
+        "options": {"status": "unavailable", "note": "BTC options analytics require a validated options-chain feed."},
+        "liquidations": {"status": "unavailable", "note": "Exchange-wide liquidation clusters are not available from this snapshot."},
+        "cross_exchange": {"status": "unavailable"}, "error": None,
+    }
+    headers = {"Accept": "application/json", "User-Agent": "MarketIntelligenceDashboard/1.0"}
+    try:
+        req = Request(base + "/v2/tickers/BTCUSD", headers=headers)
+        with urlopen(req, timeout=12) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+        if not payload.get("success", True):
+            raise ValueError("Delta ticker request was not successful")
+        raw = payload.get("result") or {}
+        if isinstance(raw, list): raw = raw[0] if raw else {}
+        if not isinstance(raw, dict): raw = {}
+        def pick(*keys):
+            for key in keys:
+                value = sf(raw.get(key))
+                if value is not None: return value
+            return None
+        ticker = {
+            "last_price": pick("last_price", "close", "price"),
+            "mark_price": pick("mark_price"), "spot_price": pick("spot_price", "underlying_price"),
+            "open": pick("open", "open_price"), "high": pick("high", "high_price"),
+            "low": pick("low", "low_price"), "volume": pick("volume", "volume_24h"),
+            "turnover": pick("turnover", "turnover_24h"),
+            "open_interest": pick("oi", "open_interest"), "funding_rate": pick("funding_rate"),
+            "timestamp": raw.get("timestamp") or raw.get("updated_at") or raw.get("last_updated_at"),
+        }
+        last, opened = ticker.get("last_price"), ticker.get("open")
+        ticker["change_pct"] = ((last / opened) - 1) * 100 if last is not None and opened not in (None, 0) else None
+        out["ticker"] = ticker
+        if last is not None: out["status"] = "live"
+    except Exception as exc:
+        out["error"] = str(exc)[:240]
+
+    try:
+        end = int(datetime.now(timezone.utc).timestamp())
+        start = end - 24 * 60 * 60
+        query = urllib.parse.urlencode({"resolution": "1m", "symbol": "BTCUSD", "start": start, "end": end})
+        req = Request(base + "/v2/history/candles?" + query, headers=headers)
+        with urlopen(req, timeout=18) as response:
+            payload = json.loads(response.read().decode("utf-8", errors="replace"))
+        if not payload.get("success", True): raise ValueError("Delta candle request was not successful")
+        rows = payload.get("result") or []
+        candles = []
+        for row in rows:
+            if not isinstance(row, dict): continue
+            c = {k: sf(row.get(k)) for k in ("time", "open", "high", "low", "close", "volume")}
+            if c["time"] is not None and c["close"] is not None: candles.append(c)
+        candles.sort(key=lambda x: x["time"])
+        out["candles"] = candles[-1440:]
+        # Candle-based volume-at-price proxy: allocate each candle's volume to its typical price.
+        bins = {}
+        for c in out["candles"]:
+            price = c.get("close")
+            vol = c.get("volume") or 0.0
+            if price is None or vol <= 0: continue
+            step = 100.0
+            level = round(price / step) * step
+            bins[level] = bins.get(level, 0.0) + vol
+        out["volume_profile"] = [{"price": k, "volume": v} for k, v in sorted(bins.items())]
+        if out["candles"] and out["status"] == "unavailable": out["status"] = "partial"
+        if out["candles"]:
+            now_ts = end
+            current = datetime.fromtimestamp(now_ts, timezone.utc)
+            hour = current.hour
+            session = "ASIA" if 0 <= hour < 8 else "EUROPE" if 7 <= hour < 16 else "US" if 13 <= hour < 22 else "ASIA"
+            # UTC session window, with overlapping global sessions represented by the active label above.
+            starts = {"ASIA": 0, "EUROPE": 7, "US": 13}
+            session_start = current.replace(hour=starts[session], minute=0, second=0, microsecond=0).timestamp()
+            if session_start > now_ts: session_start -= 86400
+            scoped = [c for c in out["candles"] if c["time"] >= session_start]
+            if scoped:
+                out["session"] = {"name": session, "timezone": "UTC", "start": session_start,
+                    "high": max(c["high"] if c["high"] is not None else c["close"] for c in scoped),
+                    "low": min(c["low"] if c["low"] is not None else c["close"] for c in scoped),
+                    "open": scoped[0]["open"], "close": scoped[-1]["close"]}
+    except Exception as exc:
+        out["candle_error"] = str(exc)[:240]
+    out["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return out
+
+
 def main():
     try:
         with open(OUT, encoding="utf-8") as f:
@@ -1209,6 +1306,9 @@ def main():
         if v is not None:
             d["prices"][key] = v
             d["prices"][key + "_change"] = ch
+
+    # BTC command center uses Delta public market data; independent of NDX GEX.
+    d["crypto"] = fetch_delta_crypto()
 
     # FX command-center layer: major pairs, relative currency strength and
     # cross-market commodity drivers. This is additive and does not alter GEX.
