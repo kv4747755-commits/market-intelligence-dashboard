@@ -1172,8 +1172,19 @@ function renderCrypto(c){
 })();
 
 async function load(){
- const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
- const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
+ setDataLayerStatus(false,'loading data.json…');
+ const controller=typeof AbortController!=='undefined'?new AbortController():null;
+ let timeoutId=null;
+ try{
+  const request=fetch('./data.json?ts='+Date.now(),{cache:'no-store',...(controller?{signal:controller.signal}:{})});
+  const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>{if(controller)controller.abort();reject(new Error('data.json request timed out after 15 seconds'));},15000);});
+  const response=await Promise.race([request,timeout]);
+  if(!response.ok)throw new Error('data.json HTTP '+response.status);
+  const d=await response.json();
+  if(!d||typeof d!=='object'||!d.prices||typeof d.prices!=='object')throw new Error('data.json has an invalid snapshot structure');
+  window.__MI_DATA__=d;
+  setDataLayerStatus(true);
+  const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
  const fmt=(x,n=2)=>x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:n,minimumFractionDigits:n});
  const pct=x=>x==null?'—':(x>=0?'+':'')+fmt(x,2)+'%';
  const q=(name,value,change,dec=2)=>`<div class="card"><div class="label">${name}</div><div class="big">${fmt(value,dec)}</div><div class="${change!=null&&change<0?'down':'up'}">${pct(change)}</div></div>`;
@@ -1584,6 +1595,7 @@ async function load(){
      <div class="small">${newsFmtTime(x.published_at)} • Market relevance ${fmt(x.relevance_score,0)}/10+</div>
    </div>`;
  }).join('') || '<div class="callout">No current market headlines available.</div>';
+ }finally{if(timeoutId!==null)clearTimeout(timeoutId);}
 }
 let __mi_refresh_busy=false;
 function setDataLayerStatus(ok,message){const el=document.getElementById('data-layer-status');if(!el)return;el.textContent=ok?'SNAPSHOT LOADED • data.json':'SNAPSHOT ERROR • '+String(message||'data.json unavailable').slice(0,120);el.style.color=ok?'#31e0a2':'#ff617b';}
