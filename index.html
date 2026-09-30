@@ -335,6 +335,14 @@ section:not(#home)>.title{padding-top:4px}
 .gex-model-card{margin-top:10px}.gex-model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}.gex-model-stat{padding:9px 10px;border:1px solid #1b2a39;border-radius:8px;background:#0a141e}.gex-model-stat .k{font-size:9px;color:#718295;letter-spacing:.8px;text-transform:uppercase}.gex-model-stat .v{font-size:14px;font-weight:800;margin-top:3px}.gex-model-stat .s{font-size:9px;color:#718295;margin-top:2px;line-height:1.35}.gex-expiry-wrap{margin-top:10px;overflow:auto}.gex-expiry-table{width:100%;border-collapse:collapse;font-size:9px}.gex-expiry-table th,.gex-expiry-table td{padding:6px 5px;border-bottom:1px solid #172634;text-align:right;white-space:nowrap}.gex-expiry-table th:first-child,.gex-expiry-table td:first-child{text-align:left}.gex-method-note{margin-top:9px;font-size:9px;line-height:1.45;color:#718295}.gex-method-note b{color:#a9b8c6}
 @media(max-width:600px){.gex-model-grid{grid-template-columns:repeat(2,1fr)}}
 
+
+/* BTC + crypto command centers */
+.crypto-hero{display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:10px;margin-bottom:12px}
+.crypto-stat{background:linear-gradient(180deg,#0d1822,#09121a);border:1px solid #1d3040;border-radius:10px;padding:13px;min-width:0}
+.crypto-stat .k{font-size:9px;color:#7e91a3;letter-spacing:.8px;text-transform:uppercase}.crypto-stat .v{font-size:20px;font-weight:800;margin-top:6px;overflow-wrap:anywhere}.crypto-stat .s{font-size:10px;color:#718295;margin-top:4px}
+.crypto-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}.crypto-panel{background:linear-gradient(180deg,#0c151e,#081018);border:1px solid #1b2b39;border-radius:10px;padding:14px;min-width:0}.crypto-panel h3{margin:0 0 8px;font-size:12px;letter-spacing:.6px;text-transform:uppercase}.crypto-panel .hint{font-size:10px;color:#718295;line-height:1.5}.crypto-chart{width:100%;height:220px;display:block}.crypto-table{width:100%;font-size:10px;border-collapse:collapse}.crypto-table th,.crypto-table td{padding:7px 5px;border-bottom:1px solid #172634;text-align:left;white-space:nowrap}.crypto-chip{display:inline-block;border:1px solid #294052;border-radius:99px;padding:4px 7px;margin:3px;font-size:9px;color:#a9bbc9}.crypto-state{font-size:9px;font-weight:800;letter-spacing:.5px;color:#f4c95d}.crypto-state.live{color:#31e0a2}.crypto-wide{grid-column:1/-1}.crypto-bars{display:flex;flex-direction:column;gap:5px;margin-top:8px}.crypto-bar-row{display:grid;grid-template-columns:64px 1fr 80px;gap:8px;align-items:center;font-size:10px}.crypto-bar-track{height:8px;background:#172532;border-radius:99px;overflow:hidden}.crypto-bar-fill{height:100%;background:linear-gradient(90deg,#3978bd,#31e0a2);border-radius:99px}
+@media(max-width:760px){.crypto-hero{grid-template-columns:repeat(2,minmax(0,1fr))}.crypto-grid{grid-template-columns:1fr}.crypto-wide{grid-column:auto}.crypto-chart{height:190px}}
+
 </style>
 </head>
 <body>
@@ -351,6 +359,8 @@ section:not(#home)>.title{padding-top:4px}
 <button data-target="nasdaq"><span class="nav-icon">N</span><span>NASDAQ</span></button>
 <button data-target="forex"><span class="nav-icon">FX</span><span>FOREX</span></button>
 <button data-target="options"><span class="nav-icon">◈</span><span>OPTIONS</span></button>
+<button data-target="bitcoin"><span class="nav-icon">₿</span><span>BITCOIN</span></button>
+<button data-target="crypto"><span class="nav-icon">◆</span><span>CRYPTO INTEL</span></button>
 </div>
 <div class="nav-group"><div class="nav-group-title">INTELLIGENCE</div>
 <button data-target="macro"><span class="nav-icon">M</span><span>MACRO</span></button>
@@ -605,6 +615,42 @@ section:not(#home)>.title{padding-top:4px}
 <div class="strike-toolbar"><div class="small" id="heat-status">Only populate this when the chain is actually available.</div><div class="strike-filter"><button class="active" data-strike-filter="near">NEAR SPOT</button><button data-strike-filter="all">ALL LOADED</button></div></div>
 <div class="strike-table-wrap"><table><thead><tr><th>Strike</th><th>Distance</th><th>Call OI</th><th>Put OI</th><th>Net GEX</th><th>Structure</th></tr></thead><tbody id="gex-detail-body"></tbody></table></div>
 <div class="options-interactive-note"><span>Hover a row to inspect its strike and modeled exposure.</span><b>Values are from the loaded option chain snapshot.</b></div></div>
+</section>
+
+<section id="bitcoin">
+<div class="title">BITCOIN COMMAND CENTER <span class="small">Delta Exchange • BTCUSD • 24/7 market</span></div>
+<div class="crypto-hero">
+<div class="crypto-stat"><div class="k">BTCUSD PERPETUAL</div><div class="v" id="btc-price">—</div><div class="s" id="btc-change">Waiting for Delta snapshot</div></div>
+<div class="crypto-stat"><div class="k">MARK PRICE</div><div class="v" id="btc-mark">—</div><div class="s">Delta mark price</div></div>
+<div class="crypto-stat"><div class="k">OPEN INTEREST</div><div class="v" id="btc-oi">—</div><div class="s">Exchange contract OI</div></div>
+<div class="crypto-stat"><div class="k">FUNDING RATE</div><div class="v" id="btc-funding">—</div><div class="s">Perpetual funding</div></div>
+</div>
+<div class="crypto-panel crypto-wide"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>BTC PRICE & SESSION STRUCTURE</h3><span class="crypto-state" id="btc-feed-state">DATA —</span></div><div class="hint" id="btc-session-note">Session levels use UTC boundaries. BTC trades 24/7.</div><svg id="btc-chart" class="crypto-chart" viewBox="0 0 900 220" preserveAspectRatio="none" aria-label="BTC one-minute price chart"></svg><div class="crypto-hero" style="grid-template-columns:repeat(4,minmax(0,1fr));margin:0"><div class="crypto-stat"><div class="k">SESSION</div><div class="v" style="font-size:15px" id="btc-session">—</div></div><div class="crypto-stat"><div class="k">SESSION OPEN</div><div class="v" style="font-size:15px" id="btc-session-open">—</div></div><div class="crypto-stat"><div class="k">SESSION HIGH / LOW</div><div class="v" style="font-size:13px" id="btc-session-range">—</div></div><div class="crypto-stat"><div class="k">DATA UPDATED</div><div class="v" style="font-size:12px" id="btc-updated">—</div></div></div></div>
+<div class="crypto-grid">
+<div class="crypto-panel"><h3>ORDER FLOW & LIQUIDITY</h3><div class="crypto-chip">L2 book: API available</div><div class="crypto-chip">CVD: pending classified trades</div><div class="crypto-chip">Absorption: not inferred</div><div class="hint" id="btc-flow-note">The scheduled snapshot contains candles, not a continuous trade stream. CVD, absorption and liquidity sweeps require streaming trade/book history.</div></div>
+<div class="crypto-panel"><h3>VOLUME PROFILE & AUCTION</h3><div class="hint">24-hour candle-based volume-at-price proxy. Not true tick-level volume profile.</div><div id="btc-volume-profile" class="crypto-bars"><div class="hint">Waiting for candle data…</div></div><div class="hint" id="btc-vp-note" style="margin-top:8px">POC: — • VAH: — • VAL: —</div></div>
+<div class="crypto-panel"><h3>FUTURES & PERPETUALS</h3><table class="crypto-table"><tbody><tr><td>Mark / last basis</td><td id="btc-basis">—</td></tr><tr><td>24h volume</td><td id="btc-volume">—</td></tr><tr><td>Open interest</td><td id="btc-oi-detail">—</td></tr><tr><td>Funding</td><td id="btc-funding-detail">—</td></tr></tbody></table><div class="hint" style="margin-top:8px">Single-exchange metrics from Delta; not aggregated market-wide positioning.</div></div>
+<div class="crypto-panel"><h3>OPTIONS INTELLIGENCE</h3><div class="crypto-state">CHAIN VALIDATION PENDING</div><p class="hint">Options chain, IV surface, skew, term structure and BTC GEX will be activated only after we validate the available Delta option contracts and quote fields. No estimated gamma is fabricated here.</p></div>
+<div class="crypto-panel crypto-wide"><h3>LIQUIDATION & LEVERAGE MAP</h3><div class="crypto-state">ESTIMATED CLUSTERS UNAVAILABLE</div><p class="hint">A reliable liquidation heatmap requires leverage/position distribution or a clearly defined liquidation model. Open interest alone cannot reveal exact liquidation prices. We'll keep this panel separate from actual exchange liquidation events.</p></div>
+</div>
+</section>
+<section id="crypto">
+<div class="title">CRYPTO MARKET INTELLIGENCE <span class="small">Free-source foundation • broader market context</span></div>
+<div class="crypto-hero">
+<div class="crypto-stat"><div class="k">BTC MARKET DATA</div><div class="v" id="ci-btc-status">—</div><div class="s">Delta Exchange India</div></div>
+<div class="crypto-stat"><div class="k">BTC DOMINANCE</div><div class="v" id="ci-dominance">UNAVAILABLE</div><div class="s">Global market feed not connected</div></div>
+<div class="crypto-stat"><div class="k">TOTAL MARKET CAP</div><div class="v" id="ci-marketcap">UNAVAILABLE</div><div class="s">Global market feed not connected</div></div>
+<div class="crypto-stat"><div class="k">MARKET BREADTH</div><div class="v" id="ci-breadth">UNAVAILABLE</div><div class="s">Cross-asset universe pending</div></div>
+</div>
+<div class="crypto-grid">
+<div class="crypto-panel"><h3>MARKET BREADTH & SECTORS</h3><p class="hint">Add a free global market-data source before displaying total market cap, dominance, altcoin breadth or sector returns. Delta BTC alone cannot calculate these reliably.</p></div>
+<div class="crypto-panel"><h3>ON-CHAIN INTELLIGENCE</h3><p class="hint">Exchange flows, reserves, active addresses, realized P/L and large-wallet transfers require a blockchain data provider or validated public node/indexer. These are not available from the current Delta snapshot.</p></div>
+<div class="crypto-panel"><h3>INSTITUTIONAL & CAPITAL FLOWS</h3><p class="hint">ETF flows and stablecoin supply will use dated public issuer / blockchain sources when integrated. No stale or estimated flow numbers will be shown as live.</p></div>
+<div class="crypto-panel"><h3>CROSS-MARKET CORRELATION</h3><div class="hint">BTC versus Nasdaq, DXY, gold and Treasury yields. Correlation calculations will be enabled when a consistent BTC history is stored alongside the macro series.</div><div class="crypto-chip">7D rolling</div><div class="crypto-chip">30D rolling</div><div class="crypto-chip">Correlation breakdown</div></div>
+<div class="crypto-panel"><h3>EVENTS & TOKEN SUPPLY</h3><p class="hint">Token unlocks, protocol upgrades, listings and network incidents need a maintained event source. This panel is reserved for verified, dated events.</p></div>
+<div class="crypto-panel"><h3>SENTIMENT & POSITIONING</h3><p class="hint">Funding and open interest are available for BTC on Delta. Broad crypto sentiment and exchange-wide long/short positioning remain unavailable until a free, reliable source is connected.</p></div>
+<div class="crypto-panel crypto-wide"><h3>DATA COVERAGE & METHOD</h3><div class="hint">Free-source policy: prefer exchange public APIs and official public datasets. Every metric must show its source, timestamp and whether it is observed, calculated or estimated. CoinGlass is not required. Current Delta data is a single-exchange view; the broader crypto modules remain visibly pending until their data sources are connected.</div></div>
+</div>
 </section>
 
 <section id="macro">
@@ -1051,6 +1097,20 @@ function renderForex(fx,p,r,fxNews){
   const newsTime=x=>{const t=x?.published_at;if(!t)return 'Time unavailable';const d=new Date(t);return Number.isNaN(d.getTime())?String(t):d.toLocaleString([], {month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});};
   if(ng) ng.innerHTML=news.length?news.map(x=>{const impact=String(x.impact||'MEDIUM').toUpperCase();return `<div class="kpi fx-news-item"><div class="small"><b>${x.currency}</b> • ${x.source||'News'} <span class="fx-news-impact ${impact==='HIGH'?'amber':''}">${impact}</span></div><b class="fx-news-title">${x.title}</b><div class="small">${x.topic||'FX'} • ${newsTime(x)}</div></div>`;}).join(''):'<div class="small">No genuinely FX-relevant headlines available right now.</div>';
 }
+function renderCrypto(c){
+ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+ const n=x=>x==null||!Number.isFinite(Number(x))?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:2});
+ const pct=x=>x==null||!Number.isFinite(Number(x))?'—':(Number(x)>=0?'+':'')+Number(x).toFixed(2)+'%';
+ const t=c?.ticker||{}, candles=Array.isArray(c?.candles)?c.candles:[], session=c?.session||{};
+ set('btc-price',n(t.last_price));set('btc-change',pct(t.change_pct)+' • 24h');set('btc-mark',n(t.mark_price));set('btc-oi',n(t.open_interest));set('btc-funding',t.funding_rate==null?'—':(Number(t.funding_rate)*100).toFixed(5)+'%');
+ set('btc-feed-state',String(c?.status||'unavailable').toUpperCase());const state=document.getElementById('btc-feed-state');if(state)state.className='crypto-state '+(c?.status==='live'?'live':'');
+ set('btc-session',session.name||'—');set('btc-session-open',n(session.open));set('btc-session-range',session.high!=null&&session.low!=null?n(session.high)+' / '+n(session.low):'—');
+ const upd=c?.updated_at?new Date(c.updated_at):null;set('btc-updated',upd&&!Number.isNaN(upd.getTime())?upd.toLocaleTimeString():'—');
+ const note=document.getElementById('btc-session-note');if(note)note.textContent=session.name?`Current ${session.name} session • ${session.timezone||'UTC'} • levels from available candles`:'Session levels unavailable until candles load.';
+ const svg=document.getElementById('btc-chart');if(svg){if(candles.length<2){svg.innerHTML='<text x="450" y="110" fill="#718295" text-anchor="middle" font-size="13">Waiting for BTC candle data</text>';}else{const vals=candles.map(x=>Number(x.close)).filter(Number.isFinite),lo=Math.min(...vals),hi=Math.max(...vals),span=hi-lo||1;const pts=vals.map((v,i)=>`${(i/(vals.length-1))*880+10},${205-((v-lo)/span)*180}`).join(' ');svg.innerHTML=`<line x1="10" y1="205" x2="890" y2="205" stroke="#223443"/><line x1="10" y1="25" x2="890" y2="25" stroke="#172735"/><polyline points="${pts}" fill="none" stroke="#59a9ff" stroke-width="2" vector-effect="non-scaling-stroke"/><text x="12" y="18" fill="#718295" font-size="10">${n(hi)}</text><text x="12" y="218" fill="#718295" font-size="10">${n(lo)}</text>`;}}
+ const vp=Array.isArray(c?.volume_profile)?c.volume_profile:[];const box=document.getElementById('btc-volume-profile');if(box){const top=vp.slice().sort((a,b)=>Number(b.volume)-Number(a.volume)).slice(0,12).sort((a,b)=>Number(a.price)-Number(b.price));const max=Math.max(1,...top.map(x=>Number(x.volume)||0));box.innerHTML=top.length?top.map(x=>`<div class="crypto-bar-row"><span>${n(x.price)}</span><div class="crypto-bar-track"><div class="crypto-bar-fill" style="width:${Math.max(1,(Number(x.volume)||0)/max*100)}%"></div></div><span style="text-align:right">${n(x.volume)}</span></div>`).join(''):'<div class="hint">Volume profile unavailable.</div>';const poc=vp.slice().sort((a,b)=>Number(b.volume)-Number(a.volume))[0];set('btc-vp-note',poc?`Proxy POC: ${n(poc.price)} • VAH/VAL: unavailable from simplified candle allocation`:'POC: — • VAH: — • VAL: —');}
+ const basis=t.mark_price!=null&&t.last_price!=null?Number(t.mark_price)-Number(t.last_price):null;set('btc-basis',basis==null?'—':n(basis));set('btc-volume',n(t.volume));set('btc-oi-detail',n(t.open_interest));set('btc-funding-detail',t.funding_rate==null?'—':(Number(t.funding_rate)*100).toFixed(5)+'%');set('ci-btc-status',String(c?.status||'unavailable').toUpperCase());
+}
 async function load(){
  const d=await fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('data.json HTTP '+r.status);return r.json();});
  const p=d.prices||{}, o=d.options||{}, r=d.rates||{}, cot=d.cot||{}, news=d.news||{}, fx=d.fx||{}, fxNews=d.fx_news||[];
@@ -1077,6 +1137,7 @@ async function load(){
  const fxeurEl=document.getElementById('fxeur'); if(fxeurEl) fxeurEl.textContent=pct(p.eurusd_change);
  const fxvixEl=document.getElementById('fxvix'); if(fxvixEl) fxvixEl.textContent=pct(p.vix_change);
  renderForex(fx,p,r,fxNews);
+ renderCrypto(d.crypto||{});
 
  // MASTER MARKET REGIME — transparent cross-asset synthesis from the backend.
  const mr=d.market_regime||{};
