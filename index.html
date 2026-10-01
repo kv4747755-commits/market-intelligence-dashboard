@@ -1158,38 +1158,38 @@ function initBtcMicrostructure(){
   const left=62,right=w-10,top=30,bottom=h-40,plotW=right-left,plotH=bottom-top;
   ctx.font='10px Arial';ctx.fillStyle='#91a2b3';ctx.textAlign='left';ctx.fillText('PRICE',8,15);
   if(!bars.length){ctx.fillText(historyReady?'No trades received yet — check stream status above':'Connecting to Binance trade stream…',left,top+28);return;}
-  const ladderMode=visibleBars<=10;
+  const zoomed=visibleBars<=12;
   const tradedPrices=bars.flatMap(b=>[...b.levels.keys()]);
   let lo=Math.min(...bars.map(b=>b.low),...(tradedPrices.length?tradedPrices:[Infinity]));
   let hi=Math.max(...bars.map(b=>b.high),...(tradedPrices.length?tradedPrices:[-Infinity]));
   if(!Number.isFinite(lo)||!Number.isFinite(hi)){ctx.fillText('No candle data',left,top+28);return;}
   const step=Math.max(1,footStep),floor=Math.floor(lo/step)*step,ceil=Math.ceil(hi/step)*step;
-  const levelsCount=Math.max(1,Math.round((ceil-floor)/step)+1),rowH=Math.max(3,Math.min(18,plotH/levelsCount));
+  const levelsCount=Math.max(1,Math.round((ceil-floor)/step)+1),rowH=Math.max(3,Math.min(20,plotH/levelsCount));
   const pad=Math.max(step,step*2);lo=floor-pad;hi=ceil+pad;if(hi<=lo)hi=lo+step;
-  const yOf=p=>top+(hi-p)/(hi-lo)*plotH,slot=plotW/Math.max(1,bars.length),cellW=Math.max(3,Math.min(90,slot*.92));
+  const yOf=p=>top+(hi-p)/(hi-lo)*plotH,slot=plotW/Math.max(1,bars.length),bodyW=Math.max(2,Math.min(18,slot*.34));
   for(let p=Math.ceil(lo/step)*step;p<=hi;p+=step){const y=yOf(p);ctx.strokeStyle='#172533';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();if((p/step)%Math.max(1,Math.ceil(levelsCount/8))===0){ctx.fillStyle='#91a2b3';ctx.textAlign='right';ctx.fillText(p.toLocaleString(undefined,{maximumFractionDigits:0}),left-7,y+3);}}
-  const maxLevel=Math.max(.000001,...bars.flatMap(b=>[...b.levels.values()].flatMap(v=>[v.buy,v.sell])));
-  const maxDelta=Math.max(1,...bars.map(b=>Math.abs(b.delta||0)));
+  const maxLevel=Math.max(.000001,...bars.flatMap(b=>[...b.levels.values()].map(v=>Math.abs(v.buy-v.sell))));
   bars.forEach((b,i)=>{
-    const x=left+(i+.5)*slot,yo=yOf(b.open),yc=yOf(b.close),yh=yOf(b.high),yl=yOf(b.low),up=b.close>=b.open,color=up?'#31e0a2':'#ff617b';
-    if(!ladderMode){ctx.strokeStyle=color;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,yh);ctx.lineTo(x,yl);ctx.stroke();ctx.fillStyle=color;ctx.fillRect(x-Math.max(1,Math.min(9,slot*.28)),Math.min(yo,yc),Math.max(2,Math.min(18,slot*.56)),Math.max(2,Math.abs(yc-yo)));}
-    const levels=[...b.levels.entries()].sort((a,b)=>a[0]-b[0]);
-    if(ladderMode){
-      levels.forEach(([price,v])=>{const y=yOf(price),rh=Math.max(4,Math.min(18,rowH*.92));if(y<top||y>bottom)return;const delta=v.buy-v.sell,total=v.buy+v.sell,alpha=.18+.76*Math.sqrt(Math.abs(delta)/Math.max(1,maxLevel));
-        if(total<=0)return;
-        ctx.fillStyle=delta>=0?`rgba(35,211,155,${alpha})`:`rgba(255,91,113,${alpha})`;
-        ctx.fillRect(x-cellW/2,y-rh/2,cellW,rh);
-        if(slot>=42){ctx.font='bold 9px system-ui,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f7fafc';ctx.fillText((delta>0?'+':'')+fmt(delta),x,y);}
-        if(total>0&&Math.abs(delta)/total>.65){ctx.strokeStyle=delta>=0?'#31e0a2':'#ff617b';ctx.lineWidth=1.2;ctx.strokeRect(x-cellW/2,y-rh/2,cellW,rh);}
+    const center=left+(i+.5)*slot,yo=yOf(b.open),yc=yOf(b.close),yh=yOf(b.high),yl=yOf(b.low),up=b.close>=b.open,color=up?'#31e0a2':'#ff617b';
+    const candleX=zoomed?center-slot*.27:center;
+    ctx.strokeStyle=color;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(candleX,yh);ctx.lineTo(candleX,yl);ctx.stroke();ctx.fillStyle=color;ctx.fillRect(candleX-bodyW/2,Math.min(yo,yc),bodyW,Math.max(2,Math.abs(yc-yo)));
+    if(zoomed){
+      const levels=[...b.levels.entries()].sort((a,b)=>a[0]-b[0]);
+      const cellX=center+slot*.25,cellW=Math.max(8,slot*.48),rh=Math.max(5,Math.min(20,rowH*.88));
+      levels.forEach(([price,v])=>{const y=yOf(price),delta=v.buy-v.sell;if(y<top||y>bottom||!Number.isFinite(delta))return;const strength=Math.sqrt(Math.abs(delta)/maxLevel),alpha=.20+.74*strength;if(delta===0)return;
+        ctx.fillStyle=delta>0?`rgba(35,211,155,${alpha})`:`rgba(255,91,113,${alpha})`;
+        ctx.fillRect(cellX-cellW/2,y-rh/2,cellW,rh);
+        if(cellW>=29&&rh>=9){ctx.font='bold 9px system-ui,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f7fafc';const label=(delta>0?'+':'')+fmt(delta);ctx.fillText(label,cellX,y,cellW-3);}
       });
     }
     const d=b.delta||0;
-    if(slot>=26){ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.font='bold 9px system-ui,Arial';ctx.fillStyle=d>=0?'#31e0a2':'#ff617b';ctx.fillText((d>=0?'+':'')+fmt(d),x,h-22);}
-    if(slot>=42){ctx.fillStyle='#91a2b3';ctx.font='9px Arial';ctx.textAlign='center';ctx.fillText(new Date(b.time*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),x,h-7);}
+    if(slot>=26){ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.font='bold 9px system-ui,Arial';ctx.fillStyle=d>=0?'#31e0a2':'#ff617b';ctx.fillText((d>=0?'+':'')+fmt(d),center,h-22);}
+    if(slot>=42){ctx.fillStyle='#91a2b3';ctx.font='9px Arial';ctx.textAlign='center';ctx.fillText(new Date(b.time*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),center,h-7);}
   });
-  ctx.textAlign='left';ctx.fillStyle='#d5e2ed';ctx.font='10px system-ui,Arial';ctx.fillText(ladderMode?'FOOTPRINT • DELTA AT PRICE':'CANDLES • ZOOM IN FOR PRICE DELTA',left,15);
-  ctx.fillStyle='#91a2b3';ctx.font='9px Arial';ctx.fillText((barOffset?'PAUSED':'LIVE')+' • '+bars.length+' bars • '+(ladderMode?'signed delta per price • bar Δ below':'candle delta • zoom for per-price delta'),left,h-7);
+  ctx.textAlign='left';ctx.fillStyle='#d5e2ed';ctx.font='10px system-ui,Arial';ctx.fillText(zoomed?'FOOTPRINT • CANDLE + SIGNED DELTA / PRICE':'CANDLES • ZOOM IN FOR PRICE DELTA',left,15);
+  ctx.fillStyle='#91a2b3';ctx.font='9px Arial';ctx.fillText((barOffset?'PAUSED':'LIVE')+' • '+bars.length+' bars • '+(zoomed?'candle + signed delta by price':'candles • zoom to ≤12 bars for footprint'),left,h-7);
  }
+
  function drawMainFootprint(){
   const c=$('btc-main-footprint-overlay');if(!c||!chart||!candleSeries)return;
   const host=$('btc-chart'),w=host.clientWidth,h=host.clientHeight,dpr=window.devicePixelRatio||1;
