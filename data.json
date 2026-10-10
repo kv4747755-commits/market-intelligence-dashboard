@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T17:18:05.529884+00:00",
+  "generated_at": "2026-10-10T17:32:33.109059+00:00",
   "prices": {
     "ndx": 30883.150390625,
     "ndx_change": 0.5120771135067814,
@@ -61,8 +61,8 @@
     "expiry": "2026-09-17",
     "spot": 29445.10546875,
     "atm_iv": 12.100934299403226,
-    "expected_move_pct": 0.9206458846588595,
-    "expected_move_points": 284.32445312429553,
+    "expected_move_pct": 0.9184487245568868,
+    "expected_move_points": 283.6459008656805,
     "pcr_oi": 1.0241286863270778,
     "gamma_flip": 29380.916004079394,
     "put_wall": 29000.0,
@@ -2740,7 +2740,7 @@
     "model": "Estimated GEX using listed option OI and modeled gamma; not direct dealer book.",
     "expiry_mode": "0DTE",
     "expiry_label": "0DTE",
-    "time_to_expiry_hours": 50.705087036944434,
+    "time_to_expiry_hours": 50.463356188888895,
     "gex_confidence": "HIGH",
     "gex_methodology": "Surface-aware multi-expiry GEX: parity-forward + market IV/quote-IV recovery + smoothed IV smile + Black-76/spot-gamma conversion; dealer sign is assumed, not observed.",
     "expiry_count": 12,
@@ -9763,7 +9763,7 @@
     "model_error": "name 'volume_surface_gex_at' is not defined",
     "gex_refresh": {
       "status": "FAILED",
-      "attempted_at": "2026-10-10T17:17:43.720312+00:00",
+      "attempted_at": "2026-10-10T17:32:13.891726+00:00",
       "source": "Yahoo Finance / yfinance NDX option chains",
       "error": "name 'volume_surface_gex_at' is not defined"
     },
@@ -12085,7 +12085,7 @@
   "news": {
     "status": "live",
     "source": "Filtered Google News RSS aggregation",
-    "updated_at": "2026-10-10T17:18:05.529369+00:00",
+    "updated_at": "2026-10-10T17:32:33.108559+00:00",
     "items": [
       {
         "title": "Mahedy Sees One Fed Rate Hike in December, If Inflation Doesn\u2019t Behave, More Could Come Fast - Kathleen Hays Presents: Central Bank Central",
@@ -12187,7 +12187,7 @@
   },
   "macro": {
     "status": "live",
-    "updated_at": "2026-10-10T17:17:48.069586+00:00",
+    "updated_at": "2026-10-10T17:32:17.548968+00:00",
     "series": {
       "sofr": {
         "series_id": "SOFR",
@@ -12203,20 +12203,6 @@
         "previous": 3.88,
         "previous_date": "2026-10-07"
       },
-      "core_pce": {
-        "series_id": "PCEPILFE",
-        "value": 130.455,
-        "date": "2026-08-01",
-        "previous": 130.133,
-        "previous_date": "2026-07-01"
-      },
-      "cpi": {
-        "series_id": "CPIAUCSL",
-        "value": 334.131,
-        "date": "2026-08-01",
-        "previous": 332.813,
-        "previous_date": "2026-07-01"
-      },
       "core_cpi": {
         "series_id": "CPILFESL",
         "value": 337.765,
@@ -12224,18 +12210,18 @@
         "previous": 336.789,
         "previous_date": "2026-07-01"
       },
-      "real_10y": {
-        "series_id": "DFII10",
-        "value": 2.87,
-        "date": "2026-10-08",
-        "previous": 2.92,
-        "previous_date": "2026-10-07"
+      "unemployment": {
+        "series_id": "UNRATE",
+        "value": 4.2,
+        "date": "2026-09-01",
+        "previous": 4.1,
+        "previous_date": "2026-08-01"
       },
-      "pce": {
-        "series_id": "PCEPI",
-        "value": 131.579,
+      "ppi": {
+        "series_id": "PPIACO",
+        "value": 287.928,
         "date": "2026-08-01",
-        "previous": 131.172,
+        "previous": 285.181,
         "previous_date": "2026-07-01"
       },
       "breakeven_10y": {
@@ -12245,60 +12231,39 @@
         "previous": 2.35,
         "previous_date": "2026-10-08"
       },
-      "unemployment": {
-        "series_id": "UNRATE",
-        "value": 4.2,
-        "date": "2026-09-01",
-        "previous": 4.1,
-        "previous_date": "2026-08-01"
-      },
-      "avg_hourly_earnings": {
-        "series_id": "CES0500000003",
-        "value": 37.81,
-        "date": "2026-09-01",
-        "previous": 37.76,
-        "previous_date": "2026-08-01"
-      },
-      "jolts": {
-        "series_id": "JTSJOL",
-        "value": 7079.0,
+      "cpi": {
+        "series_id": "CPIAUCSL",
+        "value": 334.131,
         "date": "2026-08-01",
-        "previous": 7335.0,
+        "previous": 332.813,
         "previous_date": "2026-07-01"
       },
-      "initial_claims": {
-        "series_id": "ICSA",
-        "value": 197000.0,
-        "date": "2026-10-03",
-        "previous": 199000.0,
-        "previous_date": "2026-09-26"
-      },
-      "ppi": {
-        "series_id": "PPIACO",
-        "value": 287.928,
+      "core_pce": {
+        "series_id": "PCEPILFE",
+        "value": 130.455,
         "date": "2026-08-01",
-        "previous": 285.181,
+        "previous": 130.133,
         "previous_date": "2026-07-01"
       },
-      "continuing_claims": {
-        "series_id": "CCSA",
-        "value": 1716000.0,
-        "date": "2026-09-26",
-        "previous": 1699000.0,
-        "previous_date": "2026-09-19"
+      "pce": {
+        "series_id": "PCEPI",
+        "value": 131.579,
+        "date": "2026-08-01",
+        "previous": 131.172,
+        "previous_date": "2026-07-01"
+      },
+      "real_10y": {
+        "series_id": "DFII10",
+        "value": 2.87,
+        "date": "2026-10-08",
+        "previous": 2.92,
+        "previous_date": "2026-10-07"
       },
       "payrolls": {
         "series_id": "PAYEMS",
         "value": 159044.0,
         "date": "2026-09-01",
         "previous": 159015.0,
-        "previous_date": "2026-08-01"
-      },
-      "labor_participation": {
-        "series_id": "CIVPART",
-        "value": 61.8,
-        "date": "2026-09-01",
-        "previous": 61.6,
         "previous_date": "2026-08-01"
       },
       "gdp": {
@@ -12308,12 +12273,33 @@
         "previous": 24274.383,
         "previous_date": "2026-01-01"
       },
-      "retail_sales": {
-        "series_id": "RSAFS",
-        "value": 737763.0,
-        "date": "2026-08-01",
-        "previous": 729538.0,
-        "previous_date": "2026-07-01"
+      "labor_participation": {
+        "series_id": "CIVPART",
+        "value": 61.8,
+        "date": "2026-09-01",
+        "previous": 61.6,
+        "previous_date": "2026-08-01"
+      },
+      "continuing_claims": {
+        "series_id": "CCSA",
+        "value": 1716000.0,
+        "date": "2026-09-26",
+        "previous": 1699000.0,
+        "previous_date": "2026-09-19"
+      },
+      "avg_hourly_earnings": {
+        "series_id": "CES0500000003",
+        "value": 37.81,
+        "date": "2026-09-01",
+        "previous": 37.76,
+        "previous_date": "2026-08-01"
+      },
+      "initial_claims": {
+        "series_id": "ICSA",
+        "value": 197000.0,
+        "date": "2026-10-03",
+        "previous": 199000.0,
+        "previous_date": "2026-09-26"
       },
       "gdp_growth": {
         "series_id": "A191RL1Q225SBEA",
@@ -12322,11 +12308,11 @@
         "previous": 2.5,
         "previous_date": "2026-01-01"
       },
-      "housing_starts": {
-        "series_id": "HOUST",
-        "value": 1275.0,
+      "jolts": {
+        "series_id": "JTSJOL",
+        "value": 7079.0,
         "date": "2026-08-01",
-        "previous": 1309.0,
+        "previous": 7335.0,
         "previous_date": "2026-07-01"
       },
       "industrial_production": {
@@ -12336,11 +12322,25 @@
         "previous": 103.0454,
         "previous_date": "2026-07-01"
       },
+      "housing_starts": {
+        "series_id": "HOUST",
+        "value": 1275.0,
+        "date": "2026-08-01",
+        "previous": 1309.0,
+        "previous_date": "2026-07-01"
+      },
       "building_permits": {
         "series_id": "PERMIT",
         "value": 1403.0,
         "date": "2026-08-01",
         "previous": 1433.0,
+        "previous_date": "2026-07-01"
+      },
+      "retail_sales": {
+        "series_id": "RSAFS",
+        "value": 737763.0,
+        "date": "2026-08-01",
+        "previous": 729538.0,
         "previous_date": "2026-07-01"
       },
       "consumer_sentiment": {
@@ -12357,26 +12357,12 @@
         "previous": 6743031.0,
         "previous_date": "2026-09-30"
       },
-      "m2": {
-        "series_id": "M2SL",
-        "value": 23342.8,
-        "date": "2026-08-01",
-        "previous": 23217.9,
-        "previous_date": "2026-07-01"
-      },
       "rrp": {
         "series_id": "RRPONTSYD",
         "value": 0.3,
         "date": "2026-10-09",
         "previous": 0.335,
         "previous_date": "2026-10-08"
-      },
-      "financial_conditions": {
-        "series_id": "NFCI",
-        "value": -0.494,
-        "date": "2026-10-02",
-        "previous": -0.51,
-        "previous_date": "2026-09-25"
       },
       "ig_spread": {
         "series_id": "BAMLC0A0CM",
@@ -12398,6 +12384,20 @@
         "date": "2026-10-07",
         "previous": 948674.0,
         "previous_date": "2026-09-30"
+      },
+      "financial_conditions": {
+        "series_id": "NFCI",
+        "value": -0.494,
+        "date": "2026-10-02",
+        "previous": -0.51,
+        "previous_date": "2026-09-25"
+      },
+      "m2": {
+        "series_id": "M2SL",
+        "value": 23342.8,
+        "date": "2026-08-01",
+        "previous": 23217.9,
+        "previous_date": "2026-07-01"
       }
     },
     "regime": {
@@ -12449,7 +12449,7 @@
   },
   "fx": {
     "status": "live",
-    "updated_at": "2026-10-10T17:17:41.210871+00:00",
+    "updated_at": "2026-10-10T17:32:11.495963+00:00",
     "pairs": {
       "EURUSD": {
         "ticker": "EURUSD=X",
@@ -12688,7 +12688,7 @@
   "fx_news": {
     "status": "live",
     "source": "Freshness-filtered FX news (max 7 days) from yfinance/Yahoo + Google News RSS + Investing.com Forex RSS",
-    "updated_at": "2026-10-10T17:18:01.379334+00:00",
+    "updated_at": "2026-10-10T17:32:28.865709+00:00",
     "freshness_window_days": 7,
     "items": [
       {
@@ -12698,7 +12698,7 @@
         "published_at": "2026-10-10T16:01:45+00:00",
         "currency": "CNY",
         "relevance_score": 5,
-        "freshness_score": 99.2,
+        "freshness_score": 99.1,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12709,7 +12709,7 @@
         "published_at": "2026-10-09T13:20:12+00:00",
         "currency": "EUR",
         "relevance_score": 5,
-        "freshness_score": 83.4,
+        "freshness_score": 83.2,
         "impact": "LOW",
         "topic": "FX_MARKET"
       },
@@ -12720,7 +12720,7 @@
         "published_at": "2026-10-09T10:10:09+00:00",
         "currency": "USD",
         "relevance_score": 5,
-        "freshness_score": 81.5,
+        "freshness_score": 81.3,
         "impact": "LOW",
         "topic": "FX_MARKET"
       },
@@ -12731,7 +12731,7 @@
         "published_at": "2026-10-09T09:48:11+00:00",
         "currency": "USD",
         "relevance_score": 7,
-        "freshness_score": 81.3,
+        "freshness_score": 81.1,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12742,7 +12742,7 @@
         "published_at": "2026-10-09T07:39:33+00:00",
         "currency": "CAD",
         "relevance_score": 10,
-        "freshness_score": 80.0,
+        "freshness_score": 79.8,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12753,7 +12753,7 @@
         "published_at": "2026-10-08T21:16:08+00:00",
         "currency": "EUR",
         "relevance_score": 5,
-        "freshness_score": 73.8,
+        "freshness_score": 73.6,
         "impact": "LOW",
         "topic": "FX_MARKET"
       },
@@ -12764,7 +12764,7 @@
         "published_at": "2026-10-08T19:22:09+00:00",
         "currency": "CAD",
         "relevance_score": 12,
-        "freshness_score": 72.7,
+        "freshness_score": 72.5,
         "impact": "HIGH",
         "topic": "FX_MARKET"
       },
@@ -12775,7 +12775,7 @@
         "published_at": "2026-10-07T16:41:07+00:00",
         "currency": "INR",
         "relevance_score": 11,
-        "freshness_score": 56.8,
+        "freshness_score": 56.6,
         "impact": "HIGH",
         "topic": "MONETARY_POLICY"
       },
@@ -12786,7 +12786,7 @@
         "published_at": "2026-10-07T09:22:51+00:00",
         "currency": "INR",
         "relevance_score": 7,
-        "freshness_score": 52.4,
+        "freshness_score": 52.3,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12797,7 +12797,7 @@
         "published_at": "2026-10-07T05:16:59+00:00",
         "currency": "CHF",
         "relevance_score": 10,
-        "freshness_score": 50.0,
+        "freshness_score": 49.8,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12808,7 +12808,7 @@
         "published_at": "2026-10-06T09:19:30+00:00",
         "currency": "JPY",
         "relevance_score": 7,
-        "freshness_score": 38.1,
+        "freshness_score": 38.0,
         "impact": "MEDIUM",
         "topic": "FX_MARKET"
       },
@@ -12851,7 +12851,7 @@
   },
   "market_regime": {
     "status": "live",
-    "updated_at": "2026-10-10T17:17:48.069697+00:00",
+    "updated_at": "2026-10-10T17:32:17.549065+00:00",
     "regime": "RISK-ON",
     "score": 81.3,
     "confidence": 89,
@@ -12934,142 +12934,22 @@
     "status": "live",
     "source": "Delta Exchange India public API",
     "symbol": "BTCUSD",
-    "updated_at": "2026-10-10T17:17:39.226341+00:00",
+    "updated_at": "2026-10-10T17:32:09.741633+00:00",
     "ticker": {
-      "last_price": 83039.0,
-      "mark_price": 83034.64770379,
-      "spot_price": 83077.8,
-      "open": 82640.0,
+      "last_price": 83018.0,
+      "mark_price": 83019.7066569,
+      "spot_price": 83061.3,
+      "open": 82500.0,
       "high": 83047.5,
       "low": 82241.5,
-      "volume": 4957.44600000063,
-      "turnover": 409904207.22199535,
-      "open_interest": 1000.747,
-      "funding_rate": 0.0015120226156305067,
-      "timestamp": 1791652654591762,
-      "change_pct": 0.4828170377541241
+      "volume": 4785.601000000306,
+      "turnover": 395728283.91999555,
+      "open_interest": 999.969,
+      "funding_rate": 0.0015444614432089596,
+      "timestamp": 1791653524506448,
+      "change_pct": 0.6278787878787773
     },
     "candles": [
-      {
-        "time": 1791566280.0,
-        "open": 82644.0,
-        "high": 82656.5,
-        "low": 82610.5,
-        "close": 82618.5,
-        "volume": 5436.0
-      },
-      {
-        "time": 1791566340.0,
-        "open": 82618.5,
-        "high": 82653.5,
-        "low": 82610.5,
-        "close": 82610.5,
-        "volume": 5168.0
-      },
-      {
-        "time": 1791566400.0,
-        "open": 82610.5,
-        "high": 82636.5,
-        "low": 82610.5,
-        "close": 82636.5,
-        "volume": 3288.0
-      },
-      {
-        "time": 1791566460.0,
-        "open": 82636.0,
-        "high": 82647.0,
-        "low": 82614.5,
-        "close": 82616.0,
-        "volume": 4240.0
-      },
-      {
-        "time": 1791566520.0,
-        "open": 82616.0,
-        "high": 82616.0,
-        "low": 82477.0,
-        "close": 82491.0,
-        "volume": 46571.0
-      },
-      {
-        "time": 1791566580.0,
-        "open": 82491.0,
-        "high": 82565.5,
-        "low": 82491.0,
-        "close": 82525.0,
-        "volume": 18354.0
-      },
-      {
-        "time": 1791566640.0,
-        "open": 82524.5,
-        "high": 82525.0,
-        "low": 82482.5,
-        "close": 82500.0,
-        "volume": 17356.0
-      },
-      {
-        "time": 1791566700.0,
-        "open": 82500.0,
-        "high": 82570.0,
-        "low": 82499.5,
-        "close": 82570.0,
-        "volume": 15847.0
-      },
-      {
-        "time": 1791566760.0,
-        "open": 82571.5,
-        "high": 82619.5,
-        "low": 82571.0,
-        "close": 82619.5,
-        "volume": 17440.0
-      },
-      {
-        "time": 1791566820.0,
-        "open": 82619.5,
-        "high": 82644.5,
-        "low": 82614.0,
-        "close": 82644.5,
-        "volume": 10587.0
-      },
-      {
-        "time": 1791566880.0,
-        "open": 82644.5,
-        "high": 82669.0,
-        "low": 82644.0,
-        "close": 82662.5,
-        "volume": 10615.0
-      },
-      {
-        "time": 1791566940.0,
-        "open": 82663.0,
-        "high": 82663.0,
-        "low": 82640.0,
-        "close": 82641.0,
-        "volume": 6748.0
-      },
-      {
-        "time": 1791567000.0,
-        "open": 82641.0,
-        "high": 82657.5,
-        "low": 82596.5,
-        "close": 82607.5,
-        "volume": 10066.0
-      },
-      {
-        "time": 1791567060.0,
-        "open": 82607.5,
-        "high": 82624.5,
-        "low": 82560.0,
-        "close": 82591.5,
-        "volume": 11011.0
-      },
-      {
-        "time": 1791567120.0,
-        "open": 82592.0,
-        "high": 82656.0,
-        "low": 82588.5,
-        "close": 82599.5,
-        "volume": 10445.0
-      },
       {
         "time": 1791567180.0,
         "open": 82600.0,
@@ -24468,7 +24348,127 @@
         "high": 83041.0,
         "low": 83023.5,
         "close": 83039.0,
-        "volume": 4492.0
+        "volume": 5090.0
+      },
+      {
+        "time": 1791652680.0,
+        "open": 83039.0,
+        "high": 83039.0,
+        "low": 83017.5,
+        "close": 83018.0,
+        "volume": 2569.0
+      },
+      {
+        "time": 1791652740.0,
+        "open": 83018.0,
+        "high": 83018.0,
+        "low": 83014.5,
+        "close": 83015.0,
+        "volume": 1310.0
+      },
+      {
+        "time": 1791652800.0,
+        "open": 83014.5,
+        "high": 83026.0,
+        "low": 83014.5,
+        "close": 83025.5,
+        "volume": 1202.0
+      },
+      {
+        "time": 1791652860.0,
+        "open": 83025.5,
+        "high": 83026.0,
+        "low": 83020.0,
+        "close": 83024.0,
+        "volume": 902.0
+      },
+      {
+        "time": 1791652920.0,
+        "open": 83023.5,
+        "high": 83024.0,
+        "low": 82984.0,
+        "close": 82990.5,
+        "volume": 6062.0
+      },
+      {
+        "time": 1791652980.0,
+        "open": 82990.0,
+        "high": 83005.5,
+        "low": 82990.0,
+        "close": 83005.0,
+        "volume": 3660.0
+      },
+      {
+        "time": 1791653040.0,
+        "open": 83005.5,
+        "high": 83012.5,
+        "low": 83005.0,
+        "close": 83012.5,
+        "volume": 600.0
+      },
+      {
+        "time": 1791653100.0,
+        "open": 83012.0,
+        "high": 83024.0,
+        "low": 83012.0,
+        "close": 83024.0,
+        "volume": 488.0
+      },
+      {
+        "time": 1791653160.0,
+        "open": 83024.0,
+        "high": 83024.0,
+        "low": 83023.5,
+        "close": 83023.5,
+        "volume": 1018.0
+      },
+      {
+        "time": 1791653220.0,
+        "open": 83024.0,
+        "high": 83024.0,
+        "low": 83014.5,
+        "close": 83022.5,
+        "volume": 1891.0
+      },
+      {
+        "time": 1791653280.0,
+        "open": 83022.5,
+        "high": 83022.5,
+        "low": 83022.0,
+        "close": 83022.5,
+        "volume": 435.0
+      },
+      {
+        "time": 1791653340.0,
+        "open": 83022.0,
+        "high": 83022.5,
+        "low": 83022.0,
+        "close": 83022.0,
+        "volume": 368.0
+      },
+      {
+        "time": 1791653400.0,
+        "open": 83022.0,
+        "high": 83022.5,
+        "low": 83022.0,
+        "close": 83022.0,
+        "volume": 1406.0
+      },
+      {
+        "time": 1791653460.0,
+        "open": 83021.0,
+        "high": 83021.0,
+        "low": 83018.0,
+        "close": 83018.0,
+        "volume": 1328.0
+      },
+      {
+        "time": 1791653520.0,
+        "open": 83018.0,
+        "high": 83018.0,
+        "low": 83018.0,
+        "close": 83018.0,
+        "volume": 39.0
       }
     ],
     "volume_profile": [
@@ -24482,15 +24482,15 @@
       },
       {
         "price": 82500.0,
-        "volume": 613977.0
+        "volume": 531696.0
       },
       {
         "price": 82600.0,
-        "volume": 822057.0
+        "volume": 721781.0
       },
       {
         "price": 82700.0,
-        "volume": 756232.0
+        "volume": 745617.0
       },
       {
         "price": 82800.0,
@@ -24502,7 +24502,7 @@
       },
       {
         "price": 83000.0,
-        "volume": 612332.0
+        "volume": 636208.0
       }
     ],
     "order_flow": {
@@ -24528,7 +24528,7 @@
       "high": 83047.5,
       "low": 82729.5,
       "open": 82765.0,
-      "close": 83039.0
+      "close": 83018.0
     }
   }
 }
